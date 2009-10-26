@@ -1,4 +1,4 @@
-BEGIN { scale=0.28346*5; ent=0; line=0; arc=0; readl=0; arc=0; reada=0;
+BEGIN { scale=2.8346*0.1; ent=0; line=0; arc=0; readl=0; arc=0; reada=0;
 minx = 100000; miny = 100000; maxx = 0; maxy = 0;
 print "%!PS-Adobe-2.0"; 
 print "%%BoundingBox: atend"

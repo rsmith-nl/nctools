@@ -1,5 +1,5 @@
 /* -*- c -*-
- * Time-stamp: <2009-10-20 21:25:13 rsmith>
+ * Time-stamp: <2009-10-26 17:01:38 rsmith>
  * 
  * readdxf.c
  * Copyright © 2009 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
@@ -84,17 +84,15 @@ int main(int argc, char *argv[])
 		fputs("Found ENDSEC for ENTITIES section.\n", stderr);
 #endif
 	lptr = ptr;
-	while (lptr<eptr && lptr!=NULL && aptr<eptr && aptr!=NULL) {
-		lptr = strstr(lptr, "LINE");
-		aptr = strstr(aptr, "ARC");
-		if (lptr<aptr) {
-			lptr = getline(lptr);
-			aptr = getarc(aptr);
-		} else {
-			aptr = getarc(aptr);
-			lptr = getline(lptr);
-		}
-}
+	while (lptr!=NULL) {
+		lptr = strstr(lptr, "\nLINE");
+		lptr = getline(lptr);
+	}
+	aptr = ptr;
+	while (aptr!=NULL) {
+		aptr = strstr(aptr, "\nARC");
+		aptr = getline(aptr);
+	}
 
 	return 0;
 }
@@ -103,6 +101,7 @@ char *getline(char *f) {
 	char *p = f, *e;
 	int rv, l;
 	float x1, y1, x2, y2;
+	static int cnt = 1;
 	if (p==NULL) return NULL;
 	p += 4;
 
@@ -130,7 +129,8 @@ char *getline(char *f) {
 	y2 = strtof(p, &e);
 	if (p==e) return p;
 	
-	printf("Found line segment from (%g,%g) to (%g,%g)\n", x1,y1,x2,y2);
+	printf("Found line segment %d from (%g,%g) to (%g,%g)\n", 
+	       cnt++, x1,y1,x2,y2);
 
 	return p;
 }
@@ -138,6 +138,7 @@ char *getline(char *f) {
 char *getarc(char *f) {
 	char *p = f, *e;
 	int rv, l;
+	static int cnt = 1;
 	float x1, y1, r, a1, a2;
 	if (p==NULL) return NULL;
 	p += 4;
@@ -172,8 +173,8 @@ char *getarc(char *f) {
 	a2 = strtof(p, &e);
 	if (p==e) return p;
 	
-	printf("Found arc center (%g,%g) radius %g from %g° to %g°.\n", 
-	       x1,y1,r,a1,a2);
+	printf("Found arc %d center (%g,%g) radius %g from %g° to %g°.\n", 
+	       cnt++, x1,y1,r,a1,a2);
 
 	return p;
 }

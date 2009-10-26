@@ -106,7 +106,7 @@ $(BASENAME).1: $(BASENAME).1.in replace.sed
 #endskip
 # Remove all generated files.
 clean::
-	rm -f $(OBJS) $(BASENAME) *~ core gmon.out $(TARFILE)* \
+	rm -f $(OBJS) $(BASENAME) *~ *.core gmon.out $(TARFILE)* \
 	$(BACKUP) $(LOG)
 #beginskip
 	rm -f README INSTALL $(BASENAME).1 $(BASENAME).5
