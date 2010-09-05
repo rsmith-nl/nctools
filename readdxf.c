@@ -1,5 +1,5 @@
 /* -*- c -*-
- * Time-stamp: <2009-10-26 17:01:38 rsmith>
+ * Time-stamp: <2010-08-31 14:13:58 rsmith>
  * 
  * readdxf.c
  * Copyright © 2009 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
 	aptr = ptr;
 	while (aptr!=NULL) {
 		aptr = strstr(aptr, "\nARC");
-		aptr = getline(aptr);
+		aptr = getarc(aptr);
 	}
 
 	return 0;
