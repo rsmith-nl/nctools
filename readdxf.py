@@ -3,7 +3,7 @@
 # Converts lines and arcs from a DXF file and prints them.
 #
 # Copyright © 2011 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Time-stamp: <2011-09-27 22:17:31 rsmith>
+# Time-stamp: <2011-09-27 23:03:36 rsmith>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -52,6 +52,7 @@ for f in sys.argv:
     remlines.sort()
     remarcs.sort()
     # Output
+    print "#File: {}".format(f)
     for c in contours:
         print c
     for l in remlines:
