@@ -2,7 +2,7 @@
 # Converts lines and arcs from a DXF file and organizes them into contours.
 #
 # Copyright © 2011 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Time-stamp: <2011-09-27 22:16:19 rsmith>
+# Time-stamp: <2011-09-28 00:06:06 rsmith>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -117,6 +117,13 @@ class DxfLine(DxfEntity):
         if self.sw == True:
             fs += " (swapped)"
         return fs
+    def dxfstring(self):
+        s = "  0\nLINE\n"
+        s += " 010\n{}\n 20\n{}\n 30\n0.0\n".format(self.x1, self.y1)
+        s += " 011\n{}\n 21\n{}\n 31\n0.0\n".format(self.x2, self.y2)
+        return s
+#    def psstring(self):
+#        pass
 
 class DxfArc(DxfEntity):
     '''A class for an arc entity, centering in (cx,cy) with radius R from
@@ -170,6 +177,11 @@ class DxfArc(DxfEntity):
         if self.sw == True:
             s += " (swapped)"
         return s
+    def dxfstring(self):
+        s = "  0\nARC\n"
+        s += " 10\n{}\n 20\n{}\n 30\n0.0\n".format(self.cx, self.cy)
+        s += " 40\n{}\n 50\n{}\n 51\n{}\n".format(self.R, self.a1, self.a2)
+        return s
 
 class DxfContour(DxfEntity):
     '''A class for a list of connected DxfEntities'''
@@ -219,6 +231,11 @@ class DxfContour(DxfEntity):
         for e in self.ent:
             outstr += "|" + str(e) + "\n"
         return outstr[0:-1]
+    def dxfstring(self):
+        s = ""
+        for e in self.ent:
+            s += s.dxfstring()
+        return s
 
 # Function definitions.
 def DxfMergebb(a, b):
@@ -231,7 +248,7 @@ def DxfMergebb(a, b):
     return (xmin, ymin, xmax, ymax)
 
 def DxfReadEntities(name):
-    '''Opens the DXF file 'name', and return a list of entities'''
+    '''Reads the DXF file 'name', and return a list of entities'''
     dxffile = open(name)
     sdata = [str.strip() for str in dxffile.readlines()]
     dxffile.close()
@@ -244,7 +261,7 @@ def DxfReadEntities(name):
 
 def DxfFindentities(ename, el):
     '''Searches the ent list for the entity named in the ename string. Returns
-    a list of indices.'''
+    a list of indices for that ename.'''
     cnt = el.count(ename)
     if cnt > 0:
         return [x for x in range(len(el)) if el[x] == ename]
