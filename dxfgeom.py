@@ -2,7 +2,7 @@
 # Converts lines and arcs from a DXF file and organizes them into contours.
 #
 # Copyright © 2011 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Time-stamp: <2011-09-27 21:05:26 rsmith>
+# Time-stamp: <2011-09-27 22:16:19 rsmith>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -69,25 +69,26 @@ class DxfEntity:
         (self.y1, self.y2) = (self.y2, self.y1)
         self.sw = not self.sw
     def __lt__(self, other):
-        if self.x1 == other.x1:
-            if self.y1 < other.y1:
+        '''The (xmin,ymin) corner of the bounding box will be used for sorting.'''
+        if self.xmin == other.xmin:
+            if self.ymin < other.ymin:
                 return True
         else:
-            return self.x1 < other.x1
+            return self.xmin < other.xmin
     def __gt__(self, other):
-        if self.x1 == other.x1:
-            if self.y1 > other.y1:
+        if self.xmin == other.xmin:
+            if self.ymin > other.ymin:
                 return True
         else:
-            return self.x1 > other.x1
+            return self.xmin > other.xmin
     def __eq__(self, other):
-        return self.x1 == other.x1 and self.y1 == other.y1
+        return self.xmin == other.xmin and self.ymin == other.ymin
 
 class DxfLine(DxfEntity):
     '''A class for a line entity, from point (x1,y1) to (x2,y2)'''
     def __init__(self, elist, num):
-        '''Creates a DxfLine by searching the elist entities list starting from
- the number num.'''
+        '''Creates a DxfLine by searching the elist entities list starting
+        from the number num.'''
         num = elist.index("10", num) + 1
         self.x1 = float(elist[num])
         num = elist.index("20", num) + 1
@@ -118,11 +119,11 @@ class DxfLine(DxfEntity):
         return fs
 
 class DxfArc(DxfEntity):
-    '''A class for an arc entity, centering in (cx,cy) with radius R from angle
- a1 to a2'''
+    '''A class for an arc entity, centering in (cx,cy) with radius R from
+    angle a1 to a2'''
     def __init__(self, elist, num):
         '''Creates a DxfArc by searching the elist entities list starting from
- the number num.'''
+        the number num.'''
         num = elist.index("10", num) + 1
         self.cx = float(elist[num])
         num = elist.index("20", num) + 1
@@ -213,7 +214,8 @@ class DxfContour(DxfEntity):
         self.y1 = ent.y1
         return True
     def __str__(self):
-        outstr = "#Contour\n"
+        outstr = "#Contour ({}, {}, {}, {})\n"
+        outstr = outstr.format(self.xmin, self.ymin, self.xmax, self.ymax)
         for e in self.ent:
             outstr += "|" + str(e) + "\n"
         return outstr[0:-1]
@@ -241,7 +243,8 @@ def DxfReadEntities(name):
     return entities
 
 def DxfFindentities(ename, el):
-    '''Searches the ent list for the entity named in the ename string. Returns a list of indices.'''
+    '''Searches the ent list for the entity named in the ename string. Returns
+    a list of indices.'''
     cnt = el.count(ename)
     if cnt > 0:
         return [x for x in range(len(el)) if el[x] == ename]

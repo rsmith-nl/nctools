@@ -3,7 +3,7 @@
 # Converts lines and arcs from a DXF file and prints them.
 #
 # Copyright © 2011 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Time-stamp: <2011-09-27 21:05:44 rsmith>
+# Time-stamp: <2011-09-27 22:17:31 rsmith>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -27,7 +27,7 @@
 # SUCH DAMAGE.
 
 import sys # for argv.
-import dxftools
+import dxfgeom
 
 # Main program starts here.
 if len(sys.argv) == 1:
@@ -36,17 +36,17 @@ if len(sys.argv) == 1:
 del sys.argv[0]
 for f in sys.argv:
     # Find entities
-    ent = dxftools.DxfReadEntities(f)
-    lo = dxftools.DxfFindentities("LINE", ent)
+    ent = dxfgeom.DxfReadEntities(f)
+    lo = dxfgeom.DxfFindentities("LINE", ent)
     lines = []
     if len(lo) > 0:
-        lines = [dxftools.DxfLine(ent,n) for n in lo]
-    ao = dxftools.DxfFindentities("ARC", ent)
+        lines = [dxfgeom.DxfLine(ent,n) for n in lo]
+    ao = dxfgeom.DxfFindentities("ARC", ent)
     arcs = []
     if len(ao) > 0:
-        arcs = [dxftools.DxfArc(ent,m) for m in ao]
+        arcs = [dxfgeom.DxfArc(ent,m) for m in ao]
     # Find contours
-    (contours,remlines,remarcs) = dxftools.DxfFindContours(lines, arcs)
+    (contours,remlines,remarcs) = dxfgeom.DxfFindContours(lines, arcs)
     # Sort in x1, then in y1.
     contours.sort()
     remlines.sort()
