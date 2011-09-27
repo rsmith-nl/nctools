@@ -3,7 +3,7 @@
 # Converts lines and arcs from a DXF file and prints them.
 #
 # Copyright © 2011 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Time-stamp: <2011-09-27 00:47:12 rsmith>
+# Time-stamp: <2011-09-27 17:00:37 rsmith>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -42,6 +42,7 @@ class DxfEntity:
         # Bounding box
         self.xmin = self.xmax = 0.0
         self.xmax = self.xmax = 0.0
+        self.sw = False
     def fits(self, index, other):
         if not isinstance(other, DxfEntity):
             print "{} is not a DxfEntity!".format(other)
@@ -64,6 +65,11 @@ class DxfEntity:
         return 0 # doesn't fit!
     def getbb(self):
         return (xmin, ymin, xmax, ymax)
+    def swap(self):
+        '''Swap (x1,y1) and (x2,y2)'''
+        (self.x1, self.x2) = (self.x2, self.x1)
+        (self.y1, self.y2) = (self.y2, self.y1)
+        self.sw = not self.sw
 
 class DxfLine(DxfEntity):
     '''A class for a line entity, from point (x1,y1) to (x2,y2)'''
@@ -78,6 +84,7 @@ class DxfLine(DxfEntity):
         self.x2 = float(elist[num])
         num = elist.index("21", num) + 1
         self.y2 = float(elist[num])
+        self.sw = False
         # Set bounding box
         if self.x2 > self.x1:
             self.xmin = self.x1
@@ -91,13 +98,12 @@ class DxfLine(DxfEntity):
         else:
             self.ymin = self.y2
             self.ymax = self.y1
-    def swap(self):
-        '''Swap (x1,y1) and (x2,y2)'''
-        (self.x1, self.x2) = (self.x2, self.x1)
-        (self.y1, self.y2) = (self.y2, self.y1)
     def __str__(self):
         fs = "LINE from ({:.3f},{:.3f}) to ({:.3f},{:.3f})"
-        return fs.format(self.x1, self.y1, self.x2, self.y2)
+        fs =  fs.format(self.x1, self.y1, self.x2, self.y2)
+        if self.sw == True:
+            fs += " (swapped)"
+        return fs
 
 class DxfArc(DxfEntity):
     '''A class for an arc entity, centering in (cx,cy) with radius R from angle
@@ -122,6 +128,7 @@ class DxfArc(DxfEntity):
         self.y1 = self.ymin = self.cy+self.R*math.sin(math.radians(self.a1))
         self.x2 = self.xmax = self.cx+self.R*math.cos(math.radians(self.a2))
         self.y2 = self.ymax = self.cy+self.R*math.sin(math.radians(self.a2))
+        self.sw = False
         # Refine bounding box
         if self.xmin > self.xmax:
             (self.xmin,self.xmax) = (self.xmax,self.xmin)
@@ -146,8 +153,10 @@ class DxfArc(DxfEntity):
         return (self.x2,self.y2)
     def __str__(self):
         s = "ARC from ({:.3f},{:.3f}) to ({:.3f},{:.3f}), radius {:.3f}"
-        return s.format(self.x1, self.y1, self.x2, self.y2, self.R)
-
+        s =  s.format(self.x1, self.y1, self.x2, self.y2, self.R)
+        if self.sw == True:
+            s += " (swapped)"
+        return s
 
 class DxfContour:
     '''A class for a list of connected DxfEntities'''
@@ -155,38 +164,31 @@ class DxfContour:
         '''Creates a contour from an initial entity.'''
         self.ent = [ent]
         self.nument = 1
-        self.firstfree = 1
-        self.lastfree = 2
     def append(self, ent):
         '''Appends and entity to the contour, if one of the ends of entity
         matches the end of the last entity. Returns True if matched, otherwise
         False.'''
         last = self.ent[-1]
-        newfree = last.fits(self.lastfree, ent)
+        newfree = last.fits(2, ent)
         if newfree == 0:
             return False
         self.ent.append(ent)
         self.nument += 1
-        self.lastfree = newfree
-        if newfree == 1 and isinstance(ent, DxfLine):
-            newfree = 2;
+        if newfree == 1:
             ent.swap()
-        self.firstfree = newfree
         return True
     def prepend(self, ent):
         '''Prepends and entity to the contour, if one of the ends of entity
         matches the end of the first entity. Returns True if matched,
         otherwise False.'''
         first = self.ent[0]
-        newfree = first.fits(self.firstfree, ent)
+        newfree = first.fits(1, ent)
         if newfree == 0:
             return False
         self.ent.insert(0,ent)
         self.nument += 1
-        if newfree == 2 and isinstance(ent, DxfLine):
-            newfree = 1;
+        if newfree == 2:
             ent.swap()
-        self.firstfree = newfree
         return True
     def __str__(self):
         outstr = "#Contour\n"
@@ -252,11 +254,13 @@ for f in sys.argv:
     lo = findent("LINE", ent)
     lines = []
     if len(lo) > 0:
-        lines = [DxfLine(ent,n) for n in lo] 
+        lines = [DxfLine(ent,n) for n in lo]
+    # TODO: lijnen sorteren
     ao = findent("ARC", ent)
     arcs = []
     if len(ao) > 0:
         arcs = [DxfArc(ent,m) for m in ao]
+    # TODO: lijnen sorteren
     # Find contours
     (contours,remlines,remarcs) = findcontours(lines, arcs)
     # Output
