@@ -2,7 +2,7 @@
 # Converts lines and arcs from a DXF file and organizes them into contours.
 #
 # Copyright © 2011 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Time-stamp: <2011-09-28 00:06:06 rsmith>
+# Time-stamp: <2011-09-29 20:52:59 rsmith>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -26,12 +26,13 @@
 # SUCH DAMAGE.
 
 import math
+import datetime
 
 # Constants
-DxfDelta=0.01
+Delta=0.01
 
 # Class definitions
-class DxfEntity:
+class Entity:
     '''A base class for a DXF entities; lines and arcs.'''
     def __init__(self):
         # Start- and enpoint
@@ -42,23 +43,23 @@ class DxfEntity:
         self.xmax = self.xmax = 0.0
         self.sw = False
     def fits(self, index, other):
-        if not isinstance(other, DxfEntity):
-            print "{} is not a DxfEntity!".format(other)
+        if not isinstance(other, Entity):
+            print "{} is not a Entity!".format(other)
             return 0
         if index == 1:
-            if (math.fabs(self.x1-other.x1)<DxfDelta and 
-                math.fabs(self.y1-other.y1)<DxfDelta):
+            if (math.fabs(self.x1-other.x1)<Delta and 
+                math.fabs(self.y1-other.y1)<Delta):
                 # return free end of other
                 return 2
-            elif (math.fabs(self.x1-other.x2)<DxfDelta and 
-                  math.fabs(self.y1-other.y2)<DxfDelta):
+            elif (math.fabs(self.x1-other.x2)<Delta and 
+                  math.fabs(self.y1-other.y2)<Delta):
                 return 1
         elif index == 2:
-            if (math.fabs(self.x2-other.x1)<DxfDelta and 
-                math.fabs(self.y2-other.y1)<DxfDelta):
+            if (math.fabs(self.x2-other.x1)<Delta and 
+                math.fabs(self.y2-other.y1)<Delta):
                 return 2
-            elif (math.fabs(self.x2-other.x2)<DxfDelta and 
-                  math.fabs(self.y2-other.y2)<DxfDelta):
+            elif (math.fabs(self.x2-other.x2)<Delta and 
+                  math.fabs(self.y2-other.y2)<Delta):
                 return 1
         return 0 # doesn't fit!
     def getbb(self):
@@ -84,10 +85,10 @@ class DxfEntity:
     def __eq__(self, other):
         return self.xmin == other.xmin and self.ymin == other.ymin
 
-class DxfLine(DxfEntity):
+class Line(Entity):
     '''A class for a line entity, from point (x1,y1) to (x2,y2)'''
     def __init__(self, elist, num):
-        '''Creates a DxfLine by searching the elist entities list starting
+        '''Creates a Line by searching the elist entities list starting
         from the number num.'''
         num = elist.index("10", num) + 1
         self.x1 = float(elist[num])
@@ -112,7 +113,7 @@ class DxfLine(DxfEntity):
             self.ymin = self.y2
             self.ymax = self.y1
     def __str__(self):
-        fs = "LINE from ({:.3f},{:.3f}) to ({:.3f},{:.3f})"
+        fs = "#LINE from ({:.3f},{:.3f}) to ({:.3f},{:.3f})"
         fs =  fs.format(self.x1, self.y1, self.x2, self.y2)
         if self.sw == True:
             fs += " (swapped)"
@@ -125,11 +126,11 @@ class DxfLine(DxfEntity):
 #    def psstring(self):
 #        pass
 
-class DxfArc(DxfEntity):
+class Arc(Entity):
     '''A class for an arc entity, centering in (cx,cy) with radius R from
     angle a1 to a2'''
     def __init__(self, elist, num):
-        '''Creates a DxfArc by searching the elist entities list starting from
+        '''Creates a Arc by searching the elist entities list starting from
         the number num.'''
         num = elist.index("10", num) + 1
         self.cx = float(elist[num])
@@ -172,7 +173,7 @@ class DxfArc(DxfEntity):
     def endpoint(self):
         return (self.x2,self.y2)
     def __str__(self):
-        s = "ARC from ({:.3f},{:.3f}) to ({:.3f},{:.3f}), radius {:.3f}"
+        s = "#ARC from ({:.3f},{:.3f}) to ({:.3f},{:.3f}), radius {:.3f}"
         s =  s.format(self.x1, self.y1, self.x2, self.y2, self.R)
         if self.sw == True:
             s += " (swapped)"
@@ -183,8 +184,8 @@ class DxfArc(DxfEntity):
         s += " 40\n{}\n 50\n{}\n 51\n{}\n".format(self.R, self.a1, self.a2)
         return s
 
-class DxfContour(DxfEntity):
-    '''A class for a list of connected DxfEntities'''
+class Contour(Entity):
+    '''A class for a list of connected Entities'''
     def __init__(self, ent):
         '''Creates a contour from an initial entity.'''
         self.ent = [ent]
@@ -202,7 +203,7 @@ class DxfContour(DxfEntity):
         self.ent.append(ent)
         self.nument += 1
         (self.xmin, self.ymin, 
-         self.xmax, self.ymax) = DxfMergebb(self.getbb(), ent.getbb())
+         self.xmax, self.ymax) = Mergebb(self.getbb(), ent.getbb())
         if newfree == 1:
             ent.swap()
         self.x2 = ent.x2
@@ -219,26 +220,26 @@ class DxfContour(DxfEntity):
         self.ent.insert(0,ent)
         self.nument += 1
         (self.xmin, self.ymin, 
-         self.xmax, self.ymax) = DxfMergebb(self.getbb(), ent.getbb())
+         self.xmax, self.ymax) = Mergebb(self.getbb(), ent.getbb())
         if newfree == 2:
             ent.swap()
         self.x1 = ent.x1
         self.y1 = ent.y1
         return True
     def __str__(self):
-        outstr = "#Contour ({}, {}, {}, {})\n"
+        outstr = "#Contour [boundingbox: {:.3f}, {:.3f}, {:.3f}, {:.3f}]\n"
         outstr = outstr.format(self.xmin, self.ymin, self.xmax, self.ymax)
         for e in self.ent:
-            outstr += "|" + str(e) + "\n"
+            outstr += "#" + str(e) + "\n"
         return outstr[0:-1]
     def dxfstring(self):
         s = ""
         for e in self.ent:
-            s += s.dxfstring()
+            s += e.dxfstring()
         return s
 
 # Function definitions.
-def DxfMergebb(a, b):
+def Mergebb(a, b):
     '''The bounding boxes a and b are tuples (xmin, ymin, xmax,
     ymax). Calculate and return a bounding box that contains a and b.'''
     xmin = min(a[0], b[0])
@@ -247,7 +248,7 @@ def DxfMergebb(a, b):
     ymax = max(a[3], b[3])
     return (xmin, ymin, xmax, ymax)
 
-def DxfReadEntities(name):
+def ReadEntities(name):
     '''Reads the DXF file 'name', and return a list of entities'''
     dxffile = open(name)
     sdata = [str.strip() for str in dxffile.readlines()]
@@ -259,7 +260,7 @@ def DxfReadEntities(name):
     del sdata
     return entities
 
-def DxfFindentities(ename, el):
+def Findentities(ename, el):
     '''Searches the ent list for the entity named in the ename string. Returns
     a list of indices for that ename.'''
     cnt = el.count(ename)
@@ -267,7 +268,7 @@ def DxfFindentities(ename, el):
         return [x for x in range(len(el)) if el[x] == ename]
     return []
 
-def DxfFindContours(lol, loa):
+def FindContours(lol, loa):
     '''Find polylines in the list of lines loe and list of arcs loa. Returns a
     list of contours and a list of remaining lines and a list of remaining
     arcs as a tuple.'''
@@ -277,7 +278,7 @@ def DxfFindContours(lol, loa):
     loc = []
     while len(elements) > 0:
         first = elements.pop(0)
-        cn = DxfContour(first)
+        cn = Contour(first)
         oldlen = cn.nument
         while True:
             n = 0
@@ -285,16 +286,30 @@ def DxfFindContours(lol, loa):
                 if cn.append(elements[n]) or cn.prepend(elements[n]):
                     del elements[n]
                 else:
-                    n += 1
+                   n += 1
             if cn.nument == oldlen:
                 break
             oldlen = cn.nument
         if cn.nument > 1:
             loc.append(cn)
         else:
-            if isinstance(first, DxfLine):
+            if isinstance(first, Line):
                 remlines.append(first)
-            elif isinstance(first, DxfArc):
+            elif isinstance(first, Arc):
                 remarcs.append(first)
     return (loc, remlines, remarcs)
+
+def StartEntities(progname):
+    '''Write the header of a DXF file with only an entities section.'''
+    s = "999\nDXF file generated by {}\n".format(progname)
+    dt = datetime.datetime.now()
+    s += "999\n" + dt.strftime("%A, %B %d %H:%M\n")
+    s += "  0\nSECTION\n  2\nENTITIES"
+    return s
+
+def EndEntities():
+    '''Write the header of a DXF file with only an entities section.'''
+    s = "  0\nENDSEC\n  0\nEOF"
+    return s
+
 

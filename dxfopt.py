@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Converts lines and arcs from a DXF file and prints them.
+# Optimizes lines and arc from a DXF file, output another DXF file.
 #
 # Copyright © 2011 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Time-stamp: <2011-09-29 19:37:49 rsmith>
+# Time-stamp: <2011-09-29 20:51:50 rsmith>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -28,6 +28,7 @@
 
 import sys # for argv.
 import dxfgeom
+import datetime
 
 # Main program starts here.
 if len(sys.argv) == 1:
@@ -52,10 +53,17 @@ for f in sys.argv:
     remlines.sort()
     remarcs.sort()
     # Output
-    print "#File: {}".format(f)
+    print dxfgeom.StartEntities("dxfopt")
     for c in contours:
-        print c
+        t = str(c)
+        L=t.splitlines(False)
+        h = "999\n"+L[0]
+        print h
+        print c.dxfstring(),
     for l in remlines:
-        print l
+        print "999\n"+str(l)
+        print l.dxfstring(),
     for a in remarcs:
-        print a
+        print "999\n"+str(a)
+        print a.dxfstring(),
+    print dxfgeom.EndEntities()
