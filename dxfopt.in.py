@@ -3,7 +3,7 @@
 # Optimizes lines and arc from a DXF file, output another DXF file.
 #
 # Copyright © 2011 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Time-stamp: <2011-09-29 20:51:50 rsmith>
+# Time-stamp: <2011-10-07 23:02:02 rsmith>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -26,12 +26,18 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
-import sys # for argv.
-import dxfgeom
+# System modules
+import sys
 import datetime
+
+# Local module.
+import dxfgeom
+
+ver = "dxfopt [revision VERSION] (DATE)"
 
 # Main program starts here.
 if len(sys.argv) == 1:
+    print ver
     print "Usage: {} dxf-file(s)".format(sys.argv[0])
     exit(1)
 del sys.argv[0]
@@ -53,7 +59,7 @@ for f in sys.argv:
     remlines.sort()
     remarcs.sort()
     # Output
-    print dxfgeom.StartEntities("dxfopt")
+    print dxfgeom.StartEntities(ver)
     for c in contours:
         t = str(c)
         L=t.splitlines(False)

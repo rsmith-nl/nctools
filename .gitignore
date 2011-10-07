@@ -1,2 +1,11 @@
 *.pyc
 *.pyo
+*~
+build
+dist
+setup.py
+dxfopt
+dxfopt.1
+dxfopt.1.pdf
+tools/replace.sed
+MANIFEST
