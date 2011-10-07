@@ -2,7 +2,7 @@
 # Converts lines and arcs from a DXF file and organizes them into contours.
 #
 # Copyright © 2011 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Time-stamp: <2011-09-29 20:52:59 rsmith>
+# Time-stamp: <2011-10-07 21:18:33 rsmith>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -120,8 +120,9 @@ class Line(Entity):
         return fs
     def dxfstring(self):
         s = "  0\nLINE\n"
-        s += " 010\n{}\n 20\n{}\n 30\n0.0\n".format(self.x1, self.y1)
-        s += " 011\n{}\n 21\n{}\n 31\n0.0\n".format(self.x2, self.y2)
+        s += "  8\nsnijlijnen\n"
+        s += " 10\n{}\n 20\n{}\n 30\n0.0\n".format(self.x1, self.y1)
+        s += " 11\n{}\n 21\n{}\n 31\n0.0\n".format(self.x2, self.y2)
         return s
 #    def psstring(self):
 #        pass
@@ -180,6 +181,7 @@ class Arc(Entity):
         return s
     def dxfstring(self):
         s = "  0\nARC\n"
+        s += "  8\nsnijlijnen\n"
         s += " 10\n{}\n 20\n{}\n 30\n0.0\n".format(self.cx, self.cy)
         s += " 40\n{}\n 50\n{}\n 51\n{}\n".format(self.R, self.a1, self.a2)
         return s
