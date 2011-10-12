@@ -3,7 +3,7 @@
 # Optimizes lines and arc from a DXF file, output another DXF file.
 #
 # Copyright © 2011 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Time-stamp: <2011-10-07 23:02:02 rsmith>
+# Time-stamp: <2011-10-12 20:42:00 rsmith>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -28,7 +28,6 @@
 
 # System modules
 import sys
-import datetime
 
 # Local module.
 import dxfgeom
@@ -47,13 +46,13 @@ for f in sys.argv:
     lo = dxfgeom.Findentities("LINE", ent)
     lines = []
     if len(lo) > 0:
-        lines = [dxfgeom.Line(ent,n) for n in lo]
+        lines = [dxfgeom.Line(ent, n) for n in lo]
     ao = dxfgeom.Findentities("ARC", ent)
     arcs = []
     if len(ao) > 0:
-        arcs = [dxfgeom.Arc(ent,m) for m in ao]
+        arcs = [dxfgeom.Arc(ent, m) for m in ao]
     # Find contours
-    (contours,remlines,remarcs) = dxfgeom.FindContours(lines, arcs)
+    (contours, remlines, remarcs) = dxfgeom.FindContours(lines, arcs)
     # Sort in x1, then in y1.
     contours.sort()
     remlines.sort()
@@ -62,7 +61,7 @@ for f in sys.argv:
     print dxfgeom.StartEntities(ver)
     for c in contours:
         t = str(c)
-        L=t.splitlines(False)
+        L = t.splitlines(False)
         h = "999\n"+L[0]
         print h
         print c.dxfstring(),

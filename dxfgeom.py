@@ -2,7 +2,7 @@
 # Converts lines and arcs from a DXF file and organizes them into contours.
 #
 # Copyright © 2011 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Time-stamp: <2011-10-07 21:18:33 rsmith>
+# Time-stamp: <2011-10-12 20:39:21 rsmith>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -29,7 +29,7 @@ import math
 import datetime
 
 # Constants
-Delta=0.01
+DELTA = 0.01
 
 # Class definitions
 class Entity:
@@ -40,37 +40,38 @@ class Entity:
         self.y1 = self.y2 = 0.0
         # Bounding box
         self.xmin = self.xmax = 0.0
-        self.xmax = self.xmax = 0.0
+        self.ymin = self.ymax = 0.0
         self.sw = False
     def fits(self, index, other):
         if not isinstance(other, Entity):
             print "{} is not a Entity!".format(other)
             return 0
         if index == 1:
-            if (math.fabs(self.x1-other.x1)<Delta and 
-                math.fabs(self.y1-other.y1)<Delta):
+            if (math.fabs(self.x1-other.x1)<DELTA and 
+                math.fabs(self.y1-other.y1)<DELTA):
                 # return free end of other
                 return 2
-            elif (math.fabs(self.x1-other.x2)<Delta and 
-                  math.fabs(self.y1-other.y2)<Delta):
+            elif (math.fabs(self.x1-other.x2)<DELTA and 
+                  math.fabs(self.y1-other.y2)<DELTA):
                 return 1
         elif index == 2:
-            if (math.fabs(self.x2-other.x1)<Delta and 
-                math.fabs(self.y2-other.y1)<Delta):
+            if (math.fabs(self.x2-other.x1)<DELTA and 
+                math.fabs(self.y2-other.y1)<DELTA):
                 return 2
-            elif (math.fabs(self.x2-other.x2)<Delta and 
-                  math.fabs(self.y2-other.y2)<Delta):
+            elif (math.fabs(self.x2-other.x2)<DELTA and 
+                  math.fabs(self.y2-other.y2)<DELTA):
                 return 1
         return 0 # doesn't fit!
     def getbb(self):
         return (self.xmin, self.ymin, self.xmax, self.ymax)
     def swap(self):
-        '''Swap (x1,y1) and (x2,y2)'''
+        '''Swap (x1, y1) and (x2, y2)'''
         (self.x1, self.x2) = (self.x2, self.x1)
         (self.y1, self.y2) = (self.y2, self.y1)
         self.sw = not self.sw
     def __lt__(self, other):
-        '''The (xmin,ymin) corner of the bounding box will be used for sorting.'''
+        '''The (xmin, ymin) corner of the bounding box will be used for
+        sorting.'''
         if self.xmin == other.xmin:
             if self.ymin < other.ymin:
                 return True
@@ -86,10 +87,11 @@ class Entity:
         return self.xmin == other.xmin and self.ymin == other.ymin
 
 class Line(Entity):
-    '''A class for a line entity, from point (x1,y1) to (x2,y2)'''
+    '''A class for a line entity, from point (x1, y1) to (x2, y2)'''
     def __init__(self, elist, num):
         '''Creates a Line by searching the elist entities list starting
         from the number num.'''
+        Entity.__init__(self)
         num = elist.index("10", num) + 1
         self.x1 = float(elist[num])
         num = elist.index("20", num) + 1
@@ -128,11 +130,12 @@ class Line(Entity):
 #        pass
 
 class Arc(Entity):
-    '''A class for an arc entity, centering in (cx,cy) with radius R from
+    '''A class for an arc entity, centering in (cx, cy) with radius R from
     angle a1 to a2'''
     def __init__(self, elist, num):
         '''Creates a Arc by searching the elist entities list starting from
         the number num.'''
+        Entity.__init__(self)
         num = elist.index("10", num) + 1
         self.cx = float(elist[num])
         num = elist.index("20", num) + 1
@@ -153,14 +156,14 @@ class Arc(Entity):
         self.sw = False
         # Refine bounding box
         if self.xmin > self.xmax:
-            (self.xmin,self.xmax) = (self.xmax,self.xmin)
+            (self.xmin, self.xmax) = (self.xmax, self.xmin)
         if self.ymin > self.ymax:
-            (self.ymin,self.ymax) = (self.ymax,self.ymin)
+            (self.ymin, self.ymax) = (self.ymax, self.ymin)
         A1 = int(self.a1)/90
         A2 = int(self.a2)/90
-        for ang in range(A1,A2):
-            (px,py) = (self.cx+self.R*math.cos(math.radians(90*ang)),
-                       self.cy+self.R*math.sin(math.radians(90*ang)))
+        for ang in range(A1, A2):
+            (px, py) = (self.cx+self.R*math.cos(math.radians(90*ang)),
+                        self.cy+self.R*math.sin(math.radians(90*ang)))
             if px > self.xmax:
                 self.xmax = px
             elif px < self.xmin:
@@ -170,9 +173,9 @@ class Arc(Entity):
             elif py < self.ymin:
                 self.ymin = py
     def startpoint(self):
-        return (self.x1,self.y1)
+        return (self.x1, self.y1)
     def endpoint(self):
-        return (self.x2,self.y2)
+        return (self.x2, self.y2)
     def __str__(self):
         s = "#ARC from ({:.3f},{:.3f}) to ({:.3f},{:.3f}), radius {:.3f}"
         s =  s.format(self.x1, self.y1, self.x2, self.y2, self.R)
@@ -190,6 +193,7 @@ class Contour(Entity):
     '''A class for a list of connected Entities'''
     def __init__(self, ent):
         '''Creates a contour from an initial entity.'''
+        Entity.__init__(self)
         self.ent = [ent]
         self.nument = 1
         (self.xmin, self.ymin, self.xmax, self.ymax) = ent.getbb()
@@ -219,7 +223,7 @@ class Contour(Entity):
         newfree = first.fits(1, ent)
         if newfree == 0:
             return False
-        self.ent.insert(0,ent)
+        self.ent.insert(0, ent)
         self.nument += 1
         (self.xmin, self.ymin, 
          self.xmax, self.ymax) = Mergebb(self.getbb(), ent.getbb())
@@ -253,7 +257,7 @@ def Mergebb(a, b):
 def ReadEntities(name):
     '''Reads the DXF file 'name', and return a list of entities'''
     dxffile = open(name)
-    sdata = [str.strip() for str in dxffile.readlines()]
+    sdata = [s.strip() for s in dxffile.readlines()]
     dxffile.close()
     soe = sdata.index('ENTITIES')
     sdata = sdata[soe+1:]
@@ -288,7 +292,7 @@ def FindContours(lol, loa):
                 if cn.append(elements[n]) or cn.prepend(elements[n]):
                     del elements[n]
                 else:
-                   n += 1
+                    n += 1
             if cn.nument == oldlen:
                 break
             oldlen = cn.nument
