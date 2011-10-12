@@ -2,7 +2,7 @@
 # Converts lines and arcs from a DXF file and organizes them into contours.
 #
 # Copyright © 2011 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Time-stamp: <2011-10-12 20:39:21 rsmith>
+# Time-stamp: <2011-10-12 23:38:27 rsmith>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -34,14 +34,20 @@ DELTA = 0.01
 # Class definitions
 class Entity:
     '''A base class for a DXF entities; lines and arcs.'''
-    def __init__(self):
+    def __init__(self, x1=0, y1=0, x2=0, y2=0):
         # Start- and enpoint
-        self.x1 = self.x2 = 0.0
-        self.y1 = self.y2 = 0.0
+        self.x1 = float(x1)
+        self.y1 = float(y1)
+        self.x2 = float(x2)
+        self.y2 = float(x2)
         # Bounding box
-        self.xmin = self.xmax = 0.0
-        self.ymin = self.ymax = 0.0
+        self.xmin = min(x1,x2)
+        self.ymin = min(y1,y2)
+        self.xmax = max(x1,x2)
+        self.ymax = max(y1,y2)
+        # Endpoints swapped indicator
         self.sw = False
+
     def fits(self, index, other):
         if not isinstance(other, Entity):
             print "{} is not a Entity!".format(other)
@@ -62,13 +68,16 @@ class Entity:
                   math.fabs(self.y2-other.y2)<DELTA):
                 return 1
         return 0 # doesn't fit!
+
     def getbb(self):
         return (self.xmin, self.ymin, self.xmax, self.ymax)
+
     def swap(self):
         '''Swap (x1, y1) and (x2, y2)'''
         (self.x1, self.x2) = (self.x2, self.x1)
         (self.y1, self.y2) = (self.y2, self.y1)
         self.sw = not self.sw
+
     def __lt__(self, other):
         '''The (xmin, ymin) corner of the bounding box will be used for
         sorting.'''
@@ -77,93 +86,64 @@ class Entity:
                 return True
         else:
             return self.xmin < other.xmin
+
     def __gt__(self, other):
         if self.xmin == other.xmin:
             if self.ymin > other.ymin:
                 return True
         else:
             return self.xmin > other.xmin
+
     def __eq__(self, other):
         return self.xmin == other.xmin and self.ymin == other.ymin
 
+
 class Line(Entity):
     '''A class for a line entity, from point (x1, y1) to (x2, y2)'''
-    def __init__(self, elist, num):
-        '''Creates a Line by searching the elist entities list starting
-        from the number num.'''
-        Entity.__init__(self)
-        num = elist.index("10", num) + 1
-        self.x1 = float(elist[num])
-        num = elist.index("20", num) + 1
-        self.y1 = float(elist[num])
-        num = elist.index("11", num) + 1
-        self.x2 = float(elist[num])
-        num = elist.index("21", num) + 1
-        self.y2 = float(elist[num])
-        self.sw = False
-        # Set bounding box
-        if self.x2 > self.x1:
-            self.xmin = self.x1
-            self.xmax = self.x2
-        else:
-            self.xmin = self.x2
-            self.xmax = self.x1
-        if self.y2 > self.y1:
-            self.ymin = self.y1
-            self.ymax = self.y2
-        else:
-            self.ymin = self.y2
-            self.ymax = self.y1
+    def __init__(self, x1, y1, x2, y2):
+        '''Creates a Line from (x1, y1) to (x2, y2).'''
+        Entity.__init__(self, x1, y1, x2, y2)
+
     def __str__(self):
         fs = "#LINE from ({:.3f},{:.3f}) to ({:.3f},{:.3f})"
         fs =  fs.format(self.x1, self.y1, self.x2, self.y2)
         if self.sw == True:
             fs += " (swapped)"
         return fs
+
     def dxfstring(self):
         s = "  0\nLINE\n"
         s += "  8\nsnijlijnen\n"
         s += " 10\n{}\n 20\n{}\n 30\n0.0\n".format(self.x1, self.y1)
         s += " 11\n{}\n 21\n{}\n 31\n0.0\n".format(self.x2, self.y2)
         return s
+
 #    def psstring(self):
 #        pass
+
 
 class Arc(Entity):
     '''A class for an arc entity, centering in (cx, cy) with radius R from
     angle a1 to a2'''
-    def __init__(self, elist, num):
-        '''Creates a Arc by searching the elist entities list starting from
-        the number num.'''
-        Entity.__init__(self)
-        num = elist.index("10", num) + 1
-        self.cx = float(elist[num])
-        num = elist.index("20", num) + 1
-        self.cy = float(elist[num])
-        num = elist.index("40", num) + 1
-        self.R = float(elist[num])
-        num = elist.index("50", num) + 1
-        self.a1 = float(elist[num])
-        num = elist.index("51", num) + 1
-        self.a2 = float(elist[num])
-        if self.a2 < self.a1:
-            self.a2 += 360.0
-        # Start and endpoint 
-        self.x1 = self.xmin = self.cx+self.R*math.cos(math.radians(self.a1))
-        self.y1 = self.ymin = self.cy+self.R*math.sin(math.radians(self.a1))
-        self.x2 = self.xmax = self.cx+self.R*math.cos(math.radians(self.a2))
-        self.y2 = self.ymax = self.cy+self.R*math.sin(math.radians(self.a2))
-        self.sw = False
+    def __init__(self, cx, cy, R, a1, a2):
+        '''Creates a Arc centering in (cx, cy) with radius R and running from
+        a1 degrees ccw to a2 degrees.'''
+        self.cx = cx
+        self.cy = cy
+        self.R = R
+        self.a1 = a1
+        self.a2 = a2
+        x1 = cx+R*math.cos(math.radians(a1))
+        y1 = cy+R*math.sin(math.radians(a1))
+        x2 = cx+R*math.cos(math.radians(a2))
+        y2 = cy+R*math.sin(math.radians(a2))
+        Entity.__init__(self, x1, y1, x2, y2)
         # Refine bounding box
-        if self.xmin > self.xmax:
-            (self.xmin, self.xmax) = (self.xmax, self.xmin)
-        if self.ymin > self.ymax:
-            (self.ymin, self.ymax) = (self.ymax, self.ymin)
-        A1 = int(self.a1)/90
-        A2 = int(self.a2)/90
+        A1 = int(a1)/90
+        A2 = int(a2)/90
         for ang in range(A1, A2):
-            (px, py) = (self.cx+self.R*math.cos(math.radians(90*ang)),
-                        self.cy+self.R*math.sin(math.radians(90*ang)))
+            (px, py) = (cx+R*math.cos(math.radians(90*ang)),
+                        cy+R*math.sin(math.radians(90*ang)))
             if px > self.xmax:
                 self.xmax = px
             elif px < self.xmin:
@@ -172,16 +152,46 @@ class Arc(Entity):
                 self.ymax = py
             elif py < self.ymin:
                 self.ymin = py
+
     def startpoint(self):
         return (self.x1, self.y1)
+
     def endpoint(self):
         return (self.x2, self.y2)
+
+    def segments(self, l=5):
+        '''Subdivide the arc into a list of line segments of maximally l units
+        length. Return the list of segments.'''
+        fr = float(l)/self.R
+        if fr > 1:
+            cnt = 1
+            step = self.a2-self.a1
+        else:
+            ang = math.asin(fr)/math.pi*180
+            cnt = (self.a2-self.a1)/ang + 1
+            step = (self.a2-self.a1)/cnt
+        sa = self.a1
+        ea = self.a2
+        if self.sw:
+            sa = self.a2
+            ea = self.a1
+            step = -step
+        angs = range(sa, ea, step)
+        pnts = [(self.cx+self.R*math.cos(math.radians(a)), 
+                 self.cy+self.R*math.sin(math.radians(a))) for a in angs]
+        llist = []
+        for j in range(1, len(pnts)):
+            i=j-1
+            llist.append(Line(pnts[i][0], pnts[i][1], pnts[j][0], pnts[j][1]))
+        return llist
+
     def __str__(self):
         s = "#ARC from ({:.3f},{:.3f}) to ({:.3f},{:.3f}), radius {:.3f}"
         s =  s.format(self.x1, self.y1, self.x2, self.y2, self.R)
         if self.sw == True:
             s += " (swapped)"
         return s
+
     def dxfstring(self):
         s = "  0\nARC\n"
         s += "  8\nsnijlijnen\n"
@@ -193,15 +203,16 @@ class Contour(Entity):
     '''A class for a list of connected Entities'''
     def __init__(self, ent):
         '''Creates a contour from an initial entity.'''
-        Entity.__init__(self)
+        assert isinstance(ent, Entity), 'Argument is not an Entity!'
+        Entity.__init__(self, ent.x1, ent.y1, ent.x2, ent.y2)
         self.ent = [ent]
         self.nument = 1
-        (self.xmin, self.ymin, self.xmax, self.ymax) = ent.getbb()
-        (self.x1, self.y1, self.x2, self.y2) = (ent.x1, ent.y1, ent.x2, ent.y2)
+
     def append(self, ent):
         '''Appends and entity to the contour, if one of the ends of entity
         matches the end of the last entity. Returns True if matched, otherwise
         False.'''
+        assert isinstance(ent, Entity), 'Argument is not an Entity!'
         last = self.ent[-1]
         newfree = last.fits(2, ent)
         if newfree == 0:
@@ -215,6 +226,7 @@ class Contour(Entity):
         self.x2 = ent.x2
         self.y2 = ent.y2
         return True
+
     def prepend(self, ent):
         '''Prepends and entity to the contour, if one of the ends of entity
         matches the end of the first entity. Returns True if matched,
@@ -232,12 +244,14 @@ class Contour(Entity):
         self.x1 = ent.x1
         self.y1 = ent.y1
         return True
+
     def __str__(self):
         outstr = "#Contour [boundingbox: {:.3f}, {:.3f}, {:.3f}, {:.3f}]\n"
         outstr = outstr.format(self.xmin, self.ymin, self.xmax, self.ymax)
         for e in self.ent:
             outstr += "#" + str(e) + "\n"
         return outstr[0:-1]
+
     def dxfstring(self):
         s = ""
         for e in self.ent:
@@ -267,12 +281,39 @@ def ReadEntities(name):
     return entities
 
 def Findentities(ename, el):
-    '''Searches the ent list for the entity named in the ename string. Returns
+    '''Searches the el list for the entity named in the ename string. Returns
     a list of indices for that ename.'''
     cnt = el.count(ename)
     if cnt > 0:
         return [x for x in range(len(el)) if el[x] == ename]
     return []
+
+def Linefromelist(elist, num):
+    num = elist.index("10", num) + 1
+    x1 = float(elist[num])
+    num = elist.index("20", num) + 1
+    y1 = float(elist[num])
+    num = elist.index("11", num) + 1
+    x2 = float(elist[num])
+    num = elist.index("21", num) + 1
+    y2 = float(elist[num])
+    return Line(x1, y1, x2, y2)
+    pass
+
+def Arcfromelist(elist, num):
+    num = elist.index("10", num) + 1
+    cx = float(elist[num])
+    num = elist.index("20", num) + 1
+    cy = float(elist[num])
+    num = elist.index("40", num) + 1
+    R = float(elist[num])
+    num = elist.index("50", num) + 1
+    a1 = float(elist[num])
+    num = elist.index("51", num) + 1
+    a2 = float(elist[num])
+    if a2 < a1:
+        a2 += 360.0
+    return Arc(cx, cy, R, a1, a2)
 
 def FindContours(lol, loa):
     '''Find polylines in the list of lines loe and list of arcs loa. Returns a

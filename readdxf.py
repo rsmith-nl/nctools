@@ -3,7 +3,7 @@
 # Converts lines and arcs from a DXF file and prints them.
 #
 # Copyright © 2011 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Time-stamp: <2011-10-12 20:43:57 rsmith>
+# Time-stamp: <2011-10-12 23:06:20 rsmith>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -40,11 +40,11 @@ for f in sys.argv:
     lo = dxfgeom.Findentities("LINE", ent)
     lines = []
     if len(lo) > 0:
-        lines = [dxfgeom.Line(ent, n) for n in lo]
+        lines = [dxfgeom.Linefromelist(ent, n) for n in lo]
     ao = dxfgeom.Findentities("ARC", ent)
     arcs = []
     if len(ao) > 0:
-        arcs = [dxfgeom.Arc(ent, m) for m in ao]
+        arcs = [dxfgeom.Arcfromelist(ent, m) for m in ao]
     # Find contours
     (contours, remlines, remarcs) = dxfgeom.FindContours(lines, arcs)
     # Sort in x1, then in y1.
