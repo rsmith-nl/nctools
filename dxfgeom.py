@@ -2,7 +2,7 @@
 # Converts lines and arcs from a DXF file and organizes them into contours.
 #
 # Copyright © 2011 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Time-stamp: <2011-10-12 23:38:27 rsmith>
+# Time-stamp: <2011-10-15 21:06:58 rsmith>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -30,6 +30,7 @@ import datetime
 
 # Constants
 DELTA = 0.01
+SEGMENTSIZE=5
 
 # Class definitions
 class Entity:
@@ -41,10 +42,10 @@ class Entity:
         self.x2 = float(x2)
         self.y2 = float(x2)
         # Bounding box
-        self.xmin = min(x1,x2)
-        self.ymin = min(y1,y2)
-        self.xmax = max(x1,x2)
-        self.ymax = max(y1,y2)
+        self.xmin = min(x1, x2)
+        self.ymin = min(y1, y2)
+        self.xmax = max(x1, x2)
+        self.ymax = max(y1, y2)
         # Endpoints swapped indicator
         self.sw = False
 
@@ -118,21 +119,17 @@ class Line(Entity):
         s += " 11\n{}\n 21\n{}\n 31\n0.0\n".format(self.x2, self.y2)
         return s
 
-#    def psstring(self):
-#        pass
-
-
 class Arc(Entity):
     '''A class for an arc entity, centering in (cx, cy) with radius R from
     angle a1 to a2'''
     def __init__(self, cx, cy, R, a1, a2):
         '''Creates a Arc centering in (cx, cy) with radius R and running from
         a1 degrees ccw to a2 degrees.'''
-        self.cx = cx
-        self.cy = cy
-        self.R = R
-        self.a1 = a1
-        self.a2 = a2
+        self.cx = float(cx)
+        self.cy = float(cy)
+        self.R = float(R)
+        self.a1 = float(a1)
+        self.a2 = float(a2)
         x1 = cx+R*math.cos(math.radians(a1))
         y1 = cy+R*math.sin(math.radians(a1))
         x2 = cx+R*math.cos(math.radians(a2))
@@ -159,16 +156,16 @@ class Arc(Entity):
     def endpoint(self):
         return (self.x2, self.y2)
 
-    def segments(self, l=5):
+    def segments(self):
         '''Subdivide the arc into a list of line segments of maximally l units
         length. Return the list of segments.'''
-        fr = float(l)/self.R
+        fr = float(SEGMENTSIZE)/self.R
         if fr > 1:
             cnt = 1
             step = self.a2-self.a1
         else:
             ang = math.asin(fr)/math.pi*180
-            cnt = (self.a2-self.a1)/ang + 1
+            cnt = math.floor((self.a2-self.a1)/ang) + 1
             step = (self.a2-self.a1)/cnt
         sa = self.a1
         ea = self.a2
@@ -176,12 +173,12 @@ class Arc(Entity):
             sa = self.a2
             ea = self.a1
             step = -step
-        angs = range(sa, ea, step)
+        angs = _frange(sa, ea, step)
         pnts = [(self.cx+self.R*math.cos(math.radians(a)), 
                  self.cy+self.R*math.sin(math.radians(a))) for a in angs]
         llist = []
         for j in range(1, len(pnts)):
-            i=j-1
+            i = j-1
             llist.append(Line(pnts[i][0], pnts[i][1], pnts[j][0], pnts[j][1]))
         return llist
 
@@ -245,6 +242,14 @@ class Contour(Entity):
         self.y1 = ent.y1
         return True
 
+    def convertarcs(self):
+        for e in self.ent[:]:
+            if isinstance(e, Arc):
+                i = self.ent.index(e)
+                l = e.segments()
+                self.ent = self.ent[:i]+l+self.ent[i+1:]
+                self.nument = len(self.ent)
+
     def __str__(self):
         outstr = "#Contour [boundingbox: {:.3f}, {:.3f}, {:.3f}, {:.3f}]\n"
         outstr = outstr.format(self.xmin, self.ymin, self.xmax, self.ymax)
@@ -259,6 +264,25 @@ class Contour(Entity):
         return s
 
 # Function definitions.
+def _frange(start, end, step):
+    assert start != end, "Start and end cannot have the same value!"
+    assert step != 0.0, "Step cannot be 0!"
+    if start < end:
+        assert step > 0.0, "Step must be positive if start < end!"
+    else:
+        assert step < 0.0, "Step must negative if start > end!"
+    rv = [start]
+    a = start
+    if step > 0.0:
+        while a < end:
+            a += step
+            rv.append(a)
+    else:
+        while a > end:
+            a += step
+            rv.append(a)
+    return rv    
+
 def Mergebb(a, b):
     '''The bounding boxes a and b are tuples (xmin, ymin, xmax,
     ymax). Calculate and return a bounding box that contains a and b.'''
@@ -298,7 +322,6 @@ def Linefromelist(elist, num):
     num = elist.index("21", num) + 1
     y2 = float(elist[num])
     return Line(x1, y1, x2, y2)
-    pass
 
 def Arcfromelist(elist, num):
     num = elist.index("10", num) + 1

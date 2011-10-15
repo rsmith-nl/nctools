@@ -3,7 +3,7 @@
 # Optimizes lines and arc from a DXF file, output another DXF file.
 #
 # Copyright © 2011 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Time-stamp: <2011-10-12 23:13:20 rsmith>
+# Time-stamp: <2011-10-15 21:11:03 rsmith>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -60,15 +60,12 @@ for f in sys.argv:
     # Output
     print dxfgeom.StartEntities(ver)
     for c in contours:
-        t = str(c)
-        L = t.splitlines(False)
-        h = "999\n"+L[0]
-        print h
+        c.convertarcs()
         print c.dxfstring(),
     for l in remlines:
-        print "999\n"+str(l)
         print l.dxfstring(),
     for a in remarcs:
-        print "999\n"+str(a)
-        print a.dxfstring(),
+        seg = a.segments()
+        for s in seg:
+            print s.dxfstring(),
     print dxfgeom.EndEntities()
