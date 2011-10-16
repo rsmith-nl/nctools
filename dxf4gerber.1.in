@@ -1,14 +1,21 @@
 .\" -*- nroff -*-
-.\" dxfopt.1
+.\" dxf4gerber.1
 .\" By: R.F. Smith <rsmith@xs4all.nl>
-.\" Time-stamp: <2011-10-07 22:58:11 rsmith>
+.\" Time-stamp: <2011-10-16 00:11:35 rsmith>
 .\"
 .Dd DATE
 .Os 
-.Dt dxfopt 1 CON
+.Dt dxf4gerber 1 CON
 .Sh NAME
-.Nm dxfopt
-.Nd Re-arranges lines and arcs in DXF files.
+.Nm dxf4gerber
+.Nd Extract 
+.Tn LINE 
+and 
+.Tn ARC
+entities from a 
+.Tn DXF
+file and arranges them in a way suitable for optimized
+cutting.
 .Sh SYNOPSIS
 .Nm 
 infile
@@ -18,6 +25,34 @@ This manual page documents version
 of the 
 .Nm
 program. 
+
+The cutworks software that comes with a gerber cutter doesn't automatically
+optimize the cutting paths it reads from 
+.Tn DXF
+files. It essentially cuts lines
+in the order it finds them in the 
+.Tn DXF
+file.
+
+This program reads a 
+.Tn DXF
+file and extracts all the 
+.Ql LINE 
+and 
+.Ql ARC
+entities from it. It then searches through all these entities and assembles
+connected entities into lists called contours. If necessary, the direction of
+entities in a contour is changed so that all entities can be cut in one
+continuous movement.
+
+These contours and any remaining lines and arcs are then sorted in ascending
+order of the left-bottom corner of their bounding box.
+
+It also converts arcs into line segments. By default these line segments are
+no more than 5 units in length. It ignores the
+.Dv $MEASUREMENT
+variable in the dxf file, because that is often not set correctly.
+
 .Sh EXIT STATUS
 .Ex -std
 .Sh DIAGNOSTICS
@@ -35,6 +70,8 @@ should be able to work with 3.x after fixing with
 .%U http://www.python.org/
 .Re
 .Sh HISTORY
+This program was written to stop having to fix up DXF files manually before
+loading them into cutworks.
 .Sh AUTHOR
 This manual and the 
 .Nm

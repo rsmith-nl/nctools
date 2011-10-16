@@ -2,7 +2,7 @@
 # Converts lines and arcs from a DXF file and organizes them into contours.
 #
 # Copyright © 2011 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Time-stamp: <2011-10-15 21:06:58 rsmith>
+# Time-stamp: <2011-10-16 14:32:04 rsmith>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -26,21 +26,20 @@
 # SUCH DAMAGE.
 
 import math
-import datetime
-
-# Constants
-DELTA = 0.01
-SEGMENTSIZE=5
 
 # Class definitions
 class Entity:
     '''A base class for a DXF entities; lines and arcs.'''
+
+    # Class attribute; max. distance between adjoining elements.
+    delta = 0.005
+
     def __init__(self, x1=0, y1=0, x2=0, y2=0):
         # Start- and enpoint
         self.x1 = float(x1)
         self.y1 = float(y1)
         self.x2 = float(x2)
-        self.y2 = float(x2)
+        self.y2 = float(y2)
         # Bounding box
         self.xmin = min(x1, x2)
         self.ymin = min(y1, y2)
@@ -54,23 +53,25 @@ class Entity:
             print "{} is not a Entity!".format(other)
             return 0
         if index == 1:
-            if (math.fabs(self.x1-other.x1)<DELTA and 
-                math.fabs(self.y1-other.y1)<DELTA):
+            if (math.fabs(self.x1-other.x1) < Entity.delta and 
+                math.fabs(self.y1-other.y1) < Entity.delta):
                 # return free end of other
                 return 2
-            elif (math.fabs(self.x1-other.x2)<DELTA and 
-                  math.fabs(self.y1-other.y2)<DELTA):
+            elif (math.fabs(self.x1-other.x2) < Entity.delta and 
+                  math.fabs(self.y1-other.y2) < Entity.delta):
                 return 1
         elif index == 2:
-            if (math.fabs(self.x2-other.x1)<DELTA and 
-                math.fabs(self.y2-other.y1)<DELTA):
+            if (math.fabs(self.x2-other.x1) < Entity.delta and 
+                math.fabs(self.y2-other.y1) < Entity.delta):
                 return 2
-            elif (math.fabs(self.x2-other.x2)<DELTA and 
-                  math.fabs(self.y2-other.y2)<DELTA):
+            elif (math.fabs(self.x2-other.x2) < Entity.delta and 
+                  math.fabs(self.y2-other.y2) < Entity.delta):
                 return 1
         return 0 # doesn't fit!
 
     def getbb(self):
+        '''Returns a tuple containing the bounding box of an entity in the
+        format (xmin, ymin, xmax, ymax).'''
         return (self.xmin, self.ymin, self.xmax, self.ymax)
 
     def swap(self):
@@ -79,9 +80,22 @@ class Entity:
         (self.y1, self.y2) = (self.y2, self.y1)
         self.sw = not self.sw
 
+    def dxfstring(self):
+        '''Returns a string containing the entity in DXF format.'''
+        raise NotImplementedError
+
+    def pdfstring(self):
+        '''Returns a string containing the entity in PDF format.'''
+        raise NotImplementedError
+
+    def length(self):
+        '''Returns the length of the entity.'''
+        raise NotImplementedError
+
     def __lt__(self, other):
         '''The (xmin, ymin) corner of the bounding box will be used for
         sorting.'''
+        assert isinstance(other, Entity), 'Other is not an Entity!'
         if self.xmin == other.xmin:
             if self.ymin < other.ymin:
                 return True
@@ -89,6 +103,7 @@ class Entity:
             return self.xmin < other.xmin
 
     def __gt__(self, other):
+        assert isinstance(other, Entity), 'Other is not an Entity!'
         if self.xmin == other.xmin:
             if self.ymin > other.ymin:
                 return True
@@ -96,6 +111,7 @@ class Entity:
             return self.xmin > other.xmin
 
     def __eq__(self, other):
+        assert isinstance(other, Entity), 'Other is not an Entity!'
         return self.xmin == other.xmin and self.ymin == other.ymin
 
 
@@ -119,17 +135,29 @@ class Line(Entity):
         s += " 11\n{}\n 21\n{}\n 31\n0.0\n".format(self.x2, self.y2)
         return s
 
+    def length(self):
+        '''Returns the length of a Line.'''
+        dx = self.x2-self.x1
+        dy = self.y2-self.x1
+        return math.sqrt(dx*dx+dy*dy)
+
 class Arc(Entity):
     '''A class for an arc entity, centering in (cx, cy) with radius R from
     angle a1 to a2'''
+
+    segmentsize = 5
+    as_segments = True
+
     def __init__(self, cx, cy, R, a1, a2):
         '''Creates a Arc centering in (cx, cy) with radius R and running from
         a1 degrees ccw to a2 degrees.'''
+        assert a2 > a1, 'Arcs are defined CCW, so a2 must be greater than a1'
         self.cx = float(cx)
         self.cy = float(cy)
         self.R = float(R)
         self.a1 = float(a1)
         self.a2 = float(a2)
+        self.segments = None
         x1 = cx+R*math.cos(math.radians(a1))
         y1 = cy+R*math.sin(math.radians(a1))
         x2 = cx+R*math.cos(math.radians(a2))
@@ -156,10 +184,10 @@ class Arc(Entity):
     def endpoint(self):
         return (self.x2, self.y2)
 
-    def segments(self):
-        '''Subdivide the arc into a list of line segments of maximally l units
-        length. Return the list of segments.'''
-        fr = float(SEGMENTSIZE)/self.R
+    def _gensegments(self):
+        '''Subdivide the arc into a list of line segments of maximally
+        Arc.segmentsize units length. Return the list of segments.'''
+        fr = float(Arc.segmentsize)/self.R
         if fr > 1:
             cnt = 1
             step = self.a2-self.a1
@@ -190,11 +218,23 @@ class Arc(Entity):
         return s
 
     def dxfstring(self):
-        s = "  0\nARC\n"
-        s += "  8\nsnijlijnen\n"
-        s += " 10\n{}\n 20\n{}\n 30\n0.0\n".format(self.cx, self.cy)
-        s += " 40\n{}\n 50\n{}\n 51\n{}\n".format(self.R, self.a1, self.a2)
+        if Arc.as_segments == False:
+            s = "  0\nARC\n"
+            s += "  8\nsnijlijnen\n"
+            s += " 10\n{}\n 20\n{}\n 30\n0.0\n".format(self.cx, self.cy)
+            s += " 40\n{}\n 50\n{}\n 51\n{}\n".format(self.R, self.a1, self.a2)
+            return s
+        if self.segments == None:
+            self.segments = self._gensegments()
+        s = ""
+        for sg in self.segments:
+            s += sg.dxfstring()
         return s
+
+    def length(self):
+        '''Returns the length of an arc.'''
+        angle = math.radians(self.a2-self.a1)
+        return self.R*angle
 
 class Contour(Entity):
     '''A class for a list of connected Entities'''
@@ -228,6 +268,7 @@ class Contour(Entity):
         '''Prepends and entity to the contour, if one of the ends of entity
         matches the end of the first entity. Returns True if matched,
         otherwise False.'''
+        assert isinstance(ent, Entity), 'Argument is not an Entity!'
         first = self.ent[0]
         newfree = first.fits(1, ent)
         if newfree == 0:
@@ -242,14 +283,6 @@ class Contour(Entity):
         self.y1 = ent.y1
         return True
 
-    def convertarcs(self):
-        for e in self.ent[:]:
-            if isinstance(e, Arc):
-                i = self.ent.index(e)
-                l = e.segments()
-                self.ent = self.ent[:i]+l+self.ent[i+1:]
-                self.nument = len(self.ent)
-
     def __str__(self):
         outstr = "#Contour [boundingbox: {:.3f}, {:.3f}, {:.3f}, {:.3f}]\n"
         outstr = outstr.format(self.xmin, self.ymin, self.xmax, self.ymax)
@@ -262,6 +295,11 @@ class Contour(Entity):
         for e in self.ent:
             s += e.dxfstring()
         return s
+
+    def length(self):
+        '''Returns the length of a contour.'''
+        il = [e.length() for e in self.ent]
+        return sum(il)
 
 # Function definitions.
 def _frange(start, end, step):
@@ -368,18 +406,3 @@ def FindContours(lol, loa):
             elif isinstance(first, Arc):
                 remarcs.append(first)
     return (loc, remlines, remarcs)
-
-def StartEntities(progname):
-    '''Write the header of a DXF file with only an entities section.'''
-    s = "999\nDXF file generated by {}\n".format(progname)
-    dt = datetime.datetime.now()
-    s += "999\n" + dt.strftime("%A, %B %d %H:%M\n")
-    s += "  0\nSECTION\n  2\nENTITIES"
-    return s
-
-def EndEntities():
-    '''Write the header of a DXF file with only an entities section.'''
-    s = "  0\nENDSEC\n  0\nEOF"
-    return s
-
-
