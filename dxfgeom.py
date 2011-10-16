@@ -2,7 +2,7 @@
 # Converts lines and arcs from a DXF file and organizes them into contours.
 #
 # Copyright © 2011 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Time-stamp: <2011-10-16 14:32:04 rsmith>
+# Time-stamp: <2011-10-16 14:46:21 rsmith>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -33,6 +33,10 @@ class Entity:
 
     # Class attribute; max. distance between adjoining elements.
     delta = 0.005
+    '''The class attribute delta contains the maximum distance in x and y
+    direction between eindpoints that are considered coincident.'''
+
+    _anoent = "Argument is not an entity!"
 
     def __init__(self, x1=0, y1=0, x2=0, y2=0):
         # Start- and enpoint
@@ -49,9 +53,10 @@ class Entity:
         self.sw = False
 
     def fits(self, index, other):
-        if not isinstance(other, Entity):
-            print "{} is not a Entity!".format(other)
-            return 0
+        '''Checks if the entity `other` fits onto this entity. Returns 0 if
+        other doesn't fit. Otherwise returns 1 or 2 indicating the new free
+        end of other.'''
+        assert isinstance(other, Entity), Entity._anoent
         if index == 1:
             if (math.fabs(self.x1-other.x1) < Entity.delta and 
                 math.fabs(self.y1-other.y1) < Entity.delta):
@@ -84,10 +89,6 @@ class Entity:
         '''Returns a string containing the entity in DXF format.'''
         raise NotImplementedError
 
-    def pdfstring(self):
-        '''Returns a string containing the entity in PDF format.'''
-        raise NotImplementedError
-
     def length(self):
         '''Returns the length of the entity.'''
         raise NotImplementedError
@@ -95,7 +96,7 @@ class Entity:
     def __lt__(self, other):
         '''The (xmin, ymin) corner of the bounding box will be used for
         sorting.'''
-        assert isinstance(other, Entity), 'Other is not an Entity!'
+        assert isinstance(other, Entity), Entity._anoent
         if self.xmin == other.xmin:
             if self.ymin < other.ymin:
                 return True
@@ -103,7 +104,7 @@ class Entity:
             return self.xmin < other.xmin
 
     def __gt__(self, other):
-        assert isinstance(other, Entity), 'Other is not an Entity!'
+        assert isinstance(other, Entity), Entity._anoent
         if self.xmin == other.xmin:
             if self.ymin > other.ymin:
                 return True
@@ -111,7 +112,7 @@ class Entity:
             return self.xmin > other.xmin
 
     def __eq__(self, other):
-        assert isinstance(other, Entity), 'Other is not an Entity!'
+        assert isinstance(other, Entity), Entity._anoent
         return self.xmin == other.xmin and self.ymin == other.ymin
 
 
@@ -240,7 +241,7 @@ class Contour(Entity):
     '''A class for a list of connected Entities'''
     def __init__(self, ent):
         '''Creates a contour from an initial entity.'''
-        assert isinstance(ent, Entity), 'Argument is not an Entity!'
+        assert isinstance(ent, Entity), Entity._anoent
         Entity.__init__(self, ent.x1, ent.y1, ent.x2, ent.y2)
         self.ent = [ent]
         self.nument = 1
@@ -249,7 +250,7 @@ class Contour(Entity):
         '''Appends and entity to the contour, if one of the ends of entity
         matches the end of the last entity. Returns True if matched, otherwise
         False.'''
-        assert isinstance(ent, Entity), 'Argument is not an Entity!'
+        assert isinstance(ent, Entity), Entity._anoent
         last = self.ent[-1]
         newfree = last.fits(2, ent)
         if newfree == 0:
@@ -268,7 +269,7 @@ class Contour(Entity):
         '''Prepends and entity to the contour, if one of the ends of entity
         matches the end of the first entity. Returns True if matched,
         otherwise False.'''
-        assert isinstance(ent, Entity), 'Argument is not an Entity!'
+        assert isinstance(ent, Entity), Entity._anoent
         first = self.ent[0]
         newfree = first.fits(1, ent)
         if newfree == 0:
