@@ -2,7 +2,7 @@
 # Converts lines and arcs from a DXF file and organizes them into contours.
 #
 # Copyright © 2011 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Time-stamp: <2011-10-16 14:46:21 rsmith>
+# Time-stamp: <2011-10-16 21:06:21 rsmith>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -29,16 +29,16 @@ import math
 
 # Class definitions
 class Entity:
-    '''A base class for a DXF entities; lines and arcs.'''
+    '''A base class for a DXF entities; lines and arcs.
 
-    # Class attribute; max. distance between adjoining elements.
-    delta = 0.005
-    '''The class attribute delta contains the maximum distance in x and y
+    The class attribute delta contains the maximum distance in x and y
     direction between eindpoints that are considered coincident.'''
 
+    delta = 0.005
     _anoent = "Argument is not an entity!"
 
     def __init__(self, x1=0, y1=0, x2=0, y2=0):
+        '''Creates an Entity from (x1, y1) to (x2, y2)..'''
         # Start- and enpoint
         self.x1 = float(x1)
         self.y1 = float(y1)
@@ -53,9 +53,13 @@ class Entity:
         self.sw = False
 
     def fits(self, index, other):
-        '''Checks if the entity `other` fits onto this entity. Returns 0 if
-        other doesn't fit. Otherwise returns 1 or 2 indicating the new free
-        end of other.'''
+        '''Checks if another entity fits onto this one.
+
+        index -- end of the entity to test, either 1 or 2.
+        other -- Entity to test.
+
+        Returns 0 if the other entity doesn't fit. Otherwise returns 1 or 2
+        indicating the new free end of other.'''
         assert isinstance(other, Entity), Entity._anoent
         if index == 1:
             if (math.fabs(self.x1-other.x1) < Entity.delta and 
@@ -92,6 +96,14 @@ class Entity:
     def length(self):
         '''Returns the length of the entity.'''
         raise NotImplementedError
+
+    def startpoint(self):
+        '''Returns the (x1, y1).'''
+        return (self.x1, self.y1)
+
+    def endpoint(self):
+        '''Returns the (x2, y2).'''
+        return (self.x2, self.y2)
 
     def __lt__(self, other):
         '''The (xmin, ymin) corner of the bounding box will be used for
@@ -144,8 +156,14 @@ class Line(Entity):
 
 class Arc(Entity):
     '''A class for an arc entity, centering in (cx, cy) with radius R from
-    angle a1 to a2'''
+    angle a1 to a2.
 
+    Class properties: 
+
+        Arc.segmentsize -- Maximum length of the segment when an arc is rendered
+                           as a list of connected line segments.
+        Arc.as_segments -- Whether an arc should be output as a list of
+                           connected line segments. True by default.'''
     segmentsize = 5
     as_segments = True
 
@@ -178,12 +196,6 @@ class Arc(Entity):
                 self.ymax = py
             elif py < self.ymin:
                 self.ymin = py
-
-    def startpoint(self):
-        return (self.x1, self.y1)
-
-    def endpoint(self):
-        return (self.x2, self.y2)
 
     def _gensegments(self):
         '''Subdivide the arc into a list of line segments of maximally
@@ -239,6 +251,7 @@ class Arc(Entity):
 
 class Contour(Entity):
     '''A class for a list of connected Entities'''
+
     def __init__(self, ent):
         '''Creates a contour from an initial entity.'''
         assert isinstance(ent, Entity), Entity._anoent
@@ -304,6 +317,15 @@ class Contour(Entity):
 
 # Function definitions.
 def _frange(start, end, step):
+    '''A range function for floats.
+    
+    start -- beginning of the range.
+    end -- end of the range.
+    step -- size of the step between numbers.
+
+    Returns a list of floating point numbers. If the difference between start
+    and end isn't a multiple of step, end will not be included in the list.'''
+
     assert start != end, "Start and end cannot have the same value!"
     assert step != 0.0, "Step cannot be 0!"
     if start < end:
@@ -332,7 +354,9 @@ def Mergebb(a, b):
     return (xmin, ymin, xmax, ymax)
 
 def ReadEntities(name):
-    '''Reads the DXF file 'name', and return a list of entities'''
+    '''Reads a DXF file, and return a list of elements.
+
+    name -- name of the DXF file.'''
     dxffile = open(name)
     sdata = [s.strip() for s in dxffile.readlines()]
     dxffile.close()
@@ -344,14 +368,21 @@ def ReadEntities(name):
     return entities
 
 def Findentities(ename, el):
-    '''Searches the el list for the entity named in the ename string. Returns
-    a list of indices for that ename.'''
+    '''Searches the list for a named entity. Returns a list of indices for
+    that name.
+
+    ename -- name of the entity to search for, e.g. LINE or ARC.
+    el -- list of strings froma DXF file.'''
     cnt = el.count(ename)
     if cnt > 0:
         return [x for x in range(len(el)) if el[x] == ename]
     return []
 
 def Linefromelist(elist, num):
+    '''Create a Line element from a list of strings from a DXF file.
+
+    elist -- list of strings from a DXF file.
+    num -- index where to start looking'''
     num = elist.index("10", num) + 1
     x1 = float(elist[num])
     num = elist.index("20", num) + 1
@@ -363,6 +394,10 @@ def Linefromelist(elist, num):
     return Line(x1, y1, x2, y2)
 
 def Arcfromelist(elist, num):
+    '''Create an Arc element from a list of strings from a DXF file.
+
+    elist -- list of strings from a DXF file.
+    num -- index where to start looking'''
     num = elist.index("10", num) + 1
     cx = float(elist[num])
     num = elist.index("20", num) + 1
@@ -378,9 +413,13 @@ def Arcfromelist(elist, num):
     return Arc(cx, cy, R, a1, a2)
 
 def FindContours(lol, loa):
-    '''Find polylines in the list of lines loe and list of arcs loa. Returns a
-    list of contours and a list of remaining lines and a list of remaining
-    arcs as a tuple.'''
+    '''Find polylines in the list of lines and list of arcs. 
+
+    lol -- list of lines
+    loa -- list of arcs.
+
+    Returns a list of contours and a list of remaining lines and a list of
+    remaining arcs as a tuple.'''
     remlines = []
     remarcs = []
     elements = lol[:]+loa[:]
