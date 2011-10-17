@@ -4,7 +4,7 @@
 # output another DXF file.
 #
 # Copyright © 2011 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Time-stamp: <2011-10-17 11:00:37 rsmith>
+# Time-stamp: <2011-10-18 00:13:29 rsmith>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -85,9 +85,9 @@ for f in sys.argv:
     print DxfHeader(ver, contours, remlines, remarcs)
     print StartEntities()
     for c in contours:
-        print c.dxfstring(),
+        print c.dxfdata(),
     for l in remlines:
-        print l.dxfstring(),
+        print l.dxfdata(),
     for a in remarcs:
-        print a.dxfstring(),
+        print a.dxfdata(),
     print EndEntities()

@@ -2,7 +2,7 @@
 # Converts lines and arcs from a DXF file and organizes them into contours.
 #
 # Copyright © 2011 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Time-stamp: <2011-10-16 21:06:21 rsmith>
+# Time-stamp: <2011-10-18 00:20:27 rsmith>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -89,8 +89,12 @@ class Entity:
         (self.y1, self.y2) = (self.y2, self.y1)
         self.sw = not self.sw
 
-    def dxfstring(self):
+    def dxfdata(self):
         '''Returns a string containing the entity in DXF format.'''
+        raise NotImplementedError
+
+    def pdfdata(self):
+        '''Returns info to create the entity in PDF format.'''
         raise NotImplementedError
 
     def length(self):
@@ -141,12 +145,16 @@ class Line(Entity):
             fs += " (swapped)"
         return fs
 
-    def dxfstring(self):
+    def dxfdata(self):
         s = "  0\nLINE\n"
         s += "  8\nsnijlijnen\n"
         s += " 10\n{}\n 20\n{}\n 30\n0.0\n".format(self.x1, self.y1)
         s += " 11\n{}\n 21\n{}\n 31\n0.0\n".format(self.x2, self.y2)
         return s
+
+    def pdfdata(self):
+        '''Returns a tuple containing the coordinates x1, y1, x2 and y2.'''
+        return (self.x1, self.y1, self.x2, self.y2)
 
     def length(self):
         '''Returns the length of a Line.'''
@@ -230,7 +238,7 @@ class Arc(Entity):
             s += " (swapped)"
         return s
 
-    def dxfstring(self):
+    def dxfdata(self):
         if Arc.as_segments == False:
             s = "  0\nARC\n"
             s += "  8\nsnijlijnen\n"
@@ -241,8 +249,19 @@ class Arc(Entity):
             self.segments = self._gensegments()
         s = ""
         for sg in self.segments:
-            s += sg.dxfstring()
+            s += sg.dxfdata()
         return s
+
+    def pdfdata(self):
+        '''Returns a tuple containing the data to draw an arc.'''
+        if self.sw == True:
+            sa = self.a2
+            ea = self.a1
+        else:
+            sa = self.a1
+            ea = self.a2
+        ext = ea-sa
+        return (self.xmin, self.ymin, self.xmax, self.ymax, sa, ea, ext)
 
     def length(self):
         '''Returns the length of an arc.'''
@@ -304,10 +323,10 @@ class Contour(Entity):
             outstr += "#" + str(e) + "\n"
         return outstr[0:-1]
 
-    def dxfstring(self):
+    def dxfdata(self):
         s = ""
         for e in self.ent:
-            s += e.dxfstring()
+            s += e.dxfdata()
         return s
 
     def length(self):
