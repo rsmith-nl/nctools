@@ -2,7 +2,7 @@
 .SUFFIXES: .ps .pdf .py
 
 #beginskip
-PROG = dxf4gerber
+PROG = dxfgerber
 ALL = ${PROG}.1 ${PROG}.1.pdf setup.py ${PROG} tools/replace.sed .git/hooks/post-commit
 all: ${ALL}
 #endskip

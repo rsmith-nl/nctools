@@ -1,13 +1,13 @@
 .\" -*- nroff -*-
-.\" dxf4gerber.1
+.\" dxfgerber.1
 .\" By: R.F. Smith <rsmith@xs4all.nl>
-.\" Time-stamp: <2011-10-16 00:11:35 rsmith>
+.\" Time-stamp: <2011-10-17 10:32:39 rsmith>
 .\"
 .Dd DATE
 .Os 
-.Dt dxf4gerber 1 CON
+.Dt dxfgerber 1 CON
 .Sh NAME
-.Nm dxf4gerber
+.Nm dxfgerber
 .Nd Extract 
 .Tn LINE 
 and 

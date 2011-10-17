@@ -4,8 +4,8 @@
 build
 dist
 setup.py
-dxf4gerber
-dxf4gerber.1
-dxf4gerber.1.pdf
+dxfgerber
+dxfgerber.1
+dxfgerber.1.pdf
 tools/replace.sed
 MANIFEST
