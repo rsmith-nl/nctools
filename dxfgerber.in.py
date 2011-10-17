@@ -4,7 +4,7 @@
 # output another DXF file.
 #
 # Copyright © 2011 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Time-stamp: <2011-10-16 14:12:51 rsmith>
+# Time-stamp: <2011-10-17 11:00:37 rsmith>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -34,7 +34,7 @@ import datetime
 # Local module.
 import dxfgeom
 
-ver = "dxf4gerber [revision VERSION] (DATE)"
+ver = "dxfgerber [revision VERSION] (DATE)"
 
 def DxfHeader(progname, loc, lol, loa):
     '''Write comments at the beginning of a DXF file.'''
