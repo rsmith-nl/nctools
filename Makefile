@@ -19,7 +19,7 @@ install: ${PROG}.1 setup.py ${PROG}
 dist: ${ALL} ${PROG}.1 ${PROG}.1.pdf
 	mv Makefile Makefile.org
 	awk -f tools/makemakefile.awk Makefile.org >Makefile
-	python setup.py sdist
+	python setup.py sdist --format=zip
 	mv Makefile.org Makefile
 	rm -f MANIFEST
 

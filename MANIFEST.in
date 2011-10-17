@@ -1,0 +1,3 @@
+include dxfgerber.1
+include dxfgerber.1.pdf
+include INSTALL.txt
