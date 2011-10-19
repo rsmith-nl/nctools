@@ -2,7 +2,7 @@
 # Converts lines and arcs from a DXF file and organizes them into contours.
 #
 # Copyright © 2011 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Time-stamp: <2011-10-18 00:20:27 rsmith>
+# Time-stamp: <2011-10-19 23:57:56 rsmith>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -290,7 +290,7 @@ class Contour(Entity):
         self.ent.append(ent)
         self.nument += 1
         (self.xmin, self.ymin, 
-         self.xmax, self.ymax) = Mergebb(self.getbb(), ent.getbb())
+         self.xmax, self.ymax) = merge_bb(self.getbb(), ent.getbb())
         if newfree == 1:
             ent.swap()
         self.x2 = ent.x2
@@ -309,7 +309,7 @@ class Contour(Entity):
         self.ent.insert(0, ent)
         self.nument += 1
         (self.xmin, self.ymin, 
-         self.xmax, self.ymax) = Mergebb(self.getbb(), ent.getbb())
+         self.xmax, self.ymax) = merge_bb(self.getbb(), ent.getbb())
         if newfree == 2:
             ent.swap()
         self.x1 = ent.x1
@@ -363,7 +363,7 @@ def _frange(start, end, step):
             rv.append(a)
     return rv    
 
-def Mergebb(a, b):
+def merge_bb(a, b):
     '''The bounding boxes a and b are tuples (xmin, ymin, xmax,
     ymax). Calculate and return a bounding box that contains a and b.'''
     xmin = min(a[0], b[0])
@@ -372,7 +372,7 @@ def Mergebb(a, b):
     ymax = max(a[3], b[3])
     return (xmin, ymin, xmax, ymax)
 
-def ReadEntities(name):
+def read_entities(name):
     '''Reads a DXF file, and return a list of elements.
 
     name -- name of the DXF file.'''
@@ -386,7 +386,7 @@ def ReadEntities(name):
     del sdata
     return entities
 
-def Findentities(ename, el):
+def find_entities(ename, el):
     '''Searches the list for a named entity. Returns a list of indices for
     that name.
 
@@ -397,7 +397,7 @@ def Findentities(ename, el):
         return [x for x in range(len(el)) if el[x] == ename]
     return []
 
-def Linefromelist(elist, num):
+def line_from_elist(elist, num):
     '''Create a Line element from a list of strings from a DXF file.
 
     elist -- list of strings from a DXF file.
@@ -412,7 +412,7 @@ def Linefromelist(elist, num):
     y2 = float(elist[num])
     return Line(x1, y1, x2, y2)
 
-def Arcfromelist(elist, num):
+def arc_from_elist(elist, num):
     '''Create an Arc element from a list of strings from a DXF file.
 
     elist -- list of strings from a DXF file.
@@ -431,7 +431,7 @@ def Arcfromelist(elist, num):
         a2 += 360.0
     return Arc(cx, cy, R, a1, a2)
 
-def FindContours(lol, loa):
+def find_contours(lol, loa):
     '''Find polylines in the list of lines and list of arcs. 
 
     lol -- list of lines

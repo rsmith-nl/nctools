@@ -7,15 +7,21 @@ Installation on Windows
 
 - First install the Python interpreter, e.g. version 2.7.x and make sure that
   it works.
-- In the distribution directory, run 'setup.py install'
+- Make sure that the Python directory and the scripts directory in is the
+  path; Under XP, go to My Computer, right-click and select Properties. In the
+  dialog box select the Avanced tab and click on the Environment Variables
+  button. In the system variable Path, you should see two paths, for the
+  Python interpreter and for installed scripts. It should look like this:
+  ";C:\Python27;C:\Python27\Scripts" (for Python version 2.7.x). If you don't
+  see them, add them.
+- In the distribution directory, run 'setup.py install' from a cmd.exe window.
 - Go to the Scripts subdirectory of the Python distribution
-  (e.g. C:\Python27\Scripts), and change the script 'dxfgerber' to
+  (e.g. C:\Python27\Scripts), and change the name of the script 'dxfgerber' to
   'dxfgerber.py', to help Python find it.
-- Add this script directory to the 'Path' enviroment variable. Under XP, go to
-  My Computer, right-click and select Properties. In the dialog box select the
-  Avanced tab and click on the Environment Variables button. In the system
-  variable Path, you should see the path for the Python interpreter,
-  e.g. C:\Python27. Add a semicolon, and then C:\Python27\Scripts.
+
+In the distribution there is a file called "dxfgerber.1.pdf". This is the
+manual page for the dxfgerber program.
+
 
 Installation on UNIX/Linux
 ==========================

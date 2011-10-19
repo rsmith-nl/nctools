@@ -1,7 +1,7 @@
 .\" -*- nroff -*-
 .\" dxfgerber.1
 .\" By: R.F. Smith <rsmith@xs4all.nl>
-.\" Time-stamp: <2011-10-19 18:36:22 rsmith>
+.\" Time-stamp: <2011-10-19 22:21:21 rsmith>
 .\"
 .Dd DATE
 .Os 
@@ -18,7 +18,7 @@ file and arranges them in a way suitable for optimized
 cutting.
 .Sh SYNOPSIS
 .Nm 
-infile(s)
+.Op Ar
 .Sh DESCRIPTION
 This manual page documents version 
 .Ql VERSION

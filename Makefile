@@ -3,7 +3,7 @@
 
 #beginskip
 PROG = dxfgerber
-ALL = ${PROG}.1 ${PROG}.1.pdf setup.py ${PROG} tools/replace.sed .git/hooks/post-commit
+ALL = ${PROG}.1 ${PROG}.1.pdf setup.py ${PROG}.py tools/replace.sed .git/hooks/post-commit
 all: ${ALL}
 #endskip
 
@@ -24,7 +24,7 @@ dist: ${ALL} ${PROG}.1 ${PROG}.1.pdf
 	rm -f MANIFEST
 
 clean::
-	rm -rf dist build dxftools-*.tar.gz *.pyc MANIFEST ${PROG}.1 ${PROG}.1.pdf setup.py ${PROG}
+	rm -rf dist build dxftools-*.tar.gz *.pyc MANIFEST ${PROG}.1 ${PROG}.1.pdf setup.py ${PROG}.py
 
 backup::
 	sh tools/genbackup
@@ -38,9 +38,9 @@ tools/replace.sed: .git/index
 setup.py: setup.in.py tools/replace.sed
 	sed -f tools/replace.sed setup.in.py >$@
 
-${PROG}: ${PROG}.in.py tools/replace.sed
+${PROG}.py: ${PROG}.in.py tools/replace.sed
 	sed -f tools/replace.sed ${PROG}.in.py >$@
-	chmod 755 ${PROG}
+	chmod 755 ${PROG}.py
 
 ${PROG}.1: ${PROG}.1.in tools/replace.sed
 	sed -f tools/replace.sed ${PROG}.1.in >$@
