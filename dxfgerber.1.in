@@ -1,7 +1,7 @@
 .\" -*- nroff -*-
 .\" dxfgerber.1
 .\" By: R.F. Smith <rsmith@xs4all.nl>
-.\" Time-stamp: <2011-10-17 10:32:39 rsmith>
+.\" Time-stamp: <2011-10-19 18:36:22 rsmith>
 .\"
 .Dd DATE
 .Os 
@@ -18,7 +18,7 @@ file and arranges them in a way suitable for optimized
 cutting.
 .Sh SYNOPSIS
 .Nm 
-infile
+infile(s)
 .Sh DESCRIPTION
 This manual page documents version 
 .Ql VERSION
@@ -36,7 +36,8 @@ file.
 
 This program reads a 
 .Tn DXF
-file and extracts all the 
+file. The name of the file must end in '.dxf' or '.DXF', otherwise the program
+will report an error and quit. It extracts all the 
 .Ql LINE 
 and 
 .Ql ARC
@@ -53,9 +54,12 @@ no more than 5 units in length. It ignores the
 .Dv $MEASUREMENT
 variable in the dxf file, because that is often not set correctly.
 
+The output is written to a new file. The name of the new file is based on the
+name of the old file, with a trailing number added or increased. So 'foo.dxf'
+becomes 'foo1.dxf' and 'test 17.dxf' becomes 'test 18.dxf'.
 .Sh EXIT STATUS
 .Ex -std
-.Sh DIAGNOSTICS
+.\".Sh DIAGNOSTICS
 .Sh COMPATIBILITY
 The 
 .Nm

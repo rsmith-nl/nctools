@@ -4,7 +4,7 @@
 # output another DXF file.
 #
 # Copyright © 2011 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Time-stamp: <2011-10-18 00:13:29 rsmith>
+# Time-stamp: <2011-10-19 18:26:52 rsmith>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -58,6 +58,23 @@ def EndEntities():
     s = "  0\nENDSEC\n  0\nEOF"
     return s
 
+def newname(oldname):
+    if not oldname.endswith(('.dxf', '.DXF')):
+        raise ValueError('not a DXF file!')
+    oldbase = oldname[:-4]
+    if len(oldbase) == 0:
+        raise ValueError("zero-length file name!")
+    newbase = oldbase.rstrip('0123456789')    
+    L = len(newbase)
+    dstr = oldbase[L:]
+    if len(dstr) > 0:
+        num = int(dstr) +1
+    else:
+        num = 1
+    rv = newbase + str(num) + '.dxf'
+    return rv
+
+
 # Main program starts here.
 if len(sys.argv) == 1:
     print ver
@@ -65,6 +82,7 @@ if len(sys.argv) == 1:
     exit(1)
 del sys.argv[0]
 for f in sys.argv:
+    outname = newname(f)
     # Find entities
     ent = dxfgeom.ReadEntities(f)
     lo = dxfgeom.Findentities("LINE", ent)
@@ -82,12 +100,14 @@ for f in sys.argv:
     remlines.sort()
     remarcs.sort()
     # Output
-    print DxfHeader(ver, contours, remlines, remarcs)
-    print StartEntities()
+    outf = open(outname, 'w')
+    outf.write(DxfHeader(ver, contours, remlines, remarcs))
+    outf.write(StartEntities())
     for c in contours:
-        print c.dxfdata(),
+        outf.write(c.dxfdata())
     for l in remlines:
-        print l.dxfdata(),
+        outf.write(l.dxfdata())
     for a in remarcs:
-        print a.dxfdata(),
-    print EndEntities()
+        outf.write(a.dxfdata())
+    outf.write(EndEntities())
+    outf.close()
