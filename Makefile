@@ -24,7 +24,7 @@ dist: ${ALL} ${PROG}.1 ${PROG}.1.pdf
 	rm -f MANIFEST
 
 clean::
-	rm -rf dist build dxftools-*.tar.gz *.pyc MANIFEST ${PROG}.1 ${PROG}.1.pdf setup.py ${PROG}.py
+	rm -rf dist build backup-*.tar.gz *.pyc MANIFEST ${PROG}.1 ${PROG}.1.pdf setup.py ${PROG}.py
 
 backup::
 	sh tools/genbackup

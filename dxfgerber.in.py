@@ -4,7 +4,7 @@
 # output another DXF file.
 #
 # Copyright © 2011 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Time-stamp: <2011-10-19 23:59:57 rsmith>
+# Time-stamp: <2011-10-20 11:42:59 rsmith>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -47,11 +47,12 @@ def dxf_header(progname, loc, lol, loa):
     for n,c in enumerate(contours):
         u = "\n999\n#{} bounding box ({:.3f}, {:.3f}, {:.3f}, {:.3f})"
         s += u.format(n+1, *c.getbb())
+    s += "\n"
     return s
 
 def start_entities():
     '''Write the beginning of an entities section.'''
-    return "  0\nSECTION\n  2\nENTITIES"
+    return "  0\nSECTION\n  2\nENTITIES\n"
 
 def end_entities():
     '''Write the end of an entities section.'''
