@@ -2,7 +2,7 @@
 # Converts lines and arcs from a DXF file and organizes them into contours.
 #
 # Copyright © 2011 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Time-stamp: <2011-10-19 23:57:56 rsmith>
+# Time-stamp: <2011-10-22 20:20:41 rsmith>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -141,7 +141,7 @@ class Line(Entity):
     def __str__(self):
         fs = "#LINE from ({:.3f},{:.3f}) to ({:.3f},{:.3f})"
         fs =  fs.format(self.x1, self.y1, self.x2, self.y2)
-        if self.sw == True:
+        if self.sw:
             fs += " (swapped)"
         return fs
 
@@ -234,7 +234,7 @@ class Arc(Entity):
     def __str__(self):
         s = "#ARC from ({:.3f},{:.3f}) to ({:.3f},{:.3f}), radius {:.3f}"
         s =  s.format(self.x1, self.y1, self.x2, self.y2, self.R)
-        if self.sw == True:
+        if self.sw:
             s += " (swapped)"
         return s
 
@@ -254,7 +254,7 @@ class Arc(Entity):
 
     def pdfdata(self):
         '''Returns a tuple containing the data to draw an arc.'''
-        if self.sw == True:
+        if self.sw:
             sa = self.a2
             ea = self.a1
         else:
