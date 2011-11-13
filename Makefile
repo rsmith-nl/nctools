@@ -7,7 +7,7 @@ ALL = ${PROG}.1 ${PROG}.1.pdf setup.py ${PROG}.py tools/replace.sed .git/hooks/p
 all: ${ALL}
 #endskip
 
-install: ${PROG}.1 setup.py ${PROG}
+install: ${PROG}.1 setup.py ${PROG}.py
 	@if [ `id -u` != 0 ]; then \
 		echo "You must be root to install the program!"; \
 		exit 1; \
