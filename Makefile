@@ -22,7 +22,7 @@ install: ${PROG}.1 setup.py ${PROG}.py
 	mv $(BINDIR)/${PROG}.py $(BINDIR)/${PROG}
 	rm -rf build
 #Install the manual page.
-	gzip -k ${PROG}.1
+	gzip -c ${PROG}.1 >${PROG}.1.gz
 	install -m 644 ${PROG}.1.gz $(MANDIR)/man1
 	rm -f ${PROG}.1.gz
 
