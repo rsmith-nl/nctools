@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # Converts lines and arcs from a DXF file and organizes them into contours.
 #
-# Copyright © 2011 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Time-stamp: <2011-10-22 20:20:41 rsmith>
+# Copyright © 2011,2012 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+# Time-stamp: <>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions

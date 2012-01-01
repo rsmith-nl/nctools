@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 # Converts lines and arcs from a DXF file and prints them.
 #
-# Copyright © 2011 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Time-stamp: <2011-10-12 23:06:20 rsmith>
+# Copyright © 2011,2012 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+# Time-stamp: <>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -36,17 +36,17 @@ if len(sys.argv) == 1:
 del sys.argv[0]
 for f in sys.argv:
     # Find entities
-    ent = dxfgeom.ReadEntities(f)
-    lo = dxfgeom.Findentities("LINE", ent)
+    ent = dxfgeom.read_entities(f)
+    lo = dxfgeom.find_entities("LINE", ent)
     lines = []
     if len(lo) > 0:
-        lines = [dxfgeom.Linefromelist(ent, n) for n in lo]
-    ao = dxfgeom.Findentities("ARC", ent)
+        lines = [dxfgeom.line_from_elist(ent, n) for n in lo]
+    ao = dxfgeom.find_entities("ARC", ent)
     arcs = []
     if len(ao) > 0:
-        arcs = [dxfgeom.Arcfromelist(ent, m) for m in ao]
+        arcs = [dxfgeom.arc_from_elist(ent, m) for m in ao]
     # Find contours
-    (contours, remlines, remarcs) = dxfgeom.FindContours(lines, arcs)
+    (contours, remlines, remarcs) = dxfgeom.find_contours(lines, arcs)
     # Sort in x1, then in y1.
     contours.sort()
     remlines.sort()

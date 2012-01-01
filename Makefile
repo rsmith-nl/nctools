@@ -1,15 +1,17 @@
-.PHONY: all install dist clean backup
+.PHONY: all install dist clean backup check
 .SUFFIXES: .ps .pdf .py
 
 #beginskip
 PROG = dxfgerber
 ALL = ${PROG}.1 ${PROG}.1.pdf setup.py ${PROG}.py
+SRCS = dxfgeom.py ${PROG}.in.py readdxf.py setup.in.py
 
 all: ${ALL} .git/hooks/post-commit tools/replace.sed
 #endskip
 BASE=/usr/local
 MANDIR=$(BASE)/man
 BINDIR=$(BASE)/bin
+PYSITE!=python -c 'import site; print site.getsitepackages()[0]'
 
 install: ${PROG}.1 setup.py ${PROG}.py
 	@if [ `id -u` != 0 ]; then \
@@ -25,6 +27,15 @@ install: ${PROG}.1 setup.py ${PROG}.py
 	gzip -c ${PROG}.1 >${PROG}.1.gz
 	install -m 644 ${PROG}.1.gz $(MANDIR)/man1
 	rm -f ${PROG}.1.gz
+
+deinstall::
+	@if [ `id -u` != 0 ]; then \
+		echo "You must be root to deinstall the program!"; \
+		exit 1; \
+	fi
+	rm -f ${PYSITE}/module.py
+	rm -f $(BINDIR)/${PROG}
+	rm -f $(MANDIR)/man1/${PROG}.1.gz
 
 #beginskip
 dist: ${ALL}
@@ -42,6 +53,9 @@ clean::
 backup: ${ALL}
 # Generate a full backup.
 	sh tools/genbackup
+
+check: .IGNORE
+	pylint --rcfile=tools/pylintrc ${SRCS}
 
 .git/hooks/post-commit: tools/post-commit
 	install -m 755 $> $@

@@ -2,7 +2,7 @@
 # Installation script for dxfopt
 #
 # R.F. Smith <rsmith@xs4all.nl>
-# Time-stamp: <2011-10-19 21:32:45 rsmith>
+# Time-stamp: <>
 
 from distutils.core import setup
 
