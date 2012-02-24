@@ -2,7 +2,7 @@
 # Converts lines and arcs from a DXF file and organizes them into contours.
 #
 # Copyright © 2011,2012 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Time-stamp: <>
+# Time-stamp: <2012-02-24 19:46:13 rsmith>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -111,21 +111,21 @@ class Entity:
 
     def __lt__(self, other):
         '''The (xmin, ymin) corner of the bounding box will be used for
-        sorting.'''
+        sorting. Sort by ymin first, then xmin.'''
         assert isinstance(other, Entity), Entity._anoent
-        if self.xmin == other.xmin:
-            if self.ymin < other.ymin:
+        if self.ymin == other.ymin:
+            if self.xmin < other.xmin:
                 return True
         else:
-            return self.xmin < other.xmin
+            return self.ymin < other.ymin
 
     def __gt__(self, other):
         assert isinstance(other, Entity), Entity._anoent
-        if self.xmin == other.xmin:
-            if self.ymin > other.ymin:
+        if self.ymin == other.ymin:
+            if self.xmin > other.xmin:
                 return True
         else:
-            return self.xmin > other.xmin
+            return self.ymin > other.ymin
 
     def __eq__(self, other):
         assert isinstance(other, Entity), Entity._anoent
@@ -328,6 +328,12 @@ class Contour(Entity):
         for e in self.ent:
             s += e.dxfdata()
         return s
+
+    def pdfdata(self):
+        rl = [self.ent[0].x1, self.ent[0].y1]
+        for e in self.ent:
+            rl.append(e.x2, e.y2)
+        return rl
 
     def length(self):
         '''Returns the length of a contour.'''

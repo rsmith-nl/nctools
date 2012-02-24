@@ -4,7 +4,7 @@
 # output another DXF file.
 #
 # Copyright © 2011,2012 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Time-stamp: <>
+# Time-stamp: <2012-02-24 19:48:13 rsmith>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -107,7 +107,7 @@ for f in sys.argv:
         arcs = [dxfgeom.arc_from_elist(ent, m) for m in ao]
     # Find contours
     (contours, remlines, remarcs) = dxfgeom.find_contours(lines, arcs)
-    # Sort in x1, then in y1.
+    # Sort in y1, then in x1.
     contours.sort()
     remlines.sort()
     remarcs.sort()
