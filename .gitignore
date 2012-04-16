@@ -5,6 +5,7 @@ build
 dist
 setup.py
 dxfgerber.py
+dxf2nc.py
 dxfgerber.1
 dxfgerber.1.pdf
 tools/replace.sed

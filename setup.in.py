@@ -2,7 +2,7 @@
 # Installation script for dxfopt
 #
 # R.F. Smith <rsmith@xs4all.nl>
-# Time-stamp: <>
+# Time-stamp: <2012-04-16 23:04:35 rsmith>
 
 from distutils.core import setup
 
@@ -12,10 +12,10 @@ with open('README.txt') as f:
 setup(name='dxftools',
       version='VERSION',
       license='BSD',
-      description='Program for optimizing DXF files for a Gerber cutter',
+      description='Programs for processing DXF files for a Gerber cutter',
       author='Roland Smith', author_email='rsmith@xs4all.nl',
       url='http://www.xs4all.nl/~rsmith/software/',
-      scripts=['dxfgerber.py'],
+      scripts=['dxfgerber.py', 'dxf2nc.py'],
       py_modules=['dxfgeom'],
       classifiers=['Development Status :: 5 - Production/Stable',
                    'Environment :: Console',

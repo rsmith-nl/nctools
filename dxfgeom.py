@@ -2,7 +2,7 @@
 # Converts lines and arcs from a DXF file and organizes them into contours.
 #
 # Copyright © 2011,2012 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Time-stamp: <2012-02-24 19:46:13 rsmith>
+# Time-stamp: <2012-04-16 22:40:44 rsmith>
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -83,6 +83,12 @@ class Entity:
         format (xmin, ymin, xmax, ymax).'''
         return (self.xmin, self.ymin, self.xmax, self.ymax)
 
+    def move(self, dx, dy):
+        self.x1 += dx
+        self.x2 += dx
+        self.y1 += dy
+        self.y2 += dy
+
     def swap(self):
         '''Swap (x1, y1) and (x2, y2)'''
         (self.x1, self.x2) = (self.x2, self.x1)
@@ -95,6 +101,12 @@ class Entity:
 
     def pdfdata(self):
         '''Returns info to create the entity in PDF format.'''
+        raise NotImplementedError
+
+    def ncdata(self):
+        '''Returns NC data for the entity. This is a 2-tuple of two
+        strings. The first string decribes how to go to the beginning of the
+        entity, the second string contains the entity itself.'''
         raise NotImplementedError
 
     def length(self):
@@ -155,6 +167,12 @@ class Line(Entity):
     def pdfdata(self):
         '''Returns a tuple containing the coordinates x1, y1, x2 and y2.'''
         return (self.x1, self.y1, self.x2, self.y2)
+
+    def ncdata(self):
+        '''NC code for an individual line in a 2-tuple; (goto, lineto)'''
+        s1 = 'M15*X{}Y{}*'.format(_mmtoci(self.x1), _mmtoci(self.y1))
+        s2 = 'M14*X{}Y{}*M15*'.format(_mmtoci(self.x2), _mmtoci(self.y2))
+        return (s1, s2)
 
     def length(self):
         '''Returns the length of a Line.'''
@@ -238,6 +256,14 @@ class Arc(Entity):
             s += " (swapped)"
         return s
 
+    def move(self, dx, dy):
+        Entity.move(self, dx, dy)
+        self.cx += dx
+        self.cy += dy
+        if self.segments:
+            for s in self.segments:
+                s.move(dx, dy)
+
     def dxfdata(self):
         if Arc.as_segments == False:
             s = "  0\nARC\n"
@@ -262,6 +288,15 @@ class Arc(Entity):
             ea = self.a2
         ext = ea-sa
         return (self.xmin, self.ymin, self.xmax, self.ymax, sa, ea, ext)
+
+    def ncdata(self):
+        if self.segments == None:
+            self.segments = self._gensegments()
+        (s1, s2) = self.segments[0].ncdata()
+        for sg in self.segments[1:]:
+            (f1, f2) = sg.ncdata()
+            s2 += f2
+        return (s1, s2)
 
     def length(self):
         '''Returns the length of an arc.'''
@@ -335,12 +370,23 @@ class Contour(Entity):
             rl.append(e.x2, e.y2)
         return rl
 
+    def ncdata(self):
+        (s1, s2) = self.ent[0].ncdata()
+        for e in self.ent[1:]:
+            (f1, f2) = e.ncdata()
+            s2 += f2
+        return (s1, s2)
+
     def length(self):
         '''Returns the length of a contour.'''
         il = [e.length() for e in self.ent]
         return sum(il)
 
 # Function definitions.
+def _mmtoci(d):
+    '''Converts dimensions in mm to 1/100 inches.'''
+    return int(round(float(d)*100/25.4))
+
 def _frange(start, end, step):
     '''A range function for floats.
     

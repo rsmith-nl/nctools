@@ -3,8 +3,9 @@
 
 #beginskip
 PROG = dxfgerber
-ALL = ${PROG}.1 ${PROG}.1.pdf setup.py ${PROG}.py
-SRCS = dxfgeom.py ${PROG}.in.py readdxf.py setup.in.py
+PROG2 = dxf2nc
+ALL = ${PROG}.1 ${PROG}.1.pdf setup.py ${PROG}.py ${PROG2}.py
+SRCS = dxfgeom.py ${PROG}.in.py ${PROG2}.in.py readdxf.py setup.in.py
 
 all: ${ALL} .git/hooks/post-commit tools/replace.sed
 #endskip
@@ -77,4 +78,8 @@ ${PROG}.1.pdf: ${PROG}.1
 	mandoc -Tps $> >$*.ps
 	epspdf $*.ps
 	rm -f $*.ps
+
+${PROG2}.py: ${PROG2}.in.py tools/replace.sed
+	sed -f tools/replace.sed ${PROG2}.in.py >$@
+	chmod 755 ${PROG2}.py
 #endskip
