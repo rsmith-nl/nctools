@@ -3,7 +3,7 @@
 # Converts lines and arcs from a DXF file and prints them.
 #
 # Copyright © 2011,2012 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Time-stamp: <>
+# $Date$
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -26,11 +26,17 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
+
+
 import sys # for argv.
 import dxfgeom
 
+__proginfo__ = ('readdxf [ver. ' + '$Revision$'[11:-2] +
+                '] ('+'$Date$'[7:-2]+')')
+
 # Main program starts here.
 if len(sys.argv) == 1:
+    print __proginfo__
     print "Usage: {} dxf-file(s)".format(sys.argv[0])
     exit(1)
 del sys.argv[0]

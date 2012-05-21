@@ -2,7 +2,7 @@
 # Installation script for dxfopt
 #
 # R.F. Smith <rsmith@xs4all.nl>
-# Time-stamp: <2012-04-16 23:04:35 rsmith>
+# $Date$
 
 from distutils.core import setup
 
@@ -10,7 +10,7 @@ with open('README.txt') as f:
     ld = f.read()
 
 setup(name='dxftools',
-      version='VERSION',
+      version='$Revision$'[11:-2],
       license='BSD',
       description='Programs for processing DXF files for a Gerber cutter',
       author='Roland Smith', author_email='rsmith@xs4all.nl',

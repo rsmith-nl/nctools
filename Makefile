@@ -4,10 +4,8 @@
 #beginskip
 PROG = dxfgerber
 PROG2 = dxf2nc
-ALL = ${PROG}.1 ${PROG}.1.pdf setup.py ${PROG}.py ${PROG2}.py
-SRCS = dxfgeom.py ${PROG}.in.py ${PROG2}.in.py readdxf.py setup.in.py
-
-all: ${ALL} .git/hooks/post-commit tools/replace.sed
+ALL = ${PROG}.1.pdf 
+all: ${ALL} .git/hooks/post-commit
 #endskip
 BASE=/usr/local
 MANDIR=$(BASE)/man
@@ -61,25 +59,8 @@ check: .IGNORE
 .git/hooks/post-commit: tools/post-commit
 	install -m 755 $> $@
 
-tools/replace.sed: .git/index
-	tools/post-commit
-
-setup.py: setup.in.py tools/replace.sed
-	sed -f tools/replace.sed setup.in.py >$@
-
-${PROG}.py: ${PROG}.in.py tools/replace.sed
-	sed -f tools/replace.sed ${PROG}.in.py >$@
-	chmod 755 ${PROG}.py
-
-${PROG}.1: ${PROG}.1.in tools/replace.sed
-	sed -f tools/replace.sed ${PROG}.1.in >$@
-
 ${PROG}.1.pdf: ${PROG}.1
 	mandoc -Tps $> >$*.ps
 	epspdf $*.ps
 	rm -f $*.ps
-
-${PROG2}.py: ${PROG2}.in.py tools/replace.sed
-	sed -f tools/replace.sed ${PROG2}.in.py >$@
-	chmod 755 ${PROG2}.py
 #endskip

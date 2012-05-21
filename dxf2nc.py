@@ -4,7 +4,7 @@
 # outputs G-codes for the Gerber cutter..
 #
 # Copyright © 2012 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Time-stamp: <2012-04-16 22:59:14 rsmith>
+# $Date$
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -35,7 +35,8 @@ import os.path
 # Local module.
 import dxfgeom
 
-ver = "dxf2nc [revision VERSION] (DATE)"
+__proginfo__ = ('dxf2nc [ver. ' + '$Revision$'[11:-2] + 
+                '] ('+'$Date$'[7:-2]+')')
 
 def nc_header(progname, bbox):
     '''Returns the start of the NC file.'''
@@ -61,7 +62,7 @@ def newname(oldpath):
 
 # Main program starts here.
 if len(sys.argv) == 1:
-    print ver
+    print __proginfo__
     print "Usage: {} [file.dxf ...]".format(sys.argv[0])
     exit(1)
 del sys.argv[0]
