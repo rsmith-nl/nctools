@@ -171,8 +171,10 @@ class Line(Entity):
         return (self.x1, self.y1, self.x2, self.y2)
 
     def ncdata(self):
-        '''NC code for an individual line in a 2-tuple; (goto, lineto)'''
-        s1 = 'M15*X{}Y{}*'.format(_mmtoci(self.x1), _mmtoci(self.y1))
+        '''NC code for an individual line in a 2-tuple; (goto, lineto)
+        M15 = knife up, M14 = knife down.
+        '''
+        s1 = 'X{}Y{}*'.format(_mmtoci(self.x1), _mmtoci(self.y1))
         s2 = 'M14*X{}Y{}*M15*'.format(_mmtoci(self.x2), _mmtoci(self.y2))
         return (s1, s2)
 

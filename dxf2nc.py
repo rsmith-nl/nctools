@@ -42,7 +42,7 @@ def nc_header(progname, bbox):
     '''Returns the start of the NC file.'''
     Li = (bbox[2]-bbox[0])/25.4
     Wi = (bbox[3]-bbox[1])/25.4
-    s = "H1*M20*{}/L={:5.3f}/W={:5.3f}*N1*".format(progname, Li, Wi)
+    s = "H1*M20*{}/L={:5.3f}/W={:5.3f}*N1*M15*".format(progname, Li, Wi)
     return s
 
 def nc_footer():
