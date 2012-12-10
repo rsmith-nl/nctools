@@ -114,7 +114,7 @@ for f in sys.argv:
     remarcs.sort()
     # Output
     outf = open(outname, 'w')
-    outf.write(dxf_header(ver, contours, remlines, remarcs))
+    outf.write(dxf_header(__proginfo__, contours, remlines, remarcs))
     outf.write(start_entities())
     for cn in contours:
         outf.write(cn.dxfdata())
