@@ -1,13 +1,13 @@
 .\" -*- nroff -*-
-.\" dxfgerber.1
+.\" dxf2nc.1
 .\" By: R.F. Smith <rsmith@xs4all.nl>
 .\" $Date$
 .\"
 .Dd
 .Os 
-.Dt dxfgerber 1 CON
+.Dt dxf2nc 1 CON
 .Sh NAME
-.Nm dxfgerber
+.Nm dxf2nc
 .Nd Extract 
 .Ql LINE 
 and 
@@ -15,7 +15,8 @@ and
 entities from a Drawing eXchange Format 
 .Pq Dq dxf
 file and arranges them in a way suitable for optimized
-cutting. 
+cutting. Outputs a numeric code file for a Gerber cutter, with the lower left
+corner of the bounding box of all the entities moved to 0,0.
 .Sh SYNOPSIS
 .Nm 
 .Op Ar
@@ -32,7 +33,7 @@ essentially cuts lines in the order it finds them in the dxf file.
 
 This program reads a dxf file. The name of the file must end in 
 .Ql .dxf
-or
+or 
 .Ql .DXF , 
 otherwise the program will report an error and quit. It
 extracts all the
@@ -53,15 +54,22 @@ no more than 5 mm in length. It ignores the
 variable in the dxf file because that is often not set correctly and
 assumes that the units in the dxf file are millimeters.
 
-The output is written to a new file. The name of the new file is based on the
-name of the old file, with a trailing number added or increased. So 
-.Ql foo.dxf
+The entities are then translated to Gerber numeric code, which is written
+to the output file. The name of the new file is based on the
+name of the old file, with the 
+.Ql dxf 
+extension replaced by 
+.Ql nc .
+So 
+.Ql foo.dxf 
 becomes 
-.Ql foo1.dxf 
-and 
-.Ql test17.dxf 
-becomes 
-.Ql test18.dxf .
+.Ql foo.nc .
+
+Gerber numeric code files are basically text files but do not contain
+line breaks, which makes them hard to read. The 
+.Xr ncfmt 1
+utility can be used to display the file in a more human-readable format.
+
 .Sh EXIT STATUS
 .Ex -std
 .\".Sh DIAGNOSTICS
@@ -73,14 +81,14 @@ should be able to work with 3.x after fixing with
 .Xr 2to3 .
 .Sh SEE ALSO
 .Xr python 1 ,
-.Xr 2to3.
+.Xr 2to3, 
+.Xr ncfmt 1 .
 .Rs
 .%B Python Programming Language - Official Website
 .%U http://www.python.org/
 .Re
 .Sh HISTORY
-This program was written to stop having to fix up DXF files manually before
-loading them into cutworks.
+This program was written to stop having to avoid having to deal with cutworks.
 .Sh AUTHOR
 This manual and the 
 .Nm
@@ -99,7 +107,7 @@ The
 .Nm
 program itself is released under the two-clause BSD license given below;
 .Pp
-Copyright \(co 2011,2012 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+Copyright \(co 2012 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 .Pp
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions

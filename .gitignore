@@ -4,5 +4,5 @@
 backup-*.tar.gz
 build
 dist
-dxfgerber.1.pdf
+*.1.pdf
 MANIFEST

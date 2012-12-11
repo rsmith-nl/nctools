@@ -63,8 +63,9 @@ def end_entities():
     return s
 
 def newname(oldname):
+    '''Create an output filename based on the input filename.'''
     if not oldname.endswith(('.dxf', '.DXF')):
-        raise ValueError('not a DXF file!')
+        raise ValueError('probably not a DXF file!')
     oldbase = oldname[:-4]
     if len(oldbase) == 0:
         raise ValueError("zero-length file name!")
@@ -78,49 +79,53 @@ def newname(oldname):
     rv = newbase + str(num) + '.dxf'
     return rv
 
+def main(argv):
+    '''Main program for the dxfgerber utility.'''
+    if len(argv) == 1:
+        print __proginfo__
+        print "Usage: {} [file.dxf ...]".format(argv[0])
+        exit(1)
+    del argv[0]
+    for f in argv:
+        try:
+            outname = newname(f)
+            ent = dxfgeom.read_entities(f)
+        except ValueError:
+            h = "Cannot construct output filename. Skipping file '{}'."
+            print h.format(f)
+            print "A valid filename _must_ have a '.dxf' extension."
+            print "And it must be more than just the extension."
+            continue
+        except IOError:
+            print "Cannot open the file '{}'. Skipping it.".format(f)
+            continue
+        # Find entities
+        lo = dxfgeom.find_entities("LINE", ent)
+        lines = []
+        if len(lo) > 0:
+            lines = [dxfgeom.line_from_elist(ent, nn) for nn in lo]
+        ao = dxfgeom.find_entities("ARC", ent)
+        arcs = []
+        if len(ao) > 0:
+            arcs = [dxfgeom.arc_from_elist(ent, m) for m in ao]
+        # Find contours
+        (contours, remlines, remarcs) = dxfgeom.find_contours(lines, arcs)
+        # Sort in y1, then in x1.
+        contours.sort()
+        remlines.sort()
+        remarcs.sort()
+        # Output
+        outf = open(outname, 'w')
+        outf.write(dxf_header(__proginfo__, contours, remlines, remarcs))
+        outf.write(start_entities())
+        for cn in contours:
+            outf.write(cn.dxfdata())
+        for l in remlines:
+            outf.write(l.dxfdata())
+        for a in remarcs:
+            outf.write(a.dxfdata())
+        outf.write(end_entities())
+        outf.close()
 
-# Main program starts here.
-if len(sys.argv) == 1:
-    print __proginfo__
-    print "Usage: {} [file.dxf ...]".format(sys.argv[0])
-    exit(1)
-del sys.argv[0]
-for f in sys.argv:
-    try:
-        outname = newname(f)
-        ent = dxfgeom.read_entities(f)
-    except ValueError:
-        print "Cannot construct output filename. Skipping file '{}'.".format(f)
-        print "A valid filename _must_ have a '.dxf' extension."
-        print "And it must be more than just the extension."
-        continue
-    except IOError:
-        print "Cannot open the file '{}'. Skipping it.".format(f)
-        continue
-    # Find entities
-    lo = dxfgeom.find_entities("LINE", ent)
-    lines = []
-    if len(lo) > 0:
-        lines = [dxfgeom.line_from_elist(ent, nn) for nn in lo]
-    ao = dxfgeom.find_entities("ARC", ent)
-    arcs = []
-    if len(ao) > 0:
-        arcs = [dxfgeom.arc_from_elist(ent, m) for m in ao]
-    # Find contours
-    (contours, remlines, remarcs) = dxfgeom.find_contours(lines, arcs)
-    # Sort in y1, then in x1.
-    contours.sort()
-    remlines.sort()
-    remarcs.sort()
-    # Output
-    outf = open(outname, 'w')
-    outf.write(dxf_header(__proginfo__, contours, remlines, remarcs))
-    outf.write(start_entities())
-    for cn in contours:
-        outf.write(cn.dxfdata())
-    for l in remlines:
-        outf.write(l.dxfdata())
-    for a in remarcs:
-        outf.write(a.dxfdata())
-    outf.write(end_entities())
-    outf.close()
+if __name__ == '__main__':
+    main(sys.argv)

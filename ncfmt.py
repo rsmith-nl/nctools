@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Formats G-codes for the Gerber cutter for comparison.
+# Formats G-codes for the Gerber cutter for human readability.
 #
 # Copyright © 2012 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # $Date$
@@ -27,13 +27,16 @@
 # SUCH DAMAGE.
 
 import sys
+import os
 
 __proginfo__ = ('ncfmt [ver. ' + '$Revision$'[11:-2] + 
                 '] ('+'$Date$'[7:-2]+')')
 
 def main(argv):
+    '''Main program for the ncformat utility.'''
     if len(argv) == 1:
         binary = os.path.basename(argv[0])
+        print __proginfo__
         print "Usage: {} [file ...]".format(binary)
         sys.exit(0)
     del argv[0]
