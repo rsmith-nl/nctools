@@ -4,7 +4,8 @@
 #beginskip
 PROG = dxfgerber
 PROG2 = dxf2nc
-ALL = ${PROG}.1.pdf ${PROG2}.1.pdf 
+PROG3 = ncfmt
+ALL = ${PROG}.1.pdf ${PROG2}.1.pdf ${PROG3}.1.pdf
 all: ${ALL} .git/hooks/post-commit
 #endskip
 BASE=/usr/local
@@ -69,5 +70,8 @@ ${PROG2}.1.pdf: ${PROG2}.1
 	epspdf $*.ps
 	rm -f $*.ps
 
-
+${PROG3}.1.pdf: ${PROG3}.1
+	mandoc -Tps $> >$*.ps
+	epspdf $*.ps
+	rm -f $*.ps
 #endskip
