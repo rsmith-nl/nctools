@@ -224,7 +224,7 @@ class Arc(Entity):
         :a2: ending angle in degrees
         
         """
-        if a2 > a1:
+        if a2 < a1:
             em = 'Arcs are defined CCW, so a2 must be greater than a1'
             raise ValueError(em)
         self.cx = float(cx)

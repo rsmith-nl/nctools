@@ -26,8 +26,7 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
-
-import sys # for argv.
+import sys 
 import dxfgeom
 
 
@@ -35,15 +34,13 @@ __proginfo__ = ('readdxf [ver. ' + '$Revision$'[11:-2] +
                 '] ('+'$Date$'[7:-2]+')')
 
 
-# Main program starts here.
-if len(sys.argv) == 1:
-    print __proginfo__
-    print "Usage: {} dxf-file(s)".format(sys.argv[0])
-    exit(1)
-del sys.argv[0]
-for f in sys.argv:
-    # Find entities
-    ent = dxfgeom.read_entities(f)
+def findentities(filename):
+    """Get the entities from a file
+
+    :filename: name of the file to read
+    :returns: a 3-tuple of lists (contours, lines, arcs)
+    """
+    ent = dxfgeom.read_entities(filename)
     lo = dxfgeom.find_entities("LINE", ent)
     lines = []
     if len(lo) > 0:
@@ -52,17 +49,35 @@ for f in sys.argv:
     arcs = []
     if len(ao) > 0:
         arcs = [dxfgeom.arc_from_elist(ent, m) for m in ao]
-    # Find contours
-    (contours, remlines, remarcs) = dxfgeom.find_contours(lines, arcs)
-    # Sort in x1, then in y1.
-    contours.sort()
-    remlines.sort()
-    remarcs.sort()
-    # Output
-    print "#File: {}".format(f)
-    for c in contours:
-        print c
-    for l in remlines:
-        print l
-    for a in remarcs:
-        print a
+    return dxfgeom.find_contours(lines, arcs)
+ 
+
+def main(argv):
+    """Main program for the readdxf utility.
+    
+    :argv: command line arguments
+    """
+    if len(argv) == 1:
+        print __proginfo__
+        print "Usage: {} dxf-file(s)".format(sys.argv[0])
+        exit(1)
+    del argv[0]
+    for f in argv:
+        (contours, lines, arcs) = findentities(f) 
+        # Sort in x1, then in y1.
+        contours.sort()
+        lines.sort()
+        arcs.sort()
+        # Output
+        print "#File: {}".format(f)
+        for c in contours:
+            print c
+        for l in lines:
+            print l
+        for a in arcs:
+            print a
+
+
+if __name__ == '__main__':
+    main(sys.argv)
+
