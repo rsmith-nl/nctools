@@ -298,7 +298,7 @@ class Arc(Entity):
             self.segments = self._gensegments()
         (s1, s2) = self.segments[0].ncdata()
         for sg in self.segments[1:]:
-            (f1, f2) = sg.ncdata()
+            (_, f2) = sg.ncdata()
             s2 += f2
         return (s1, s2)
 
@@ -377,7 +377,7 @@ class Contour(Entity):
     def ncdata(self):
         (s1, s2) = self.ent[0].ncdata()
         for e in self.ent[1:]:
-            (f1, f2) = e.ncdata()
+            (_, f2) = e.ncdata()
             s2 += f2
         return (s1, s2)
 

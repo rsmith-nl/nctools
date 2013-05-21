@@ -34,8 +34,8 @@ import datetime
 # Local module.
 import dxfgeom
 
-__proginfo__ = ('dxfgerber [ver. ' + '$Revision$'[11:-2] + '] (' +
-                '$Date$'[7:-2] + ')')
+__proginfo__ = ('dxfgerber [ver. ' + '$Revision$'[11:-2] +
+                '] (' + '$Date$'[7:-2] + ')')
 
 def dxf_header(progname, loc, lol, loa):
     '''Write comments at the beginning of a DXF file.'''
@@ -47,7 +47,7 @@ def dxf_header(progname, loc, lol, loa):
         " loose lines and {} loose arcs.\n"
     s += c.format(len(loc), len(lol), len(loa))
     s += "999\nThe contours are:"
-    for n, c in enumerate(contours):
+    for n, c in enumerate(loc):
         u = "\n999\n#{} bounding box ({:.3f}, {:.3f}, {:.3f}, {:.3f})"
         s += u.format(n+1, *c.getbb())
     s += "\n"

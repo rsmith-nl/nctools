@@ -55,7 +55,7 @@ backup: ${ALL}
 	sh tools/genbackup
 
 check: .IGNORE
-	pylint --rcfile=tools/pylintrc ${SRCS}
+	pylint --rcfile=tools/pylintrc *.py
 
 .git/hooks/post-commit: tools/post-commit
 	install -m 755 $> $@

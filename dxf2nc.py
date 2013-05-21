@@ -29,7 +29,6 @@
 
 # System modules
 import sys
-import datetime
 import os.path
 
 # Local module.
@@ -71,7 +70,8 @@ def main(argv):
             outname = newname(f)
             ent = dxfgeom.read_entities(f)
         except ValueError:
-            print "Cannot construct output filename. Skipping file '{}'.".format(f)
+            fns = "Cannot construct output filename. Skipping file '{}'."
+            print fns.format(f)
             print "A valid filename _must_ have a '.dxf' extension."
             print "And it must be more than just the extension."
             continue
@@ -87,13 +87,11 @@ def main(argv):
         arcs = []
         if len(ao) > 0:
             arcs = [dxfgeom.arc_from_elist(ent, m) for m in ao]
-        # TODO: Find bounding box.
         bbs = [ln.getbb() for ln in lines]
         bbs += [a.getbb() for a in arcs]
         bb = bbs[0]
         for add in bbs[1:]:
             bb = dxfgeom.merge_bb(bb, add)
-        # TODO: Translate all elements so that bounding box starts at 0,0.
         dispx = -bb[0]
         dispy = -bb[1]
         for ln in lines:
