@@ -21,7 +21,7 @@ q = arcs[0]
 print q.cx, q.cy, q.R, q.a1, q.a2, q.x1, q.y1, q.x2, q.y2
 with open('arcs.txt', 'w+') as of:
     for a in arcs:
-        a.segments = a._gensegments() #pylint: disable=W0212
+        a.gensegments()
         p1 = (a.x1, a.y1)
         p2 = (a.x2, a.y2)
         p3 = (a.segments[0].x1, a.segments[0].y1)

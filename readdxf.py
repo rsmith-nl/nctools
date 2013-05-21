@@ -27,12 +27,13 @@
 # SUCH DAMAGE.
 
 
-
 import sys # for argv.
 import dxfgeom
 
+
 __proginfo__ = ('readdxf [ver. ' + '$Revision$'[11:-2] +
                 '] ('+'$Date$'[7:-2]+')')
+
 
 # Main program starts here.
 if len(sys.argv) == 1:

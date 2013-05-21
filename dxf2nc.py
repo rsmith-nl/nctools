@@ -27,29 +27,39 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
-# System modules
 import sys
 import os.path
-
-# Local module.
 import dxfgeom
+
 
 __proginfo__ = ('dxf2nc [ver. ' + '$Revision$'[11:-2] + 
                 '] ('+'$Date$'[7:-2]+')')
 
+
 def nc_header(progname, bbox):
-    '''Returns the start of the NC file.'''
+    """Returns the start of the NC file.
+    
+    :progname: name of the program
+    :bbox: 4-tuple (xmin, ymin, xmax, ymax) in mm
+    :returns: a string containing the header for the nc file. 
+    """
     Li = (bbox[2]-bbox[0])/25.4
     Wi = (bbox[3]-bbox[1])/25.4
     s = "H1*M20*{}/L={:5.3f}/W={:5.3f}*N1*M15*".format(progname, Li, Wi)
     return s
 
+
 def nc_footer():
-    '''Returns the ending of the NC file.'''
+    """Returns the ending of the NC file."""
     return 'M0*'
 
+
 def newname(oldpath):
-    '''Write the header of the NC file.'''
+    """Create the output filename from the input filename.
+    
+    :oldpath: path of the input file
+    :returns: path of the output file
+    """
     oldname = os.path.basename(oldpath)
     if not oldname.endswith(('.dxf', '.DXF')):
         raise ValueError('not a DXF file!')
@@ -59,7 +69,12 @@ def newname(oldpath):
     rv = oldbase + '.nc'
     return rv
 
+
 def main(argv): #pylint: disable=R0912
+    """Main program for the dxf2nc utility.
+
+    :argv: command line arguments
+    """    
     if len(argv) == 1:
         print __proginfo__
         print "Usage: {} [file.dxf ...]".format(argv[0])
@@ -121,6 +136,7 @@ def main(argv): #pylint: disable=R0912
             outf.write(s1+s2)
         outf.write(nc_footer())
         outf.close()
+
 
 if __name__ == '__main__':
     main(sys.argv)

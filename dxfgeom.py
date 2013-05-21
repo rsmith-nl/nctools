@@ -29,18 +29,23 @@ __version__ = '$Revision$'[11:-2]
 
 import math
 
+
 # Class definitions
 class Entity:
-    '''A base class for a DXF entities; lines and arcs.
+    """A base class for a DXF entities; lines and arcs.
 
     The class attribute delta contains the maximum distance in x and y
-    direction between eindpoints that are considered coincident.'''
-
+    direction between eindpoints that are considered coincident.
+    """
     delta = 0.005
     _anoent = "Argument is not an entity!"
 
     def __init__(self, x1=0, y1=0, x2=0, y2=0):
-        '''Creates an Entity from (x1, y1) to (x2, y2)..'''
+        """Creates an Entity from (x1, y1) to (x2, y2).
+        
+        :x1, y1: start point of the entity
+        :x2, y2: end point of the entity
+        """
         # Start- and enpoint
         self.x1 = float(x1)
         self.y1 = float(y1)
@@ -55,13 +60,13 @@ class Entity:
         self.sw = False
 
     def fits(self, index, other):
-        '''Checks if another entity fits onto this one.
+        """Checks if another entity fits onto this one.
 
-        index -- end of the entity to test, either 1 or 2.
-        other -- Entity to test.
-
-        Returns 0 if the other entity doesn't fit. Otherwise returns 1 or 2
-        indicating the new free end of other.'''
+        :index: end of the entity to test, either 1 or 2
+        :other: entity to test
+        :returns: 0 if the other entity doesn't fit. Otherwise returns 1 or 2
+                  indicating the new free end of other.
+        """
         assert isinstance(other, Entity), Entity._anoent
         if index == 1:
             if (math.fabs(self.x1-other.x1) < Entity.delta and 
@@ -81,51 +86,60 @@ class Entity:
         return 0 # doesn't fit!
 
     def getbb(self):
-        '''Returns a tuple containing the bounding box of an entity in the
-        format (xmin, ymin, xmax, ymax).'''
+        """Returns a tuple containing the bounding box of an entity in the
+        format (xmin, ymin, xmax, ymax).
+        """
         return (self.xmin, self.ymin, self.xmax, self.ymax)
 
     def move(self, dx, dy):
+        """Move the entity.
+        
+        :dx: movement in the x direction
+        :dy: movement in the y direction
+        """
         self.x1 += dx
         self.x2 += dx
         self.y1 += dy
         self.y2 += dy
 
     def swap(self):
-        '''Swap (x1, y1) and (x2, y2)'''
+        """Swap (x1, y1) and (x2, y2)"""
         (self.x1, self.x2) = (self.x2, self.x1)
         (self.y1, self.y2) = (self.y2, self.y1)
         self.sw = not self.sw
 
     def dxfdata(self):
-        '''Returns a string containing the entity in DXF format.'''
+        """Returns a string containing the entity in DXF format."""
         raise NotImplementedError
 
     def pdfdata(self):
-        '''Returns info to create the entity in PDF format.'''
+        """Returns info to create the entity in PDF format."""
         raise NotImplementedError
 
     def ncdata(self):
-        '''Returns NC data for the entity. This is a 2-tuple of two
+        """Returns NC data for the entity. This is a 2-tuple of two
         strings. The first string decribes how to go to the beginning of the
-        entity, the second string contains the entity itself.'''
+        entity, the second string contains the entity itself.
+        """
         raise NotImplementedError
 
     def length(self):
-        '''Returns the length of the entity.'''
+        """Returns the length of the entity."""
         raise NotImplementedError
 
+    @property
     def startpoint(self):
-        '''Returns the (x1, y1).'''
+        """Returns (x1, y1) of the entity."""
         return (self.x1, self.y1)
 
+    @property
     def endpoint(self):
-        '''Returns the (x2, y2).'''
+        """Returns (x2, y2) of the entity"""
         return (self.x2, self.y2)
 
     def __lt__(self, other):
-        '''The (xmin, ymin) corner of the bounding box will be used for
-        sorting. Sort by ymin first, then xmin.'''
+        """The (xmin, ymin) corner of the bounding box will be used for
+        sorting. Sort by ymin first, then xmin."""
         assert isinstance(other, Entity), Entity._anoent
         if self.ymin == other.ymin:
             if self.xmin < other.xmin:
@@ -147,9 +161,10 @@ class Entity:
 
 
 class Line(Entity):
-    '''A class for a line entity, from point (x1, y1) to (x2, y2)'''
+    """A class for a line entity, from point (x1, y1) to (x2, y2)"""
+
     def __init__(self, x1, y1, x2, y2):
-        '''Creates a Line from (x1, y1) to (x2, y2).'''
+        """Creates a Line from (x1, y1) to (x2, y2)."""
         Entity.__init__(self, x1, y1, x2, y2)
 
     def __str__(self):
@@ -167,40 +182,51 @@ class Line(Entity):
         return s
 
     def pdfdata(self):
-        '''Returns a tuple containing the coordinates x1, y1, x2 and y2.'''
+        """Returns a tuple containing the coordinates x1, y1, x2 and y2."""
         return (self.x1, self.y1, self.x2, self.y2)
 
     def ncdata(self):
-        '''NC code for an individual line in a 2-tuple; (goto, lineto)
+        """NC code for an individual line in a 2-tuple; (goto, lineto)
         M15 = knife up, M14 = knife down.
-        '''
+        """
         s1 = 'X{}Y{}*'.format(_mmtoci(self.x1), _mmtoci(self.y1))
         s2 = 'M14*X{}Y{}*M15*'.format(_mmtoci(self.x2), _mmtoci(self.y2))
         return (s1, s2)
 
     def length(self):
-        '''Returns the length of a Line.'''
+        """Returns the length of a Line."""
         dx = self.x2-self.x1
         dy = self.y2-self.x1
         return math.sqrt(dx*dx+dy*dy)
 
+
 class Arc(Entity):
-    '''A class for an arc entity, centering in (cx, cy) with radius R from
+    """A class for an arc entity, centering in (cx, cy) with radius R from
     angle a1 to a2.
 
     Class properties: 
 
-        Arc.segmentsize -- Maximum length of the segment when an arc is rendered
-                           as a list of connected line segments.
-        Arc.as_segments -- Whether an arc should be output as a list of
-                           connected line segments. True by default.'''
+        :Arc.segmentsize: Maximum length of the segment when an arc is rendered
+                          as a list of connected line segments.
+        :Arc.as_segments: Whether an arc should be output as a list of
+                          connected line segments. True by default.
+    """
     segmentsize = 20 # centi-inches
     as_segments = True
 
     def __init__(self, cx, cy, R, a1, a2):
-        '''Creates a Arc centering in (cx, cy) with radius R and running from
-        a1 degrees ccw to a2 degrees.'''
-        assert a2 > a1, 'Arcs are defined CCW, so a2 must be greater than a1'
+        """Creates a Arc centering in (cx, cy) with radius R and running from
+        a1 degrees ccw to a2 degrees.
+        
+        :cx, cy: center point 
+        :R: radius
+        :a1: starting angle in degrees
+        :a2: ending angle in degrees
+        
+        """
+        if a2 > a1:
+            em = 'Arcs are defined CCW, so a2 must be greater than a1'
+            raise ValueError(em)
         self.cx = float(cx)
         self.cy = float(cy)
         self.R = float(R)
@@ -227,9 +253,10 @@ class Arc(Entity):
             elif py < self.ymin:
                 self.ymin = py
 
-    def _gensegments(self):
-        '''Subdivide the arc into a list of line segments of maximally
-        Arc.segmentsize units length. Return the list of segments.'''
+    def gensegments(self):
+        """Subdivide the arc into a list of line segments of maximally
+        Arc.segmentsize units length. 
+        """
         fr = float(Arc.segmentsize)/self.R
         if fr > 1:
             cnt = 1
@@ -250,8 +277,9 @@ class Arc(Entity):
         llist = []
         for j in range(1, len(pnts)):
             i = j-1
-            llist.append(Line(pnts[i][0], pnts[i][1], pnts[j][0], pnts[j][1]))
-        return llist
+            llist.append(Line(pnts[i][0], pnts[i][1], 
+                              pnts[j][0], pnts[j][1]))
+        self.segments = llist
 
     def __str__(self):
         s = "#ARC from ({:.3f},{:.3f}) to ({:.3f},{:.3f}), radius {:.3f}"
@@ -276,14 +304,14 @@ class Arc(Entity):
             s += " 40\n{}\n 50\n{}\n 51\n{}\n".format(self.R, self.a1, self.a2)
             return s
         if self.segments == None:
-            self.segments = self._gensegments()
+            self.gensegments()
         s = ""
         for sg in self.segments:
             s += sg.dxfdata()
         return s
 
     def pdfdata(self):
-        '''Returns a tuple containing the data to draw an arc.'''
+        """Returns a tuple containing the data to draw an arc."""
         if self.sw:
             sa = self.a2
             ea = self.a1
@@ -295,7 +323,7 @@ class Arc(Entity):
 
     def ncdata(self):
         if self.segments == None:
-            self.segments = self._gensegments()
+            self.gensegments()
         s1 = 'X{}Y{}*'.format(_mmtoci(self.segments[0].x1),
                               _mmtoci(self.segments[0].y1))
         s2 = 'M14*'
@@ -305,24 +333,27 @@ class Arc(Entity):
         return (s1, s2)
 
     def length(self):
-        '''Returns the length of an arc.'''
+        """Returns the length of an arc."""
         angle = math.radians(self.a2-self.a1)
         return self.R*angle
 
 class Contour(Entity):
-    '''A class for a list of connected Entities'''
+    """A class for a list of connected Entities"""
 
     def __init__(self, ent):
-        '''Creates a contour from an initial entity.'''
+        """Creates a contour from an initial entity."""
         assert isinstance(ent, Entity), Entity._anoent
         Entity.__init__(self, ent.x1, ent.y1, ent.x2, ent.y2)
         self.ent = [ent]
         self.nument = 1
 
-    def append(self, ent):
-        '''Appends and entity to the contour, if one of the ends of entity
-        matches the end of the last entity. Returns True if matched, otherwise
-        False.'''
+    def append(self, ent): 
+        """Tries to append an entity to the contour, if one of the ends of
+        entity matches the end of the last entity.  otherwise False.
+
+        :ent: entity to try and connect
+        :returns: True if ent connects, otherwise False.
+        """
         assert isinstance(ent, Entity), Entity._anoent
         last = self.ent[-1]
         newfree = last.fits(2, ent)
@@ -339,9 +370,12 @@ class Contour(Entity):
         return True
 
     def prepend(self, ent):
-        '''Prepends and entity to the contour, if one of the ends of entity
-        matches the end of the first entity. Returns True if matched,
-        otherwise False.'''
+        """Tries to prepent an entity to the contour, if one of the ends of
+        entity matches the beginning of the first entity.  otherwise False.
+
+        :ent: entity to try and connect
+        :returns: True if ent connects, otherwise False.
+        """
         assert isinstance(ent, Entity), Entity._anoent
         first = self.ent[0]
         newfree = first.fits(1, ent)
@@ -384,25 +418,28 @@ class Contour(Entity):
         return (s1, s2)
 
     def length(self):
-        '''Returns the length of a contour.'''
+        """Returns the length of a contour."""
         il = [e.length() for e in self.ent]
         return sum(il)
 
+
 # Function definitions.
 def _mmtoci(d):
-    '''Converts dimensions in mm to 1/100 inches.'''
-    return int(round(float(d)*100/25.4))
+    """Converts dimensions in mm to 1/100 inches."""
+    return int(round(float(d)*3.937007874015748))
+
 
 def _frange(start, end, step):
-    '''A range function for floats.
+    """A range function for floats.
     
-    start -- beginning of the range.
-    end -- end of the range.
-    step -- size of the step between numbers.
+    :start: beginning of the range.
+    :end: end of the range.
+    :step: size of the step between numbers.
 
-    Returns a list of floating point numbers. If the difference between start
-    and end isn't a multiple of step, end will not be included in the list.'''
-
+    :returns: a list of floating point numbers. If the difference between 
+    start and end isn't a multiple of step, end will not be included in the 
+    list.
+    """
     assert start != end, "Start and end cannot have the same value!"
     assert step != 0.0, "Step cannot be 0!"
     if start < end:
@@ -422,8 +459,11 @@ def _frange(start, end, step):
     return rv    
 
 def merge_bb(a, b):
-    '''The bounding boxes a and b are tuples (xmin, ymin, xmax,
-    ymax). Calculate and return a bounding box that contains a and b.'''
+    """Calculate and return a box that contains a and b.
+
+    :a,b: 4-tuples (xmin, ymin, xmax, ymax)
+    :returns: a 4-tuple that envelopes a and b
+    """
     xmin = min(a[0], b[0])
     ymin = min(a[1], b[1])
     xmax = max(a[2], b[2])
@@ -431,9 +471,11 @@ def merge_bb(a, b):
     return (xmin, ymin, xmax, ymax)
 
 def read_entities(name):
-    '''Reads a DXF file, and return a list of elements.
+    """Reads a DXF file, and return a list of entities as strings.
 
-    name -- name of the DXF file.'''
+    :name: name of the DXF file.
+    :returns: a list of strings
+    """
     dxffile = open(name)
     sdata = [s.strip() for s in dxffile.readlines()]
     dxffile.close()
@@ -445,21 +487,25 @@ def read_entities(name):
     return entities
 
 def find_entities(ename, el):
-    '''Searches the list for a named entity. Returns a list of indices for
+    """Searches the list for a named entity. Returns a list of indices for
     that name.
 
-    ename -- name of the entity to search for, e.g. LINE or ARC.
-    el -- list of strings froma DXF file.'''
+    :ename: name of the entity to search for, e.g. LINE or ARC.
+    :el: list of strings froma DXF file.
+    :returns: a list of indices where these elements can be found in el
+    """
     cnt = el.count(ename)
     if cnt > 0:
         return [x for x in range(len(el)) if el[x] == ename]
     return []
 
 def line_from_elist(elist, num):
-    '''Create a Line element from a list of strings from a DXF file.
+    """Create a Line element from a list of strings from a DXF file.
 
-    elist -- list of strings from a DXF file.
-    num -- index where to start looking'''
+    :elist: list of strings from a DXF file.
+    :num: index where to start looking
+    :returns: a Line object
+    """
     num = elist.index("10", num) + 1
     x1 = float(elist[num])
     num = elist.index("20", num) + 1
@@ -471,10 +517,12 @@ def line_from_elist(elist, num):
     return Line(x1, y1, x2, y2)
 
 def arc_from_elist(elist, num):
-    '''Create an Arc element from a list of strings from a DXF file.
+    """Create an Arc element from a list of strings from a DXF file.
 
-    elist -- list of strings from a DXF file.
-    num -- index where to start looking'''
+    :elist: list of strings from a DXF file.
+    :num: index where to start looking
+    :returns: an Arc object
+    """
     num = elist.index("10", num) + 1
     cx = float(elist[num])
     num = elist.index("20", num) + 1
@@ -490,13 +538,13 @@ def arc_from_elist(elist, num):
     return Arc(cx, cy, R, a1, a2)
 
 def find_contours(lol, loa):
-    '''Find polylines in the list of lines and list of arcs. 
+    """Find polylines in the list of lines and list of arcs. 
 
-    lol -- list of lines
-    loa -- list of arcs.
-
-    Returns a list of contours and a list of remaining lines and a list of
-    remaining arcs as a tuple.'''
+    :lol: list of lines
+    :loa: list of arcs.
+    :returns: a list of contours and a list of remaining lines and a list of
+    remaining arcs as a tuple.
+    """
     remlines = []
     remarcs = []
     elements = lol[:]+loa[:]

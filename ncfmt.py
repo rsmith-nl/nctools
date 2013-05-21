@@ -29,11 +29,16 @@
 import sys
 import os
 
+
 __proginfo__ = ('ncfmt [ver. ' + '$Revision$'[11:-2] + 
                 '] ('+'$Date$'[7:-2]+')')
 
+
 def main(argv):
-    '''Main program for the ncformat utility.'''
+    """Main program for the ncformat utility.
+    
+    :argv: command line arguments
+    """
     if len(argv) == 1:
         binary = os.path.basename(argv[0])
         print __proginfo__
