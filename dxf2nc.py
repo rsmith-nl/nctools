@@ -59,7 +59,7 @@ def newname(oldpath):
     rv = oldbase + '.nc'
     return rv
 
-def main(argv):
+def main(argv): #pylint: disable=R0912
     if len(argv) == 1:
         print __proginfo__
         print "Usage: {} [file.dxf ...]".format(argv[0])
@@ -87,6 +87,9 @@ def main(argv):
         arcs = []
         if len(ao) > 0:
             arcs = [dxfgeom.arc_from_elist(ent, m) for m in ao]
+        if len(lo) == 0 and len(ao) == 0:
+            print "No lines or arcs found. Skipping file '{}'".format(f)
+            continue
         bbs = [ln.getbb() for ln in lines]
         bbs += [a.getbb() for a in arcs]
         bb = bbs[0]
