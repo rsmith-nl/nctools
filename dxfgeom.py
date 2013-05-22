@@ -52,10 +52,10 @@ class Entity:
         self.x2 = float(x2)
         self.y2 = float(y2)
         # Bounding box
-        self.xmin = min(x1, x2)
-        self.ymin = min(y1, y2)
-        self.xmax = max(x1, x2)
-        self.ymax = max(y1, y2)
+        self.xmin = min(self.x1, self.x2)
+        self.ymin = min(self.y1, self.y2)
+        self.xmax = max(self.x1, self.x2)
+        self.ymax = max(self.y1, self.y2)
         # Endpoints swapped indicator
         self.sw = False
 
@@ -183,7 +183,7 @@ class Line(Entity):
 
     def pdfdata(self):
         """Returns a tuple containing the coordinates x1, y1, x2 and y2."""
-        return (self.x1, self.y1, self.x2, self.y2)
+        return ((self.x1, self.y1), (self.x2, self.y2))
 
     def ncdata(self):
         """NC code for an individual line in a 2-tuple; (goto, lineto)
@@ -239,8 +239,8 @@ class Arc(Entity):
         y2 = cy+R*math.sin(math.radians(a2))
         Entity.__init__(self, x1, y1, x2, y2)
         # Refine bounding box
-        A1 = int(a1)/90
-        A2 = int(a2)/90
+        A1 = int(a1)//90
+        A2 = int(a2)//90
         for ang in range(A1, A2):
             (px, py) = (cx+R*math.cos(math.radians(90*ang)),
                         cy+R*math.sin(math.radians(90*ang)))
@@ -311,15 +311,12 @@ class Arc(Entity):
         return s
 
     def pdfdata(self):
-        """Returns a tuple containing the data to draw an arc."""
-        if self.sw:
-            sa = self.a2
-            ea = self.a1
-        else:
-            sa = self.a1
-            ea = self.a2
-        ext = ea-sa
-        return (self.xmin, self.ymin, self.xmax, self.ymax, sa, ea, ext)
+        """Returns a tuple containing the data to draw an arc.
+        (as used by cairo.Context.arc)
+        """
+        a1 = math.radians(self.a1)
+        a2 = math.radians(self.a2)
+        return (self.cx, self.cy, self.R, a1, a2)
 
     def ncdata(self):
         if self.segments == None:
