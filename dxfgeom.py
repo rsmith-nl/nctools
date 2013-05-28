@@ -261,19 +261,17 @@ class Arc(Entity):
         """Subdivide the arc into a list of line segments of maximally
         Arc.segmentsize units length. 
         """
-        fr = float(Arc.segmentsize)/self.R
-        if fr > 1:
+        da = self.a2-self.a1
+        maxsegda = float(Arc.segmentsize)/self.R
+        if maxsegda >= da:
             cnt = 1
-            step = self.a2-self.a1
+            step = da
         else:
-            ang = math.asin(fr)/math.pi*180
-            cnt = math.floor((self.a2-self.a1)/ang) + 1
-            step = (self.a2-self.a1)/cnt
-        sa = self.a1
-        ea = self.a2
+            cnt = da//maxsegda
+            step = da/float(cnt)
+        sa, ea = self.a1, self.a2
         if self.sw:
-            sa = self.a2
-            ea = self.a1
+            sa, ea = self.a2, self.a1
             step = -step
         angs = _frange(sa, ea, step)
         pnts = [(self.cx+self.R*math.cos(math.radians(a)), 
