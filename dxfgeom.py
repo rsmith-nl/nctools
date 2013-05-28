@@ -262,13 +262,9 @@ class Arc(Entity):
         Arc.segmentsize units length. 
         """
         da = self.a2-self.a1
-        maxsegda = float(Arc.segmentsize)/self.R
-        if maxsegda >= da:
-            cnt = 1
-            step = da
-        else:
-            cnt = da//maxsegda
-            step = da/float(cnt)
+        minstep = _getstep(1, self.R)
+        cnt = da//minstep + 1        
+        step = da/float(cnt)
         sa, ea = self.a1, self.a2
         if self.sw:
             sa, ea = self.a2, self.a1
