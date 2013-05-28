@@ -99,8 +99,12 @@ class Entity:
         """
         self.x1 += dx
         self.x2 += dx
+        self.xmin += dx
+        self.xmax += dx
         self.y1 += dy
         self.y2 += dy
+        self.ymin += dy
+        self.ymax += dy
 
     def swap(self):
         """Swap (x1, y1) and (x2, y2)"""

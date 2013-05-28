@@ -114,7 +114,7 @@ def main(argv):
         ctx.stroke()
         ctx.restore()
         # plot the lines and arcs
-        ctx.translate(10, 10)
+        ctx.translate(10-bb[0], 10-bb[1])
         ctx.new_path()
         # draw the arcs first, or the last arc will have an artefact
         # because of the ctx.close_path() that is called after it.
