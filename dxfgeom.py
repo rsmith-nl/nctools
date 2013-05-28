@@ -457,6 +457,17 @@ def _frange(start, end, step):
             rv.append(a)
     return rv    
 
+def _getstep(dev, R):
+    """Calculate the maximum step angle so that the deviation of the line
+    segments from the arc is not larger than `dev`.
+    
+    :dev: maximum allowable deviation
+    :R: radius
+    :returns: the maximum step angle
+    """
+    return 2*math.acos(1-dev/float(R))
+
+
 def merge_bb(a, b):
     """Calculate and return a box that contains a and b.
 
