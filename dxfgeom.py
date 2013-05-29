@@ -262,8 +262,8 @@ class Arc(Entity):
         Arc.segmentsize units length. 
         """
         da = self.a2-self.a1
-        minstep = _getstep(1, self.R)
-        cnt = da//minstep + 1        
+        minstep = _getstep(5, self.R)
+        cnt = da//minstep + 1
         step = da/float(cnt)
         sa, ea = self.a1, self.a2
         if self.sw:

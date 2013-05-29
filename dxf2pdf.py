@@ -46,7 +46,6 @@ def outname(inname):
     return rv + '.pdf'
 
 
-
 def findentities(filename):
     """Get the entities from a file
 
