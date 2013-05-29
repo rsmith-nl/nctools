@@ -320,10 +320,10 @@ class Arc(Entity):
             self.gensegments()
         s1 = 'X{}Y{}*'.format(_mmtoci(self.segments[0].x1),
                               _mmtoci(self.segments[0].y1))
-        s2 = 'M14*'
+        s2 = 'M14*' # start cutting
         for sg in self.segments:
             s2 += 'X{}Y{}*'.format(_mmtoci(sg.x2), _mmtoci(sg.y2))
-        s2 += 'M15*'
+        s2 += 'M15*' # stop cutting
         return (s1, s2)
 
     def length(self):
@@ -406,9 +406,11 @@ class Contour(Entity):
 
     def ncdata(self):
         (s1, s2) = self.ent[0].ncdata()
-        for e in self.ent[1:]:
-            (_, f2) = e.ncdata()
-            s2 += f2
+        es = [e.ncdata()[1] for e in self.ent[1:]]
+        s2 += ''.join(es)
+        # Remove superfluous knife up/down movements
+        sc, ec = 'M14*', 'M15*' # knife down, knife up
+        s2 = sc + s2.replace(sc, '').replace(ec, '') + ec
         return (s1, s2)
 
     def length(self):
