@@ -31,7 +31,7 @@ import os.path
 import cairo
 import dxfgeom
 
-__proginfo__ = ('readdxf [ver. ' + '$Revision$'[11:-2] +
+__proginfo__ = ('dxf2pdf [ver. ' + '$Revision$'[11:-2] +
                 '] ('+'$Date$'[7:-2]+')')
 
 def outname(inname):
