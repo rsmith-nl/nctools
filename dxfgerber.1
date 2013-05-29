@@ -54,14 +54,10 @@ variable in the dxf file because that is often not set correctly and
 assumes that the units in the dxf file are millimeters.
 
 The output is written to a new file. The name of the new file is based on the
-name of the old file, with a trailing number added or increased. So 
+name of the old file, with "_mod" appended. So 
 .Ql foo.dxf
 becomes 
-.Ql foo1.dxf 
-and 
-.Ql test17.dxf 
-becomes 
-.Ql test18.dxf .
+.Ql foo_mod.dxf .
 .Sh EXIT STATUS
 .Ex -std
 .\".Sh DIAGNOSTICS

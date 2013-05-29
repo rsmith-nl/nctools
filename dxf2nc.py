@@ -58,17 +58,13 @@ def newname(oldpath):
     """Create the output filename from the input filename.
     
     :oldpath: path of the input file
-    :returns: path of the output file
+    :returns: name of the output file
     """
-    oldname = os.path.basename(oldpath)
-    if not oldname.endswith(('.dxf', '.DXF')):
-        raise ValueError('not a DXF file!')
-    oldbase = oldname[:-4]
-    if len(oldbase) == 0:
-        raise ValueError("zero-length file name!")
+    oldbase = os.path.splitext(os.path.basename(oldpath))[0]
+    if oldbase.startswith('.') or oldbase.isspace():
+        raise ValueError("Invalid file name!")
     rv = oldbase + '.nc'
     return rv
-
 
 def main(argv): #pylint: disable=R0912
     """Main program for the dxf2nc utility.
@@ -83,7 +79,8 @@ def main(argv): #pylint: disable=R0912
     for f in argv:
         try:
             outname = newname(f)
-            ent = dxfgeom.read_entities(f)
+            # Find entities
+            (lines, arcs) = dxfgeom.fromfile(f)
         except ValueError:
             fns = "Cannot construct output filename. Skipping file '{}'."
             print fns.format(f)
@@ -93,20 +90,11 @@ def main(argv): #pylint: disable=R0912
         except IOError:
             print "Cannot open the file '{}'. Skipping it.".format(f)
             continue
-        # Find entities
-        lo = dxfgeom.find_entities("LINE", ent)
-        lines = []
-        if len(lo) > 0:
-            lines = [dxfgeom.line_from_elist(ent, nn) for nn in lo]
-            print 'Found {} lines.'.format(len(lines))
-        ao = dxfgeom.find_entities("ARC", ent)
-        arcs = []
-        if len(ao) > 0:
-            arcs = [dxfgeom.arc_from_elist(ent, m) for m in ao]
-            print 'Found {} arcs.'.format(len(arcs))
-        if len(lo) == 0 and len(ao) == 0:
+        if len(lines) == 0 and len(arcs) == 0:
             print "No lines or arcs found. Skipping file '{}'".format(f)
             continue
+        print 'Found {} lines, {} arcs.'.format(len(lines), len(arcs))
+        # Move bounding box of entities to 0,0.
         bbs = [ln.getbb() for ln in lines]
         bbs += [a.getbb() for a in arcs]
         bb = bbs[0]
@@ -119,6 +107,7 @@ def main(argv): #pylint: disable=R0912
         for a in arcs:
             a.move(dispx, dispy)
         # Find contours
+        print 'Looking for contours...'
         (contours, remlines, remarcs) = dxfgeom.find_contours(lines, arcs)
         print 'Found {} contours.'.format(len(contours))
         print '{} unconnected lines and {} arcs remain'.format(len(remlines),

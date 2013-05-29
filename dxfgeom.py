@@ -425,36 +425,6 @@ def _mmtoci(d):
     return int(round(float(d)*3.937007874015748))
 
 
-def _frange(start, end, step):
-    """A range function for floats.
-    
-    :start: beginning of the range.
-    :end: end of the range.
-    :step: size of the step between numbers.
-
-    :returns: a list of floating point numbers. If the difference between 
-    start and end isn't a multiple of step, end will not be included in the 
-    list.
-    """
-    assert start != end, "Start and end cannot have the same value!"
-    assert step != 0.0, "Step cannot be 0!"
-    if start < end:
-        assert step > 0.0, "Step must be positive if start < end!"
-    else:
-        assert step < 0.0, "Step must negative if start > end!"
-    rv = [start]
-    a = start
-    if step > 0.0:
-        while a < end:
-            a += step
-            rv.append(a)
-    else:
-        while a > end:
-            a += step
-            rv.append(a)
-    return rv    
-
-
 def merge_bb(a, b):
     """Calculate and return a box that contains a and b.
 
@@ -467,7 +437,8 @@ def merge_bb(a, b):
     ymax = max(a[3], b[3])
     return (xmin, ymin, xmax, ymax)
 
-def read_entities(name):
+
+def _read_entities(name):
     """Reads a DXF file, and return a list of entities as strings.
 
     :name: name of the DXF file.
@@ -483,7 +454,8 @@ def read_entities(name):
     del sdata
     return entities
 
-def find_entities(ename, el):
+
+def _find_entities(ename, el):
     """Searches the list for a named entity. Returns a list of indices for
     that name.
 
@@ -496,7 +468,8 @@ def find_entities(ename, el):
         return [x for x in range(len(el)) if el[x] == ename]
     return []
 
-def line_from_elist(elist, num):
+
+def _line_from_elist(elist, num):
     """Create a Line element from a list of strings from a DXF file.
 
     :elist: list of strings from a DXF file.
@@ -513,7 +486,8 @@ def line_from_elist(elist, num):
     y2 = float(elist[num])
     return Line(x1, y1, x2, y2)
 
-def arc_from_elist(elist, num):
+
+def _arc_from_elist(elist, num):
     """Create an Arc element from a list of strings from a DXF file.
 
     :elist: list of strings from a DXF file.
@@ -533,6 +507,26 @@ def arc_from_elist(elist, num):
     if a2 < a1:
         a2 += 360.0
     return Arc(cx, cy, R, a1, a2)
+
+
+def fromfile(fname):
+    """Extracts LINE and ARC entities from a DXF file
+
+    :fname: name of the file to read
+    :returns: a tuple containing a list of Line objects and a list of Arc
+    objects.
+    """
+    ent = _read_entities(fname)
+    lo = _find_entities("LINE", ent)
+    lines = []
+    if len(lo) > 0:
+        lines = [_line_from_elist(ent, n) for n in lo]
+    ao = _find_entities("ARC", ent)
+    arcs = []
+    if len(ao) > 0:
+        arcs = [_arc_from_elist(ent, m) for m in ao]
+    return (lines, arcs)
+
 
 def find_contours(lol, loa):
     """Find polylines in the list of lines and list of arcs. 

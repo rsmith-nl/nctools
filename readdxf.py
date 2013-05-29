@@ -34,24 +34,6 @@ __proginfo__ = ('readdxf [ver. ' + '$Revision$'[11:-2] +
                 '] ('+'$Date$'[7:-2]+')')
 
 
-def findentities(filename):
-    """Get the entities from a file
-
-    :filename: name of the file to read
-    :returns: a 3-tuple of lists (contours, lines, arcs)
-    """
-    ent = dxfgeom.read_entities(filename)
-    lo = dxfgeom.find_entities("LINE", ent)
-    lines = []
-    if len(lo) > 0:
-        lines = [dxfgeom.line_from_elist(ent, n) for n in lo]
-    ao = dxfgeom.find_entities("ARC", ent)
-    arcs = []
-    if len(ao) > 0:
-        arcs = [dxfgeom.arc_from_elist(ent, m) for m in ao]
-    return dxfgeom.find_contours(lines, arcs)
- 
-
 def main(argv):
     """Main program for the readdxf utility.
     
@@ -63,7 +45,12 @@ def main(argv):
         exit(1)
     del argv[0]
     for f in argv:
-        (contours, lines, arcs) = findentities(f) 
+        try:
+            (lines, arcs) = dxfgeom.fromfile(f)
+        except IOError:
+            print "Cannot open the file '{}'. Skipping it.".format(f)
+            continue
+        (contours, lines, arcs) = dxfgeom.find_contours(lines, arcs)
         # Sort in x1, then in y1.
         contours.sort()
         lines.sort()

@@ -29,6 +29,7 @@
 
 import sys
 import datetime
+import os.path
 import dxfgeom
 
 
@@ -83,19 +84,10 @@ def newname(oldname):
     :oldname: name of the input file
     :returns: name of the output file
     """
-    if not oldname.endswith(('.dxf', '.DXF')):
-        raise ValueError('probably not a DXF file!')
-    oldbase = oldname[:-4]
-    if len(oldbase) == 0:
-        raise ValueError("zero-length file name!")
-    newbase = oldbase.rstrip('0123456789')    
-    L = len(newbase)
-    dstr = oldbase[L:]
-    if len(dstr) > 0:
-        num = int(dstr) +1
-    else:
-        num = 1
-    rv = newbase + str(num) + '.dxf'
+    oldbase = os.path.splitext(os.path.basename(oldname))[0]
+    if oldbase.startswith('.') or oldbase.isspace():
+        raise ValueError("Invalid file name!")
+    rv = oldbase + '_mod.dxf'
     return rv
 
 
@@ -110,10 +102,15 @@ def main(argv):
         exit(1)
     del argv[0]
     for f in argv:
+        if not f.endswith(('.dxf', '.DXF')):
+            h = 'Probably not a DXF file. Skipping file "{}".'
+            print h.format(f)
         try:
             outname = newname(f)
-            ent = dxfgeom.read_entities(f)
-        except ValueError:
+            # Find entities
+            (lines, arcs) = dxfgeom.fromfile(f)
+        except ValueError as e:
+            print e
             h = "Cannot construct output filename. Skipping file '{}'."
             print h.format(f)
             print "A valid filename _must_ have a '.dxf' extension."
@@ -122,15 +119,6 @@ def main(argv):
         except IOError:
             print "Cannot open the file '{}'. Skipping it.".format(f)
             continue
-        # Find entities
-        lo = dxfgeom.find_entities("LINE", ent)
-        lines = []
-        if len(lo) > 0:
-            lines = [dxfgeom.line_from_elist(ent, nn) for nn in lo]
-        ao = dxfgeom.find_entities("ARC", ent)
-        arcs = []
-        if len(ao) > 0:
-            arcs = [dxfgeom.arc_from_elist(ent, m) for m in ao]
         # Find contours
         (contours, remlines, remarcs) = dxfgeom.find_contours(lines, arcs)
         # Sort in y1, then in x1.

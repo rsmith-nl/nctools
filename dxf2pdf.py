@@ -41,28 +41,10 @@ def outname(inname):
     :returns: output file name.
     """
     rv = os.path.splitext(os.path.basename(inname))[0]
-    if len(rv) == 0:
-        raise ValueError("zero-length file name!")
-    return rv + '.pdf'
+    if rv.startswith('.') or rv.isspace():
+        raise ValueError("Invalid file name!")
+    return rv + '_dxf.pdf'
 
-
-def findentities(filename):
-    """Get the entities from a file
-
-    :filename: name of the file to read
-    :returns: a 3-tuple of lists (contours, lines, arcs)
-    """
-    ent = dxfgeom.read_entities(filename)
-    lo = dxfgeom.find_entities("LINE", ent)
-    lines = []
-    if len(lo) > 0:
-        lines = [dxfgeom.line_from_elist(ent, n) for n in lo]
-    ao = dxfgeom.find_entities("ARC", ent)
-    arcs = []
-    if len(ao) > 0:
-        arcs = [dxfgeom.arc_from_elist(ent, n) for n in ao]
-    return lines, arcs 
- 
 
 def main(argv):
     """Main program for the readdxf utility.
@@ -77,12 +59,14 @@ def main(argv):
     for f in argv:
         try:
             ofn = outname(f)
-            (lines, arcs) = findentities(f)
-        except ValueError:
+            (lines, arcs) = dxfgeom.fromfile(f)
+        except ValueError as e:
+            print e
             fns = "Cannot construct output filename. Skipping file '{}'."
             print fns.format(f)
             continue
-        except IOError:
+        except IOError as e:
+            print e
             print "Cannot open the file '{}'. Skipping it.".format(f)
             continue
         # Output

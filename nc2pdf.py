@@ -41,9 +41,10 @@ def outname(inname):
     :returns: output file name.
     """
     rv = os.path.splitext(os.path.basename(inname))[0]
-    if len(rv) == 0:
-        raise ValueError("zero-length file name!")
-    return rv + '.pdf'
+    if rv.startswith('.') or rv.isspace():
+        raise ValueError("Invalid file name!")
+    return rv + '_nc.pdf'
+
 
 def parsexy(m):
     """Parse a movement string, return the coordinates in mm.
@@ -98,11 +99,13 @@ def main(argv):
             ofn = outname(fn)
             with open(fn, 'r') as inf:
                 rd = inf.read()
-        except ValueError:
+        except ValueError as e:
+            print e
             fns = "Cannot construct output filename. Skipping file '{}'."
             print fns.format(fn)
             continue
-        except IOError:
+        except IOError as e:
+            print e
             print "Cannot open the file '{}'. Skipping it.".format(fn)
             continue
         cmds = rd.split('*')
@@ -152,7 +155,6 @@ def main(argv):
         ctx.stroke()
         out.show_page()
         out.finish()
-
 
 
 if __name__ == '__main__':
