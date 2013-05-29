@@ -112,15 +112,19 @@ def main(argv):
         print 'Got {} cuts'.format(len(cuts))
         xvals = [i for c in cuts for i in (c[0][0], c[1][0])]
         yvals = [i for c in cuts for i in (c[0][1], c[1][1])]
+        minx, maxx = min(xvals), max(xvals)
+        miny, maxy = min(yvals), max(yvals)
         bs = '{} range from {:.1f} mm to {:.1f} mm'
-        print bs.format('X', min(xvals), max(xvals))
-        print bs.format('Y', min(yvals), max(yvals))
-        w = max(xvals) - min(xvals) + 20
-        h = max(yvals) - min(yvals) + 20
+        print bs.format('X', minx, maxx)
+        print bs.format('Y', miny, maxy)
+        w = maxx - minx + 20
+        h = maxy - miny + 20
         # Produce PDF output. Scale factor is 1 mm real = 
         # 1 PostScript point in the PDF file
+        xf = cairo.Matrix(xx=1.0, yy=-1.0, y0=h)
         out = cairo.PDFSurface(ofn, w, h)
         ctx = cairo.Context(out)
+        ctx.set_matrix(xf)
         ctx.set_line_cap(cairo.LINE_CAP_ROUND)
         ctx.set_line_join(cairo.LINE_JOIN_ROUND)
         ctx.set_line_width(0.5)
@@ -139,7 +143,7 @@ def main(argv):
         ctx.stroke()
         ctx.restore()
         # Plot the cutlines in black
-        ctx.translate(10, 10)
+        ctx.translate(10-minx, 10-miny)
         ctx.new_path()
         for ((x1, y1), (x2, y2)) in cuts:
             ctx.move_to(x1, y1)

@@ -210,12 +210,11 @@ class Arc(Entity):
 
     Class properties: 
 
-        :Arc.segmentsize: Maximum length of the segment when an arc is rendered
-                          as a list of connected line segments.
+        :Arc.dev: Maximum deviation from the true arc.
         :Arc.as_segments: Whether an arc should be output as a list of
                           connected line segments. True by default.
     """
-    segmentsize = 20 # centi-inches
+    dev = 1
     as_segments = True
 
     def __init__(self, cx, cy, R, a1, a2):
@@ -258,18 +257,18 @@ class Arc(Entity):
                 self.ymin = py
 
     def gensegments(self):
-        """Subdivide the arc into a list of line segments of maximally
-        Arc.segmentsize units length. 
+        """Subdivide the arc into a list of line segments which deviate
+        maximally Arc.dev fromt the true arc. 
         """
         da = self.a2-self.a1
-        minstep = _getstep(5, self.R)
-        cnt = da//minstep + 1
-        step = da/float(cnt)
-        sa, ea = self.a1, self.a2
+        step = math.degrees(2*math.acos(1-Arc.dev/float(self.R)))
+        cnt = da//step + 1
+        step = da/cnt
+        sa = self.a1
         if self.sw:
-            sa, ea = self.a2, self.a1
+            sa = self.a2
             step = -step
-        angs = _frange(sa, ea, step)
+        angs = [sa+i*step for i in range(int(cnt)+1)]
         pnts = [(self.cx+self.R*math.cos(math.radians(a)), 
                  self.cy+self.R*math.sin(math.radians(a))) for a in angs]
         llist = []
@@ -452,16 +451,6 @@ def _frange(start, end, step):
             a += step
             rv.append(a)
     return rv    
-
-def _getstep(dev, R):
-    """Calculate the maximum step angle so that the deviation of the line
-    segments from the arc is not larger than `dev`.
-    
-    :dev: maximum allowable deviation
-    :R: radius
-    :returns: the maximum step angle
-    """
-    return 2*math.acos(1-dev/float(R))
 
 
 def merge_bb(a, b):

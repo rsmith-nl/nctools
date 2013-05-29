@@ -98,10 +98,12 @@ def main(argv): #pylint: disable=R0912
         lines = []
         if len(lo) > 0:
             lines = [dxfgeom.line_from_elist(ent, nn) for nn in lo]
+            print 'Found {} lines.'.format(len(lines))
         ao = dxfgeom.find_entities("ARC", ent)
         arcs = []
         if len(ao) > 0:
             arcs = [dxfgeom.arc_from_elist(ent, m) for m in ao]
+            print 'Found {} arcs.'.format(len(arcs))
         if len(lo) == 0 and len(ao) == 0:
             print "No lines or arcs found. Skipping file '{}'".format(f)
             continue
@@ -118,6 +120,9 @@ def main(argv): #pylint: disable=R0912
             a.move(dispx, dispy)
         # Find contours
         (contours, remlines, remarcs) = dxfgeom.find_contours(lines, arcs)
+        print 'Found {} contours.'.format(len(contours))
+        print '{} unconnected lines and {} arcs remain'.format(len(remlines),
+                len(remarcs))
         # Sort in y1, then in x1.
         contours.sort()
         remlines.sort()
