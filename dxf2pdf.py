@@ -91,10 +91,14 @@ def main(argv):
             bb = dxfgeom.merge_bb(bb, l.getbb())
         for a in arcs:
             bb = dxfgeom.merge_bb(bb, a.getbb())
+        # bb = xmin, ymin, xmax, ymax
         w = bb[2] - bb[0] + 20
         h = bb[3] - bb[1] + 20
+        #print "w,h:", w, h
+        xf = cairo.Matrix(xx=1.0, yy=-1.0, y0=h)
         out = cairo.PDFSurface(ofn, w, h)
         ctx = cairo.Context(out)
+        ctx.set_matrix(xf)
         ctx.set_line_cap(cairo.LINE_CAP_ROUND)
         ctx.set_line_join(cairo.LINE_JOIN_ROUND)
         ctx.set_line_width(0.5)
