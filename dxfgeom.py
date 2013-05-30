@@ -32,7 +32,7 @@ import math
 
 # Class definitions
 class Entity:
-    """A base class for a DXF entities; lines and arcs.
+    """A base class for a DXF entities.
 
     The class attribute delta contains the maximum distance in x and y
     direction between eindpoints that are considered coincident.
@@ -203,6 +203,45 @@ class Line(Entity):
         dy = self.y2-self.x1
         return math.sqrt(dx*dx+dy*dy)
 
+
+class Polyline(Entity):
+    """A class for a polyline entity, consisting if several linked line
+    segments.
+    """
+
+    def __init__(self, pnts):
+        self.pnts = pnts
+        x1, y1 = pnts[0][0], pnts[0][1]
+        x2, y2 = pnts[-1][0], pnts[-1][1]
+        Entity.__init__(self, x1, y1, x2, y2)
+
+    def dxfdata(self):
+        """Returns a string containing the entity in DXF format."""
+        pass
+
+    def pdfdata(self):
+        """Returns info to create the entity in PDF format."""
+        return self.pnts
+
+    def ncdata(self):
+        """Returns NC data for the entity. This is a 2-tuple of two
+        strings. The first string decribes how to go to the beginning of the
+        entity, the second string contains the entity itself.
+        """
+        pass
+
+    def move(self, dx, dy):
+        """Move the entity.
+        
+        :dx: movement in the x direction
+        :dy: movement in the y direction
+        """
+        self.pnts = [(p[0]+dx, p[1]+dy) for p in self.pnts]
+        Entity.move(self, dx, dy)
+
+    def length(self):
+        """Returns the length of the entity."""
+        pass
 
 class Arc(Entity):
     """A class for an arc entity, centering in (cx, cy) with radius R from
@@ -447,11 +486,9 @@ def _read_entities(name):
     dxffile = open(name)
     sdata = [s.strip() for s in dxffile.readlines()]
     dxffile.close()
-    soe = sdata.index('ENTITIES')
-    sdata = sdata[soe+1:]
-    eoe = sdata.index('ENDSEC')
-    entities = sdata[:eoe]
-    del sdata
+    soe = sdata.index('ENTITIES')+1
+    eoe = sdata.index('ENDSEC', soe)
+    entities = sdata[soe:eoe]
     return entities
 
 
