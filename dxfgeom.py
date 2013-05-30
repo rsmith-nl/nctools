@@ -179,12 +179,12 @@ class Line(Entity):
         return fs
 
     def dxfdata(self):
-        s = "  0\nLINE\n"
-        s += "  8\nsnijlijnen\n"
-        s += " 10\n{}\n 20\n{}\n 30\n0.0\n".format(self.x1, self.y1)
-        s += " 11\n{}\n 21\n{}\n 31\n0.0\n".format(self.x2, self.y2)
-        return s
-
+        lines = ['  0', 'LINE', '  8', 'snijlijnen', ' 10', str(self.x1),
+                 ' 20', str(self.y1), ' 30', '0.0', ' 11', str(self.x2),
+                 ' 21', str(self.y2), ' 31', '0.0', '']
+        # empty string for adding a last newline with the join.
+        return '\n'.join(lines)
+        
     def pdfdata(self):
         """Returns a tuple containing the coordinates x1, y1, x2 and y2."""
         return ((self.x1, self.y1), (self.x2, self.y2))
@@ -227,8 +227,16 @@ class Polyline(Entity):
         """Returns NC data for the entity. This is a 2-tuple of two
         strings. The first string decribes how to go to the beginning of the
         entity, the second string contains the entity itself.
+        M15 = knife up, M14 = knife down.
         """
-        pass
+        ms = 'X{}Y{}*'
+        s1 = ms.format(_mmtoci(self.x1), _mmtoci(self.y1))
+        lines = ['M14*']
+        lines += [ms.format(_mmtoci(x), _mmtoci(y)) 
+                  for x,y in self.pnts[:1]]
+        lines += ['M15*']
+        s2 = ''.join(lines)
+        return (s1, s2)
 
     def move(self, dx, dy):
         """Move the entity.
@@ -236,12 +244,17 @@ class Polyline(Entity):
         :dx: movement in the x direction
         :dy: movement in the y direction
         """
-        self.pnts = [(p[0]+dx, p[1]+dy) for p in self.pnts]
+        self.pnts = [(x+dx, y+dy) for x, y in self.pnts]
         Entity.move(self, dx, dy)
+
+    def swap(self):
+        self.pnts.reverse()
+        Entity.swap(self)
 
     def length(self):
         """Returns the length of the entity."""
         pass
+
 
 class Arc(Entity):
     """A class for an arc entity, centering in (cx, cy) with radius R from
@@ -334,17 +347,17 @@ class Arc(Entity):
 
     def dxfdata(self):
         if Arc.as_segments == False:
-            s = "  0\nARC\n"
-            s += "  8\nsnijlijnen\n"
-            s += " 10\n{}\n 20\n{}\n 30\n0.0\n".format(self.cx, self.cy)
-            s += " 40\n{}\n 50\n{}\n 51\n{}\n".format(self.R, self.a1, self.a2)
-            return s
+            lines = ['  0', 'ARC', '  8', 'snijlijnen', ' 10', str(self.cx),
+                     ' 20', str(self.cy), ' 30', '0.0', ' 40', str(self.R),
+                     ' 50', str(self.a1), ' 51', str(self.a2), '']
+            # empty string for adding a last newline with the join.
+            return '\n'.join(lines)
         if self.segments == None:
             self.gensegments()
-        s = ""
+        lines = []
         for sg in self.segments:
-            s += sg.dxfdata()
-        return s
+            lines.append(sg.dxfdata())
+        return ''.join(lines)
 
     def pdfdata(self):
         """Returns a tuple containing the data to draw an arc.
@@ -359,11 +372,11 @@ class Arc(Entity):
             self.gensegments()
         s1 = 'X{}Y{}*'.format(_mmtoci(self.segments[0].x1),
                               _mmtoci(self.segments[0].y1))
-        s2 = 'M14*' # start cutting
+        ls2 = ['M14*'] # start cutting
         for sg in self.segments:
-            s2 += 'X{}Y{}*'.format(_mmtoci(sg.x2), _mmtoci(sg.y2))
-        s2 += 'M15*' # stop cutting
-        return (s1, s2)
+            ls2.append('X{}Y{}*'.format(_mmtoci(sg.x2), _mmtoci(sg.y2)))
+        ls2.append('M15*') # stop cutting
+        return (s1, ''.join(ls2))
 
     def length(self):
         """Returns the length of an arc."""
@@ -432,10 +445,10 @@ class Contour(Entity):
         return outstr[0:-1]
 
     def dxfdata(self):
-        s = ""
+        lines = []
         for e in self.ent:
-            s += e.dxfdata()
-        return s
+            lines.append(e.dxfdata())
+        return ''.join(lines)
 
     def pdfdata(self):
         rl = [self.ent[0].x1, self.ent[0].y1]
@@ -544,6 +557,29 @@ def _arc_from_elist(elist, num):
     if a2 < a1:
         a2 += 360.0
     return Arc(cx, cy, R, a1, a2)
+
+
+def _polyline_from_elist(elist, num):
+    """Create a Polyline object from a list of strings from a DXF file.
+
+    :elist: list of strings from a DXF file.
+    :num: index where to start looking
+    :returns: a Polyline object
+    """
+    end = elist.index('SEQEND', num)
+    points = []
+    v = 'VERTEX'
+    while num < end:
+        try:
+            num = elist.index(v, num)
+            num = elist.index("10", num) + 1
+            x = float(elist[num])
+            num = elist.index("20", num) + 1
+            y = float(elist[num])
+            points.append((x, y))
+        except ValueError: # item not in list
+            break
+    return Polyline(points)
 
 
 def fromfile(fname):
