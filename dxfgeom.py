@@ -216,6 +216,19 @@ class Polyline(Entity):
         x1, y1 = pnts[0][0], pnts[0][1]
         x2, y2 = pnts[-1][0], pnts[-1][1]
         Entity.__init__(self, x1, y1, x2, y2, index)
+        xvals = [x for x, _ in pnts]
+        yvals = [y for _, y in pnts]
+        self.xmin = min(xvals)
+        self.ymin = min(yvals)
+        self.xmax = max(xvals)
+        self.ymax = max(yvals)
+
+    def __str__(self):
+        s = "#POLYLINE from ({:.3f},{:.3f}) to ({:.3f},{:.3f}), index {}"
+        s =  s.format(self.x1, self.y1, self.x2, self.y2, self.index)
+        if self.sw:
+            s += " (swapped)"
+        return s
 
     def dxfdata(self):
         """Returns a string containing the entity in DXF format."""
@@ -235,7 +248,7 @@ class Polyline(Entity):
         s1 = ms.format(_mmtoci(self.x1), _mmtoci(self.y1))
         lines = ['M14*']
         lines += [ms.format(_mmtoci(x), _mmtoci(y)) 
-                  for x,y in self.pnts[:1]]
+                  for x,y in self.pnts[1:]]
         lines += ['M15*']
         s2 = ''.join(lines)
         return (s1, s2)
@@ -570,20 +583,22 @@ def _polyline_from_elist(elist, num):
     :num: index where to start looking
     :returns: a Polyline object
     """
+    start = num
     end = elist.index('SEQEND', num)
     points = []
     v = 'VERTEX'
+    num = elist.index(v, num)
     while num < end:
         try:
-            num = elist.index(v, num)
             num = elist.index("10", num) + 1
             x = float(elist[num])
             num = elist.index("20", num) + 1
             y = float(elist[num])
             points.append((x, y))
+            num = elist.index(v, num)
         except ValueError: # item not in list
             break
-    return Polyline(points, num)
+    return Polyline(points, start)
 
 
 def fromfile(fname):

@@ -115,12 +115,12 @@ def main(argv): # pylint: disable=R0912
                 p = e.pdfdata()
                 ctx.new_sub_path()
                 ctx.arc(*p)
-#            elif isinstance(e, dxfgeom.Polyline):
-#                rest = e.pdfdata()
-#                first = rest.pop(0)
-#                ctx.move_to(*first)
-#                for r in rest:
-#                    ctx.line_to(*r)
+            elif isinstance(e, dxfgeom.Polyline):
+                rest = e.pdfdata()
+                first = rest.pop(0)
+                ctx.move_to(*first)
+                for r in rest:
+                    ctx.line_to(*r)
             ctx.stroke()
         ctx.restore()
         # plot the color bar
