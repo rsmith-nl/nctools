@@ -40,7 +40,7 @@ class Entity:
     delta = 0.005
     _anoent = "Argument is not an entity!"
 
-    def __init__(self, x1=0, y1=0, x2=0, y2=0):
+    def __init__(self, x1=0, y1=0, x2=0, y2=0, index=None):
         """Creates an Entity from (x1, y1) to (x2, y2).
         
         :x1, y1: start point of the entity
@@ -58,6 +58,8 @@ class Entity:
         self.ymax = max(self.y1, self.y2)
         # Endpoints swapped indicator
         self.sw = False
+        # index in the DXF file
+        self.index = index
 
     def fits(self, index, other):
         """Checks if another entity fits onto this one.
@@ -167,13 +169,13 @@ class Entity:
 class Line(Entity):
     """A class for a line entity, from point (x1, y1) to (x2, y2)"""
 
-    def __init__(self, x1, y1, x2, y2):
+    def __init__(self, x1, y1, x2, y2, index):
         """Creates a Line from (x1, y1) to (x2, y2)."""
-        Entity.__init__(self, x1, y1, x2, y2)
+        Entity.__init__(self, x1, y1, x2, y2, index)
 
     def __str__(self):
-        fs = "#LINE from ({:.3f},{:.3f}) to ({:.3f},{:.3f})"
-        fs =  fs.format(self.x1, self.y1, self.x2, self.y2)
+        fs = "#LINE from ({:.3f},{:.3f}) to ({:.3f},{:.3f}), index {}"
+        fs =  fs.format(self.x1, self.y1, self.x2, self.y2, self.index)
         if self.sw:
             fs += " (swapped)"
         return fs
@@ -209,11 +211,11 @@ class Polyline(Entity):
     segments.
     """
 
-    def __init__(self, pnts):
+    def __init__(self, pnts, index):
         self.pnts = pnts
         x1, y1 = pnts[0][0], pnts[0][1]
         x2, y2 = pnts[-1][0], pnts[-1][1]
-        Entity.__init__(self, x1, y1, x2, y2)
+        Entity.__init__(self, x1, y1, x2, y2, index)
 
     def dxfdata(self):
         """Returns a string containing the entity in DXF format."""
@@ -269,7 +271,7 @@ class Arc(Entity):
     dev = 1
     as_segments = True
 
-    def __init__(self, cx, cy, R, a1, a2):
+    def __init__(self, cx, cy, R, a1, a2, index):
         """Creates a Arc centering in (cx, cy) with radius R and running from
         a1 degrees ccw to a2 degrees.
         
@@ -277,7 +279,7 @@ class Arc(Entity):
         :R: radius
         :a1: starting angle in degrees
         :a2: ending angle in degrees
-        
+        :index: sequence of the element in the DXF file.
         """
         if a2 < a1:
             em = 'Arcs are defined CCW, so a2 must be greater than a1'
@@ -292,7 +294,7 @@ class Arc(Entity):
         y1 = cy+R*math.sin(math.radians(a1))
         x2 = cx+R*math.cos(math.radians(a2))
         y2 = cy+R*math.sin(math.radians(a2))
-        Entity.__init__(self, x1, y1, x2, y2)
+        Entity.__init__(self, x1, y1, x2, y2, index)
         # Refine bounding box
         A1 = int(a1)//90
         A2 = int(a2)//90
@@ -327,12 +329,13 @@ class Arc(Entity):
         for j in range(1, len(pnts)):
             i = j-1
             llist.append(Line(pnts[i][0], pnts[i][1], 
-                              pnts[j][0], pnts[j][1]))
+                              pnts[j][0], pnts[j][1], None))
         self.segments = llist
 
     def __str__(self):
         s = "#ARC from ({:.3f},{:.3f}) to ({:.3f},{:.3f}), radius {:.3f}"
-        s =  s.format(self.x1, self.y1, self.x2, self.y2, self.R)
+        s += ", index {}"
+        s =  s.format(self.x1, self.y1, self.x2, self.y2, self.R, self.index)
         if self.sw:
             s += " (swapped)"
         return s
@@ -382,6 +385,7 @@ class Arc(Entity):
         """Returns the length of an arc."""
         angle = math.radians(self.a2-self.a1)
         return self.R*angle
+
 
 class Contour(Entity):
     """A class for a list of connected Entities"""
@@ -534,7 +538,7 @@ def _line_from_elist(elist, num):
     x2 = float(elist[num])
     num = elist.index("21", num) + 1
     y2 = float(elist[num])
-    return Line(x1, y1, x2, y2)
+    return Line(x1, y1, x2, y2, num)
 
 
 def _arc_from_elist(elist, num):
@@ -556,7 +560,7 @@ def _arc_from_elist(elist, num):
     a2 = float(elist[num])
     if a2 < a1:
         a2 += 360.0
-    return Arc(cx, cy, R, a1, a2)
+    return Arc(cx, cy, R, a1, a2, num)
 
 
 def _polyline_from_elist(elist, num):
@@ -579,15 +583,14 @@ def _polyline_from_elist(elist, num):
             points.append((x, y))
         except ValueError: # item not in list
             break
-    return Polyline(points)
+    return Polyline(points, num)
 
 
 def fromfile(fname):
     """Extracts LINE and ARC entities from a DXF file
 
     :fname: name of the file to read
-    :returns: a tuple containing a list of Line objects and a list of Arc
-    objects.
+    :returns: a list of Entities
     """
     ent = _read_entities(fname)
     lo = _find_entities("LINE", ent)
@@ -598,20 +601,18 @@ def fromfile(fname):
     arcs = []
     if len(ao) > 0:
         arcs = [_arc_from_elist(ent, m) for m in ao]
-    return (lines, arcs)
+    entities = lines + arcs
+    entities.sort(key=lambda x: x.index)
+    return entities
 
 
-def find_contours(lol, loa):
+def find_contours(elements):
     """Find polylines in the list of lines and list of arcs. 
 
-    :lol: list of lines
-    :loa: list of arcs.
-    :returns: a list of contours and a list of remaining lines and a list of
-    remaining arcs as a tuple.
+    :elements: list of Entities
+    :returns: a list of Contours and a list of remaining Entities as a tuple.
     """
-    remlines = []
-    remarcs = []
-    elements = lol[:]+loa[:]
+    rement = []
     loc = []
     while len(elements) > 0:
         first = elements.pop(0)
@@ -630,8 +631,5 @@ def find_contours(lol, loa):
         if cn.nument > 1:
             loc.append(cn)
         else:
-            if isinstance(first, Line):
-                remlines.append(first)
-            elif isinstance(first, Arc):
-                remarcs.append(first)
-    return (loc, remlines, remarcs)
+            rement.append(first)
+    return (loc, rement)

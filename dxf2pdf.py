@@ -59,7 +59,7 @@ def main(argv):
     for f in argv:
         try:
             ofn = outname(f)
-            (lines, arcs) = dxfgeom.fromfile(f)
+            entities = dxfgeom.fromfile(f)
         except ValueError as e:
             print e
             fns = "Cannot construct output filename. Skipping file '{}'."
@@ -70,15 +70,12 @@ def main(argv):
             print "Cannot open the file '{}'. Skipping it.".format(f)
             continue
         # Output
-        bb = lines[0].getbb()
-        for l in lines:
-            bb = dxfgeom.merge_bb(bb, l.getbb())
-        for a in arcs:
-            bb = dxfgeom.merge_bb(bb, a.getbb())
+        bb = entities[0].getbb()
+        for e in entities:
+            bb = dxfgeom.merge_bb(bb, e.getbb())
         # bb = xmin, ymin, xmax, ymax
         w = bb[2] - bb[0] + 20
         h = bb[3] - bb[1] + 20
-        #print "w,h:", w, h
         xf = cairo.Matrix(xx=1.0, yy=-1.0, y0=h)
         out = cairo.PDFSurface(ofn, w, h)
         ctx = cairo.Context(out)
@@ -105,10 +102,12 @@ def main(argv):
         ctx.new_path()
         # draw the arcs first, or the last arc will have an artefact
         # because of the ctx.close_path() that is called after it.
+        arcs = [e for e in entities if isinstance(e, dxfgeom.Arc)]
         for a in arcs:
             p = a.pdfdata()
             ctx.new_sub_path()
             ctx.arc(*p)
+        lines = [e for e in entities if isinstance(e, dxfgeom.Line)]
         for l in lines:
             s, e = l.pdfdata()
             ctx.move_to(*s)

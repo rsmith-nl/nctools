@@ -80,7 +80,7 @@ def main(argv): #pylint: disable=R0912
         try:
             outname = newname(f)
             # Find entities
-            (lines, arcs) = dxfgeom.fromfile(f)
+            entities = dxfgeom.fromfile(f)
         except ValueError:
             fns = "Cannot construct output filename. Skipping file '{}'."
             print fns.format(f)
@@ -90,29 +90,25 @@ def main(argv): #pylint: disable=R0912
         except IOError:
             print "Cannot open the file '{}'. Skipping it.".format(f)
             continue
-        if len(lines) == 0 and len(arcs) == 0:
+        if len(entities) == 0:
             print "No lines or arcs found. Skipping file '{}'".format(f)
             continue
-        print 'Found {} lines, {} arcs.'.format(len(lines), len(arcs))
+        print 'Found {} entities.'.format(len(entities))
         # Move bounding box of entities to 0,0.
-        bbs = [ln.getbb() for ln in lines]
-        bbs += [a.getbb() for a in arcs]
+        bbs = [e.getbb() for e in entities]
         bb = bbs[0]
         for add in bbs[1:]:
             bb = dxfgeom.merge_bb(bb, add)
         dispx = -bb[0]
         dispy = -bb[1]
-        for ln in lines:
-            ln.move(dispx, dispy)
-        for a in arcs:
-            a.move(dispx, dispy)
+        for e in entities:
+            e.move(dispx, dispy)
         # Find contours
         print 'Looking for contours...'
-        (contours, remlines, remarcs) = dxfgeom.find_contours(lines, arcs)
+        (contours, rement) = dxfgeom.find_contours(entities)
         print 'Found {} contours.'.format(len(contours))
-        print '{} unconnected lines and {} arcs remain'.format(len(remlines),
-                len(remarcs))
-        entities = contours + remlines + remarcs
+        print '{} entities remain'.format(len(rement))
+        entities = contours + rement
         # Sort in y1, then in x1.
         entities.sort()
         # Output

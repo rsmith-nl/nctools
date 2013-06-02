@@ -46,23 +46,19 @@ def main(argv):
     del argv[0]
     for f in argv:
         try:
-            (lines, arcs) = dxfgeom.fromfile(f)
+            entities = dxfgeom.fromfile(f)
         except IOError:
             print "Cannot open the file '{}'. Skipping it.".format(f)
             continue
-        (contours, lines, arcs) = dxfgeom.find_contours(lines, arcs)
+        (contours, entities) = dxfgeom.find_contours(entities)
         # Sort in x1, then in y1.
-        contours.sort()
-        lines.sort()
-        arcs.sort()
+        entities.sort()
         # Output
         print "#File: {}".format(f)
         for c in contours:
             print c
-        for l in lines:
-            print l
-        for a in arcs:
-            print a
+        for e in entities:
+            print e
 
 
 if __name__ == '__main__':
