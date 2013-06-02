@@ -29,6 +29,7 @@
 import sys
 import os.path
 import cairo
+from wavelentorgb import wavelen2rgb
 
 __proginfo__ = ('nc2pdf [ver. ' + '$Revision$'[11:-2] + 
                 '] ('+'$Date$'[7:-2]+')')
@@ -62,9 +63,12 @@ def getcuts(glist):
     """Make a list of cuts.
 
     :glist: list of g-code strings
-    :returns: list of nested ((x,y),(x,y)) tuples representing the cuts 
+    :returns: nested list of (x,y) tuples representing the cuts 
     """
     cuts = []
+    x = []
+    y = []
+    section = None
     cutting = False
     pos = None
     for g in glist:
@@ -72,14 +76,33 @@ def getcuts(glist):
             cutting = True
             if not pos:
                 raise ValueError('Start of cutting without pos')
+            section = [pos]
         elif g == 'M15':
             cutting = False
+            if section:
+                cuts.append(section)
+            section = []
         elif g.startswith('X'):
             newpos = parsexy(g)
             if cutting:
-                cuts.append((pos, newpos))
+                section.append(newpos)
+            xv, yv = newpos
+            x.append(xv)
+            y.append(yv)
             pos = newpos
-    return cuts
+    return cuts, x, y
+
+
+def drange(start, stop, count):
+    """Create a list of evenly spaced numbers.
+
+    :start: start point (begin of the list)
+    :stop: end point (end of the list)
+    :count: length of the list
+    :returns: a list of floats
+    """
+    step = (stop-start)/float(count-1)
+    return [start + j*step for j in xrange(1, count)]
 
 
 def main(argv):
@@ -87,6 +110,7 @@ def main(argv):
 
     :argv: command line arguments
     """
+    offset = 40
     if len(argv) == 1:
         binary = os.path.basename(argv[0])
         print __proginfo__
@@ -111,17 +135,16 @@ def main(argv):
         cmds = rd.split('*')
         if len(cmds[-1]) == 0:
             del cmds[-1]
-        cuts = getcuts(cmds)
-        print 'Got {} cuts'.format(len(cuts))
-        xvals = [i for c in cuts for i in (c[0][0], c[1][0])]
-        yvals = [i for c in cuts for i in (c[0][1], c[1][1])]
+        cuts, xvals, yvals = getcuts(cmds)
+        cnt = len(cuts)
+        print 'Got {} cuts'.format(cnt)
         minx, maxx = min(xvals), max(xvals)
         miny, maxy = min(yvals), max(yvals)
         bs = '{} range from {:.1f} mm to {:.1f} mm'
         print bs.format('X', minx, maxx)
         print bs.format('Y', miny, maxy)
-        w = maxx - minx + 20
-        h = maxy - miny + 20
+        w = maxx - minx + offset
+        h = maxy - miny + offset
         # Produce PDF output. Scale factor is 1 mm real = 
         # 1 PostScript point in the PDF file
         xf = cairo.Matrix(xx=1.0, yy=-1.0, y0=h)
@@ -145,14 +168,28 @@ def main(argv):
         ctx.set_source_rgb(1, 0, 0)
         ctx.stroke()
         ctx.restore()
-        # Plot the cutlines in black
-        ctx.translate(10-minx, 10-miny)
-        ctx.new_path()
-        for ((x1, y1), (x2, y2)) in cuts:
+        # Plot the cutlines
+        colors = [wavelen2rgb(j) for j in drange(380, 780, cnt)]
+        ctx.save()
+        ctx.translate(offset/2-minx, offset/2-miny)
+        for section, (r, g, b) in zip(cuts, colors):
+            x1, y1 = section.pop(0)
             ctx.move_to(x1, y1)
-            ctx.line_to(x2, y2)
-        ctx.close_path()
-        ctx.stroke()
+            ctx.set_source_rgb(r/255.0, g/255.0, b/255.0)
+            for x2, y2 in section:
+                ctx.line_to(x2, y2)
+            ctx.stroke()
+        ctx.restore()
+        # Plot the color bar
+        ctx.set_line_cap(cairo.LINE_CAP_SQUARE)
+        ctx.set_line_width(2)
+        xs = 5
+        for r, g, b in colors:
+            ctx.set_source_rgb(r/255.0, g/255.0, b/255.0)
+            ctx.move_to(xs, 5)
+            ctx.rel_line_to(0, 5)
+            ctx.stroke()
+            xs += 2
         out.show_page()
         out.finish()
 

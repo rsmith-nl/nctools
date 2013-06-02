@@ -112,21 +112,14 @@ def main(argv): #pylint: disable=R0912
         print 'Found {} contours.'.format(len(contours))
         print '{} unconnected lines and {} arcs remain'.format(len(remlines),
                 len(remarcs))
+        entities = contours + remlines + remarcs
         # Sort in y1, then in x1.
-        contours.sort()
-        remlines.sort()
-        remarcs.sort()
+        entities.sort()
         # Output
         outf = open(outname, 'w')
         outf.write(nc_header(outname[:-3], bb))
-        for cn in contours:
-            s1, s2 = cn.ncdata()
-            outf.write(s1+s2)
-        for l in remlines:
-            s1, s2 = l.ncdata()
-            outf.write(s1+s2)
-        for a in remarcs:
-            s1, s2 = a.ncdata()
+        for e in entities:
+            s1, s2 = e.ncdata()
             outf.write(s1+s2)
         outf.write(nc_footer())
         outf.close()
