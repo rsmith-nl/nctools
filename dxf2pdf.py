@@ -30,7 +30,7 @@ import sys
 import os.path
 import cairo
 import dxfgeom
-from wavelentorgb import wavelen2rgb, drange
+from wavelentorgb import crange
 
 
 __proginfo__ = ('dxf2pdf [ver. ' + '$Revision$'[11:-2] +
@@ -100,7 +100,7 @@ def main(argv): # pylint: disable=R0912
         ctx.set_source_rgb(1, 0, 0)
         ctx.stroke()
         ctx.restore()
-        colors = [wavelen2rgb(j) for j in drange(380, 650, len(entities))]
+        colors = crange(380, 650, len(entities))
         # plot the lines and arcs
         ctx.save()
         ctx.translate(offset/2-bb[0], offset/2-bb[1])

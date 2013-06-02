@@ -29,7 +29,7 @@
 import sys
 import os.path
 import cairo
-from wavelentorgb import wavelen2rgb, drange
+from wavelentorgb import crange
 
 __proginfo__ = ('nc2pdf [ver. ' + '$Revision$'[11:-2] + 
                 '] ('+'$Date$'[7:-2]+')')
@@ -157,7 +157,7 @@ def main(argv):
         ctx.stroke()
         ctx.restore()
         # Plot the cutlines
-        colors = [wavelen2rgb(j) for j in drange(380, 650, cnt)]
+        colors = crange(380, 650, cnt)
         ctx.save()
         ctx.translate(offset/2-minx, offset/2-miny)
         for section, (r, g, b) in zip(cuts, colors):

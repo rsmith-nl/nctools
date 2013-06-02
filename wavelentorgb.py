@@ -81,14 +81,15 @@ def wavelen2rgb(nm): # pylint: disable=R0912
     return (adjust(red, factor), adjust(green, factor), 
             adjust(blue, factor))
 
-def drange(start, stop, count):
-    """Create a list of evenly spaced numbers.
 
-    :start: start point (begin of the list)
-    :stop: end point (end of the list)
-    :count: length of the list
-    :returns: a list of floats
+def crange(start, stop, count):
+    """Create a list of colors
+
+    :start: starting wavelength
+    :stop: final wavelength
+    :count: length of the returned list
+    :returns: a list of (R,G,B) tuples
     """
     step = (stop-start)/float(count-1)
-    return [start + j*step for j in xrange(1, count)]
+    return [wavelen2rgb(start + j*step) for j in xrange(1, count)]
 
