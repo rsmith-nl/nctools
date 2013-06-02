@@ -30,6 +30,8 @@ import sys
 import os.path
 import cairo
 import dxfgeom
+from wavelentorgb import wavelen2rgb, drange
+
 
 __proginfo__ = ('dxf2pdf [ver. ' + '$Revision$'[11:-2] +
                 '] ('+'$Date$'[7:-2]+')')
@@ -46,11 +48,12 @@ def outname(inname):
     return rv + '_dxf.pdf'
 
 
-def main(argv):
+def main(argv): # pylint: disable=R0912
     """Main program for the readdxf utility.
     
     :argv: command line arguments
     """
+    offset = 40
     if len(argv) == 1:
         print __proginfo__
         print "Usage: {} dxf-file(s)".format(sys.argv[0])
@@ -74,8 +77,8 @@ def main(argv):
         for e in entities:
             bb = dxfgeom.merge_bb(bb, e.getbb())
         # bb = xmin, ymin, xmax, ymax
-        w = bb[2] - bb[0] + 20
-        h = bb[3] - bb[1] + 20
+        w = bb[2] - bb[0] + offset
+        h = bb[3] - bb[1] + offset
         xf = cairo.Matrix(xx=1.0, yy=-1.0, y0=h)
         out = cairo.PDFSurface(ofn, w, h)
         ctx = cairo.Context(out)
@@ -97,23 +100,40 @@ def main(argv):
         ctx.set_source_rgb(1, 0, 0)
         ctx.stroke()
         ctx.restore()
+        colors = [wavelen2rgb(j) for j in drange(380, 650, len(entities))]
         # plot the lines and arcs
-        ctx.translate(10-bb[0], 10-bb[1])
-        ctx.new_path()
-        # draw the arcs first, or the last arc will have an artefact
-        # because of the ctx.close_path() that is called after it.
-        arcs = [e for e in entities if isinstance(e, dxfgeom.Arc)]
-        for a in arcs:
-            p = a.pdfdata()
-            ctx.new_sub_path()
-            ctx.arc(*p)
-        lines = [e for e in entities if isinstance(e, dxfgeom.Line)]
-        for l in lines:
-            s, e = l.pdfdata()
-            ctx.move_to(*s)
-            ctx.line_to(*e)
-        ctx.close_path()
-        ctx.stroke()
+        ctx.save()
+        ctx.translate(offset/2-bb[0], offset/2-bb[1])
+        for e, (r, g, b) in zip(entities, colors):
+            ctx.new_path()
+            ctx.set_source_rgb(r/255.0, g/255.0, b/255.0)
+            if isinstance(e, dxfgeom.Line): 
+                s, x = e.pdfdata()
+                ctx.move_to(*s)
+                ctx.line_to(*x)
+            elif isinstance(e, dxfgeom.Arc):
+                p = e.pdfdata()
+                ctx.new_sub_path()
+                ctx.arc(*p)
+#            elif isinstance(e, dxfgeom.Polyline):
+#                rest = e.pdfdata()
+#                first = rest.pop(0)
+#                ctx.move_to(*first)
+#                for r in rest:
+#                    ctx.line_to(*r)
+            ctx.stroke()
+        ctx.restore()
+        # plot the color bar
+        sw = w/float(2*len(entities))
+        ctx.set_line_cap(cairo.LINE_CAP_BUTT)
+        ctx.set_line_width(sw)
+        xs = 5
+        for r, g, b in colors:
+            ctx.set_source_rgb(r/255.0, g/255.0, b/255.0)
+            ctx.move_to(xs, 5)
+            ctx.rel_line_to(0, 5)
+            ctx.stroke()
+            xs += sw
         out.show_page()
         out.finish()
 

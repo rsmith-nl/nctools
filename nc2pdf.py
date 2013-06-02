@@ -29,7 +29,7 @@
 import sys
 import os.path
 import cairo
-from wavelentorgb import wavelen2rgb
+from wavelentorgb import wavelen2rgb, drange
 
 __proginfo__ = ('nc2pdf [ver. ' + '$Revision$'[11:-2] + 
                 '] ('+'$Date$'[7:-2]+')')
@@ -91,18 +91,6 @@ def getcuts(glist):
             y.append(yv)
             pos = newpos
     return cuts, x, y
-
-
-def drange(start, stop, count):
-    """Create a list of evenly spaced numbers.
-
-    :start: start point (begin of the list)
-    :stop: end point (end of the list)
-    :count: length of the list
-    :returns: a list of floats
-    """
-    step = (stop-start)/float(count-1)
-    return [start + j*step for j in xrange(1, count)]
 
 
 def main(argv):
@@ -169,7 +157,7 @@ def main(argv):
         ctx.stroke()
         ctx.restore()
         # Plot the cutlines
-        colors = [wavelen2rgb(j) for j in drange(380, 780, cnt)]
+        colors = [wavelen2rgb(j) for j in drange(380, 650, cnt)]
         ctx.save()
         ctx.translate(offset/2-minx, offset/2-miny)
         for section, (r, g, b) in zip(cuts, colors):
@@ -181,15 +169,16 @@ def main(argv):
             ctx.stroke()
         ctx.restore()
         # Plot the color bar
-        ctx.set_line_cap(cairo.LINE_CAP_SQUARE)
-        ctx.set_line_width(2)
+        sw = w/float(2*cnt)
+        ctx.set_line_cap(cairo.LINE_CAP_BUTT)
+        ctx.set_line_width(sw)
         xs = 5
         for r, g, b in colors:
             ctx.set_source_rgb(r/255.0, g/255.0, b/255.0)
             ctx.move_to(xs, 5)
             ctx.rel_line_to(0, 5)
             ctx.stroke()
-            xs += 2
+            xs += sw
         out.show_page()
         out.finish()
 

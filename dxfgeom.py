@@ -601,7 +601,11 @@ def fromfile(fname):
     arcs = []
     if len(ao) > 0:
         arcs = [_arc_from_elist(ent, m) for m in ao]
-    entities = lines + arcs
+    polys = []
+    po = _find_entities("POLYLINE", ent)
+    if len(po) > 0:
+        polys = [_polyline_from_elist(ent, m) for m in po]
+    entities = lines + arcs + polys
     entities.sort(key=lambda x: x.index)
     return entities
 
