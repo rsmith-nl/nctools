@@ -29,7 +29,7 @@
 
 import sys
 import os.path
-import dxfgeom
+import dxftools.dxfgeom as dxfgeom
 
 
 __proginfo__ = ('dxf2nc [ver. ' + '$Revision$'[11:-2] + 

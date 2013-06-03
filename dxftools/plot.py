@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 # Copyright © 2013 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
@@ -25,12 +24,13 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
-"""convert wavelengths to RBG."""
+"""Utilities for plotting."""
 
+import dxfgeom
+import cairo
 
 gamma = 0.8
 maxc = 255
-
 
 def wavelen2rgb(nm): # pylint: disable=R0912
     """Convert a wavelength to an RGB tuple
@@ -93,3 +93,86 @@ def crange(start, stop, count):
     step = (stop-start)/float(count-1)
     return [wavelen2rgb(start + j*step) for j in xrange(1, count+1)]
 
+
+def plotgrid(context, width, height, size=100):
+    """Plot a grid
+
+    :context: PDF drawing context
+    :width: width of the context
+    :height: height of the context
+    :size: grid cell size
+    :returns: @todo
+    """
+    context.save()
+    context.new_path()
+    for x in xrange(100, int(width), size):
+        context.move_to(x, 0)
+        context.line_to(x, height)
+    for y in xrange(int(height)-size, 0, -size):
+        context.move_to(0, y)
+        context.line_to(width, y)
+    context.close_path()
+    context.set_line_width(0.25)
+    context.set_source_rgb(1, 0, 0)
+    context.stroke()
+    context.restore()
+
+
+def plotentities(context, offset, entities, colors, lw=0.5):
+    """Draw the entities
+
+    :context: PDF drawing context
+    :offset: tuple for translating the coordinate system
+    :entities: list of entities
+    :colors: list of (r,g,b) tuples or one (r,g,b) tuple
+    :lw: line width
+    :returns: nothing
+    """
+    if isinstance(colors, tuple) and len(colors) == 3:
+        colors = [colors]*len(entities)
+    elif len(colors) != len(entities):
+        print len(colors), len(entities)
+        raise ValueError('the amount of colors should be equal to entities')
+    context.save()
+    context.set_line_width(lw)
+    context.translate(offset[0], offset[1])
+    for e, (r, g, b) in zip(entities, colors):
+        context.new_path()
+        context.set_source_rgb(r/255.0, g/255.0, b/255.0)
+        if isinstance(e, dxfgeom.Line): 
+            s, x = e.pdfdata()
+            context.move_to(*s)
+            context.line_to(*x)
+        elif isinstance(e, dxfgeom.Arc):
+            p = e.pdfdata()
+            context.new_sub_path()
+            context.arc(*p)
+        elif isinstance(e, dxfgeom.Polyline):
+            rest = e.pdfdata()
+            first = rest.pop(0)
+            context.move_to(*first)
+            for r in rest:
+                context.line_to(*r)
+        context.stroke()        
+    context.restore()
+
+def plotcolorbar(context, width, nument, colors):
+    """Plot a color bar
+
+    :context: plotting context
+    :width: width of the canvas
+    :nument: number of entities
+    :colors: list of colors
+    :returns: nothing
+    """
+    sw = width/float(2*nument)
+    context.set_line_cap(cairo.LINE_CAP_BUTT)
+    context.set_line_width(sw)
+    xs = 5
+    for r, g, b in colors:
+        context.set_source_rgb(r/255.0, g/255.0, b/255.0)
+        context.move_to(xs, 5)
+        context.rel_line_to(0, 5)
+        context.stroke()
+        xs += sw
+ 

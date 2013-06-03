@@ -27,7 +27,7 @@
 # SUCH DAMAGE.
 
 import sys 
-import dxfgeom
+import dxftools.dxfgeom as dxfgeom
 
 
 __proginfo__ = ('readdxf [ver. ' + '$Revision$'[11:-2] +

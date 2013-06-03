@@ -30,7 +30,7 @@
 import sys
 import datetime
 import os.path
-import dxfgeom
+import dxftools.dxfgeom as dxfgeom
 
 
 __proginfo__ = ('dxfgerber [ver. ' + '$Revision$'[11:-2] +

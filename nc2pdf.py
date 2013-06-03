@@ -29,7 +29,7 @@
 import sys
 import os.path
 import cairo
-from wavelentorgb import crange
+import dxftools.plot as plot
 
 __proginfo__ = ('nc2pdf [ver. ' + '$Revision$'[11:-2] + 
                 '] ('+'$Date$'[7:-2]+')')
@@ -143,21 +143,10 @@ def main(argv):
         ctx.set_line_join(cairo.LINE_JOIN_ROUND)
         ctx.set_line_width(0.5)
         # Plot a grid in red
-        ctx.save()
-        ctx.new_path()
-        for x in xrange(100, int(w), 100):
-            ctx.move_to(x, 0)
-            ctx.line_to(x, h)
-        for y in xrange(int(h)-100, 0, -100):
-            ctx.move_to(0, y)
-            ctx.line_to(w, y)
-        ctx.close_path()
-        ctx.set_line_width(0.25)
-        ctx.set_source_rgb(1, 0, 0)
-        ctx.stroke()
-        ctx.restore()
+        plot.plotgrid(ctx, w, h)
         # Plot the cutlines
-        colors = crange(380, 650, cnt)
+        colors = plot.crange(380, 650, cnt)
+        # Plot in colors
         ctx.save()
         ctx.translate(offset/2-minx, offset/2-miny)
         for section, (r, g, b) in zip(cuts, colors):
@@ -168,17 +157,8 @@ def main(argv):
                 ctx.line_to(x2, y2)
             ctx.stroke()
         ctx.restore()
-        # Plot the color bar
-        sw = w/float(2*cnt)
-        ctx.set_line_cap(cairo.LINE_CAP_BUTT)
-        ctx.set_line_width(sw)
-        xs = 5
-        for r, g, b in colors:
-            ctx.set_source_rgb(r/255.0, g/255.0, b/255.0)
-            ctx.move_to(xs, 5)
-            ctx.rel_line_to(0, 5)
-            ctx.stroke()
-            xs += sw
+        # plot the color bar
+        plot.plotcolorbar(ctx, w, cnt, colors)
         out.show_page()
         out.finish()
 
