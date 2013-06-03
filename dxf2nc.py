@@ -38,7 +38,7 @@ __proginfo__ = ('dxf2nc [ver. ' + '$Revision$'[11:-2] +
 def nc_header(progname, bbox):
     """Returns the start of the NC file.
     
-    :progname: name of the program
+    :progname: name of the file
     :bbox: 4-tuple (xmin, ymin, xmax, ymax) in mm
     :returns: a string containing the header for the nc file. 
     """
@@ -99,7 +99,7 @@ def main(argv): #pylint: disable=R0912
         entities.sort()
         # Output
         outf = open(ofn, 'w')
-        outf.write(nc_header(outname[:-3], bb))
+        outf.write(nc_header(ofn[:-3], bb))
         for e in entities:
             s1, s2 = e.ncdata()
             outf.write(s1+s2)

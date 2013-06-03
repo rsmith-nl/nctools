@@ -36,18 +36,6 @@ __proginfo__ = ('nc2pdf [ver. ' + '$Revision$'[11:-2] +
                 '] ('+'$Date$'[7:-2]+')')
 
 
-def outname(inname):
-    """Creates the name of the output filename based on the input filename.
-
-    :inname: name + path of the input file
-    :returns: output file name.
-    """
-    rv = os.path.splitext(os.path.basename(inname))[0]
-    if rv.startswith('.') or rv.isspace():
-        raise ValueError("Invalid file name!")
-    return rv + '_nc.pdf'
-
-
 def parsexy(m):
     """Parse a movement string, return the coordinates in mm.
 
