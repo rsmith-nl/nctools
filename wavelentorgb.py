@@ -91,5 +91,5 @@ def crange(start, stop, count):
     :returns: a list of (R,G,B) tuples
     """
     step = (stop-start)/float(count-1)
-    return [wavelen2rgb(start + j*step) for j in xrange(1, count)]
+    return [wavelen2rgb(start + j*step) for j in xrange(1, count+1)]
 

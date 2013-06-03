@@ -48,6 +48,70 @@ def outname(inname):
     return rv + '_dxf.pdf'
 
 
+def plotgrid(context, width, height, size=100):
+    """@todo: Docstring for plotgrid
+
+    :context: PDF drawing context
+    :width: width of the context
+    :height: height of the context
+    :size: grid cell size
+    :returns: @todo
+
+    """
+    context.save()
+    context.new_path()
+    for x in xrange(100, int(width), size):
+        context.move_to(x, 0)
+        context.line_to(x, height)
+    for y in xrange(int(height)-size, 0, -size):
+        context.move_to(0, y)
+        context.line_to(width, y)
+    context.close_path()
+    context.set_line_width(0.25)
+    context.set_source_rgb(1, 0, 0)
+    context.stroke()
+    context.restore()
+
+def plotentities(context, offset, entities, colors, lw=0.5):
+    """Draw the entities
+
+    :context: PDF drawing context
+    :offset: tuple for translating the coordinate system
+    :entities: list of entities
+    :colors: list of (r,g,b) tuples or one (r,g,b) tuple
+    :lw: line width
+    :returns: nothing
+    """
+#    print isinstance(colors, tuple), len(colors)
+    if isinstance(colors, tuple) and len(colors) == 3:
+        colors = [colors]*len(entities)
+    elif len(colors) != len(entities):
+        print len(colors), len(entities)
+        raise ValueError('the amount of colors should be equal to entities')
+    context.save()
+    context.set_line_width(lw)
+    context.translate(offset[0], offset[1])
+    for e, (r, g, b) in zip(entities, colors):
+        context.new_path()
+        context.set_source_rgb(r/255.0, g/255.0, b/255.0)
+        if isinstance(e, dxfgeom.Line): 
+            s, x = e.pdfdata()
+            context.move_to(*s)
+            context.line_to(*x)
+        elif isinstance(e, dxfgeom.Arc):
+            p = e.pdfdata()
+            context.new_sub_path()
+            context.arc(*p)
+        elif isinstance(e, dxfgeom.Polyline):
+            rest = e.pdfdata()
+            first = rest.pop(0)
+            context.move_to(*first)
+            for r in rest:
+                context.line_to(*r)
+        context.stroke()        
+    context.restore()
+
+
 def main(argv): # pylint: disable=R0912
     """Main program for the readdxf utility.
     
@@ -86,43 +150,10 @@ def main(argv): # pylint: disable=R0912
         ctx.set_line_cap(cairo.LINE_CAP_ROUND)
         ctx.set_line_join(cairo.LINE_JOIN_ROUND)
         ctx.set_line_width(0.5)
-        # Plot a grid in red
-        ctx.save()
-        ctx.new_path()
-        for x in xrange(100, int(w), 100):
-            ctx.move_to(x, 0)
-            ctx.line_to(x, h)
-        for y in xrange(int(h)-100, 0, -100):
-            ctx.move_to(0, y)
-            ctx.line_to(w, y)
-        ctx.close_path()
-        ctx.set_line_width(0.25)
-        ctx.set_source_rgb(1, 0, 0)
-        ctx.stroke()
-        ctx.restore()
+        plotgrid(ctx, w, h)
         colors = crange(380, 650, len(entities))
-        # plot the lines and arcs
-        ctx.save()
-        ctx.translate(offset/2-bb[0], offset/2-bb[1])
-        for e, (r, g, b) in zip(entities, colors):
-            ctx.new_path()
-            ctx.set_source_rgb(r/255.0, g/255.0, b/255.0)
-            if isinstance(e, dxfgeom.Line): 
-                s, x = e.pdfdata()
-                ctx.move_to(*s)
-                ctx.line_to(*x)
-            elif isinstance(e, dxfgeom.Arc):
-                p = e.pdfdata()
-                ctx.new_sub_path()
-                ctx.arc(*p)
-            elif isinstance(e, dxfgeom.Polyline):
-                rest = e.pdfdata()
-                first = rest.pop(0)
-                ctx.move_to(*first)
-                for r in rest:
-                    ctx.line_to(*r)
-            ctx.stroke()
-        ctx.restore()
+        # Plot in colors
+        plotentities(ctx, (offset/2-bb[0], offset/2-bb[1]), entities, colors)
         # plot the color bar
         sw = w/float(2*len(entities))
         ctx.set_line_cap(cairo.LINE_CAP_BUTT)
