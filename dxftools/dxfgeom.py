@@ -145,24 +145,20 @@ class Entity:
 
     def __lt__(self, other):
         """The (xmin, ymin) corner of the bounding box will be used for
-        sorting. Sort by ymin first, then xmin."""
-        assert isinstance(other, Entity), Entity._anoent
-        if self.ymin == other.ymin:
-            if self.xmin < other.xmin:
-                return True
-        else:
+        sorting. Sort by xmin in descending order first, then ymin in
+        ascending order."""
+        if self.xmin == other.xmin:
             return self.ymin < other.ymin
+        else:
+            return self.xmin > other.xmin
 
     def __gt__(self, other):
-        assert isinstance(other, Entity), Entity._anoent
-        if self.ymin == other.ymin:
-            if self.xmin > other.xmin:
-                return True
-        else:
+        if self.xmin == other.xmin:
             return self.ymin > other.ymin
+        else:
+            return self.xmin < other.xmin
 
     def __eq__(self, other):
-        assert isinstance(other, Entity), Entity._anoent
         return self.xmin == other.xmin and self.ymin == other.ymin
 
 
