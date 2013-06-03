@@ -1,6 +1,6 @@
-========
-DXFtools
-========
+=======
+NCtools
+=======
 
 Installation on Windows
 =======================
@@ -15,12 +15,6 @@ Installation on Windows
   ";C:\Python27;C:\Python27\Scripts" (for Python version 2.7.x). If you don't
   see them, add them.
 - In the distribution directory, run 'setup.py install' from a cmd.exe window.
-- Go to the Scripts subdirectory of the Python distribution
-  (e.g. C:\Python27\Scripts), and change the name of the script 'dxfgerber' to
-  'dxfgerber.py', to help Python find it.
-
-In the distribution there is a file called "dxfgerber.1.pdf". This is the
-manual page for the dxfgerber program.
 
 
 Installation on UNIX/Linux
@@ -29,4 +23,4 @@ Installation on UNIX/Linux
 - Install Python
 - Run 'make install'
 
-This will also install the manual page.
+This will also install the manual pages.

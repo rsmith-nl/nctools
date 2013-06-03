@@ -9,15 +9,16 @@ from distutils.core import setup
 with open('README.txt') as f:
     ld = f.read()
 
-setup(name='dxftools',
+setup(name='nctools',
       version='$Revision$'[11:-2],
       license='BSD',
-      description='Programs for processing DXF files for a Gerber cutter',
+      description=\
+      'Programs for creating and manipulating nc files for a Gerber cutter',
       author='Roland Smith', author_email='rsmith@xs4all.nl',
       url='http://www.xs4all.nl/~rsmith/software/',
       scripts=['dxfgerber.py', 'dxf2nc.py', 'ncfmt.py', 'nc2pdf.py',
                'dxf2pdf.py'],
-      provides='dxftools', packages=['dxftools'],
+      provides='nctools', packages=['nctools'],
       classifiers=['Development Status :: 5 - Production/Stable',
                    'Environment :: Console',
                    'Intended Audience :: End Users/Desktop',

@@ -28,9 +28,8 @@
 # SUCH DAMAGE.
 
 import sys
-import os.path
-import dxftools.dxfgeom as dxfgeom
-
+import nctools.dxfgeom as dxfgeom
+from nctools.fileutils import outname
 
 __proginfo__ = ('dxf2nc [ver. ' + '$Revision$'[11:-2] + 
                 '] ('+'$Date$'[7:-2]+')')
@@ -54,18 +53,6 @@ def nc_footer():
     return 'M0*'
 
 
-def newname(oldpath):
-    """Create the output filename from the input filename.
-    
-    :oldpath: path of the input file
-    :returns: name of the output file
-    """
-    oldbase = os.path.splitext(os.path.basename(oldpath))[0]
-    if oldbase.startswith('.') or oldbase.isspace():
-        raise ValueError("Invalid file name!")
-    rv = oldbase + '.nc'
-    return rv
-
 def main(argv): #pylint: disable=R0912
     """Main program for the dxf2nc utility.
 
@@ -78,7 +65,7 @@ def main(argv): #pylint: disable=R0912
     del argv[0]
     for f in argv:
         try:
-            outname = newname(f)
+            ofn = outname(f, extension='.nc')
             # Find entities
             entities = dxfgeom.fromfile(f)
         except ValueError:
@@ -109,10 +96,9 @@ def main(argv): #pylint: disable=R0912
         print 'Found {} contours.'.format(len(contours))
         print '{} entities remain'.format(len(rement))
         entities = contours + rement
-        # Sort in y1, then in x1.
         entities.sort()
         # Output
-        outf = open(outname, 'w')
+        outf = open(ofn, 'w')
         outf.write(nc_header(outname[:-3], bb))
         for e in entities:
             s1, s2 = e.ncdata()

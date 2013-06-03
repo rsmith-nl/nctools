@@ -29,9 +29,8 @@
 
 import sys
 import datetime
-import os.path
-import dxftools.dxfgeom as dxfgeom
-
+import nctools.dxfgeom as dxfgeom
+from nctools.fileutils import outname
 
 __proginfo__ = ('dxfgerber [ver. ' + '$Revision$'[11:-2] +
                 '] (' + '$Date$'[7:-2] + ')')
@@ -75,19 +74,6 @@ def end_entities():
     return s
 
 
-def newname(oldname):
-    """Create an output filename based on the input filename.
-
-    :oldname: name of the input file
-    :returns: name of the output file
-    """
-    oldbase = os.path.splitext(os.path.basename(oldname))[0]
-    if oldbase.startswith('.') or oldbase.isspace():
-        raise ValueError("Invalid file name!")
-    rv = oldbase + '_mod.dxf'
-    return rv
-
-
 def main(argv):
     """Main program for the dxfgerber utility.
 
@@ -103,7 +89,7 @@ def main(argv):
             h = 'Probably not a DXF file. Skipping file "{}".'
             print h.format(f)
         try:
-            outname = newname(f)
+            ofn = outname(f, extension='.dxf', addenum='_mod')
             # Find entities
             entities = dxfgeom.fromfile(f)
         except ValueError as e:
@@ -122,7 +108,7 @@ def main(argv):
         entities = contours + rement
         entities.sort()
         # Output
-        outf = open(outname, 'w')
+        outf = open(ofn, 'w')
         outf.write(dxf_header(__proginfo__, contours, rement))
         outf.write(start_entities())
         for e in entities:

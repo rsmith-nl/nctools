@@ -1,8 +1,6 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Converts lines and arcs from a DXF file and prints them.
 #
-# Copyright © 2011,2012 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+# Copyright © 2013 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # $Date$
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -26,41 +24,24 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
-import sys 
-import nctools.dxfgeom as dxfgeom
+"""Utilities for manipulating filenames."""
+
+import os.path
+
+__version__ = '$Revision$'[11:-2]
 
 
-__proginfo__ = ('readdxf [ver. ' + '$Revision$'[11:-2] +
-                '] ('+'$Date$'[7:-2]+')')
+def outname(inname, extension, addenum=''):
+    """Creates the name of the output filename based on the input filename.
 
-
-def main(argv):
-    """Main program for the readdxf utility.
-    
-    :argv: command line arguments
+    :inname: name + path of the input file
+    :extension: extension of the output file. 
+    :addenum: string to append to filename
+    :returns: output file name.
     """
-    if len(argv) == 1:
-        print __proginfo__
-        print "Usage: {} dxf-file(s)".format(sys.argv[0])
-        exit(1)
-    del argv[0]
-    for f in argv:
-        try:
-            entities = dxfgeom.fromfile(f)
-        except IOError:
-            print "Cannot open the file '{}'. Skipping it.".format(f)
-            continue
-        (contours, entities) = dxfgeom.find_contours(entities)
-        # Sort in x1, then in y1.
-        entities.sort()
-        # Output
-        print "#File: {}".format(f)
-        for c in contours:
-            print c
-        for e in entities:
-            print e
-
-
-if __name__ == '__main__':
-    main(sys.argv)
-
+    rv = os.path.splitext(os.path.basename(inname))[0]
+    if rv.startswith('.') or rv.isspace():
+        raise ValueError("Invalid file name!")
+    if not extension.startswith('.'):
+        extension = '.' + extension
+    return rv + addenum + extension

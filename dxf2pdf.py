@@ -27,27 +27,14 @@
 # SUCH DAMAGE.
 
 import sys 
-import os.path
 import cairo
-import dxftools.dxfgeom as dxfgeom
-import dxftools.plot as plot
+import nctools.dxfgeom as dxfgeom
+import nctools.plot as plot
+from nctools.fileutils import outname
 
 
 __proginfo__ = ('dxf2pdf [ver. ' + '$Revision$'[11:-2] +
                 '] ('+'$Date$'[7:-2]+')')
-
-
-def outname(inname):
-    """Creates the name of the output filename based on the input filename.
-
-    :inname: name + path of the input file
-    :returns: output file name.
-    """
-    rv = os.path.splitext(os.path.basename(inname))[0]
-    if rv.startswith('.') or rv.isspace():
-        raise ValueError("Invalid file name!")
-    return rv + '_dxf.pdf'
-
 
 def main(argv): # pylint: disable=R0912
     """Main program for the readdxf utility.
@@ -62,7 +49,7 @@ def main(argv): # pylint: disable=R0912
     del argv[0]
     for f in argv:
         try:
-            ofn = outname(f)
+            ofn = outname(f, extension='.pdf', addenum='_dxf')
             entities = dxfgeom.fromfile(f)
         except ValueError as e:
             print e

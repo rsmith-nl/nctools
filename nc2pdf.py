@@ -27,9 +27,10 @@
 # SUCH DAMAGE.
 
 import sys
-import os.path
 import cairo
-import dxftools.plot as plot
+import nctools.plot as plot
+from nctools.fileutils import outname
+
 
 __proginfo__ = ('nc2pdf [ver. ' + '$Revision$'[11:-2] + 
                 '] ('+'$Date$'[7:-2]+')')
@@ -100,15 +101,14 @@ def main(argv):
     """
     offset = 40
     if len(argv) == 1:
-        binary = os.path.basename(argv[0])
         print __proginfo__
-        print "Usage: {} [file ...]".format(binary)
+        print "Usage: nc2pdf.py [file ...]"
         print
         sys.exit(0)
     del argv[0]
     for fn in argv:
         try:
-            ofn = outname(fn)
+            ofn = outname(fn, extension='.pdf', addenum='_nc')
             with open(fn, 'r') as inf:
                 rd = inf.read()
         except ValueError as e:
