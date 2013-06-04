@@ -146,22 +146,22 @@ class Entity:
         return (self.x2, self.y2)
 
     def __lt__(self, other):
-        """The (xmin, ymin) corner of the bounding box will be used for
+        """The (xmax, ymin) corner of the bounding box will be used for
         sorting. Sort by xmin in descending order first, then ymin in
         ascending order."""
-        if self.xmin == other.xmin:
+        if self.xmax == other.xmax:
             return self.ymin < other.ymin
         else:
-            return self.xmin > other.xmin
+            return self.xmax > other.xmax
 
     def __gt__(self, other):
-        if self.xmin == other.xmin:
+        if self.xmax == other.xmax:
             return self.ymin > other.ymin
         else:
-            return self.xmin < other.xmin
+            return self.xmax < other.xmax
 
     def __eq__(self, other):
-        return self.xmin == other.xmin and self.ymin == other.ymin
+        return self.xmax == other.xmas and self.ymin == other.ymin
 
 
 class Line(Entity):
