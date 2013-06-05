@@ -46,9 +46,17 @@ def main(argv):
         sys.exit(0)
     del argv[0]
     for fn in argv:
-        with open(fn, 'r') as inf:
-            rd = inf.read()
+        try:
+            with open(fn, 'r') as inf:
+                rd = inf.read()
+        except IOError as e:
+            print "Cannot read file: {}".format(e)
+            print "Skipping file '{}'".format(fn)
+            continue
         rd = rd.split('*')
+        if len(rd) == 1 or rd[0] != 'H1':
+            print "'{}' is not a valid NC code file. Skipping it".format(fn)
+            continue
         if len(rd[-1]) == 0:
             del rd[-1]
         print 'file:', fn

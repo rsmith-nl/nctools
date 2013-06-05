@@ -99,8 +99,9 @@ def main(argv):
             print "A valid filename _must_ have a '.dxf' extension."
             print "And it must be more than just the extension."
             continue
-        except IOError:
-            print "Cannot open the file '{}'. Skipping it.".format(f)
+        except IOError as e:
+            print "Cannot read file: {}".format(e)
+            print "Skipping file '{}'".format(f)
             continue
         # Find contours
         (contours, rement) = dxfgeom.find_contours(entities)

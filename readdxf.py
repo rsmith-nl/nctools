@@ -47,8 +47,9 @@ def main(argv):
     for f in argv:
         try:
             entities = dxfgeom.fromfile(f)
-        except IOError:
-            print "Cannot open the file '{}'. Skipping it.".format(f)
+        except IOError as e:
+            print "Cannot read file: {}".format(e)
+            print "Skipping file '{}'".format(f)
             continue
         (contours, entities) = dxfgeom.find_contours(entities)
         # Sort in x1, then in y1.

@@ -105,8 +105,8 @@ def main(argv):
             print fns.format(fn)
             continue
         except IOError as e:
-            print e
-            print "Cannot open the file '{}'. Skipping it.".format(fn)
+            print "Cannot read file: {}".format(e)
+            print "Skipping file '{}'".format(fn)
             continue
         cmds = rd.split('*')
         if len(cmds[-1]) == 0:

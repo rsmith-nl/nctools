@@ -74,8 +74,9 @@ def main(argv): #pylint: disable=R0912
             print "A valid filename _must_ have a '.dxf' extension."
             print "And it must be more than just the extension."
             continue
-        except IOError:
-            print "Cannot open the file '{}'. Skipping it.".format(f)
+        except IOError as e:
+            print "Cannot read file: {}".format(e)
+            print "Skipping file '{}'".format(f)
             continue
         if len(entities) == 0:
             print "No lines or arcs found. Skipping file '{}'".format(f)
