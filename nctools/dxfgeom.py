@@ -37,9 +37,9 @@ class Entity:
     """A base class for a DXF entities.
 
     The class attribute delta contains the maximum distance in x and y
-    direction between eindpoints that are considered coincident.
+    direction between eindpoints that are considered coincident. 
     """
-    delta = 0.005
+    delta = 0.1
     _anoent = "Argument is not an entity!"
 
     def __init__(self, x1=0, y1=0, x2=0, y2=0, index=None):
@@ -53,6 +53,9 @@ class Entity:
         self.y1 = float(y1)
         self.x2 = float(x2)
         self.y2 = float(y2)
+        # angles in degrees
+        self.ea1 = None
+        self.ea2 = None
         # Bounding box
         self.xmin = min(self.x1, self.x2)
         self.ymin = min(self.y1, self.y2)
@@ -64,28 +67,42 @@ class Entity:
         self.index = index
 
     def fits(self, index, other):
-        """Checks if another entity fits onto this one.
+        """Checks if another entity fits onto this one. An entity fits if the
+        end points are less than Entity.delta apart and if the included angle
+        between the end vectors is less than Entity.angle.
 
         :index: end of the entity to test, either 1 or 2
         :other: entity to test
         :returns: 0 if the other entity doesn't fit. Otherwise returns 1 or 2
                   indicating the new free end of other.
         """
+        def ia(a, b):
+            a = _ca(a)
+            b = _ca(b)
+            t = abs(a - b)
+            if t > 180:
+                t = 360 - t
+            #print 'DEBUG:', a, b, t
+            return t
         assert isinstance(other, Entity), Entity._anoent
         if index == 1:
             if (math.fabs(self.x1-other.x1) < Entity.delta and 
-                math.fabs(self.y1-other.y1) < Entity.delta):
+                math.fabs(self.y1-other.y1) < Entity.delta and 
+                ia(self.ea1, other.ea1) >= 120):
                 # return free end of other
                 return 2
             elif (math.fabs(self.x1-other.x2) < Entity.delta and 
-                  math.fabs(self.y1-other.y2) < Entity.delta):
+                  math.fabs(self.y1-other.y2) < Entity.delta and
+                  ia(self.ea1, other.ea2) >= 120):
                 return 1
         elif index == 2:
             if (math.fabs(self.x2-other.x1) < Entity.delta and 
-                math.fabs(self.y2-other.y1) < Entity.delta):
+                math.fabs(self.y2-other.y1) < Entity.delta and
+                ia(self.ea2, other.ea1) >= 120):
                 return 2
             elif (math.fabs(self.x2-other.x2) < Entity.delta and 
-                  math.fabs(self.y2-other.y2) < Entity.delta):
+                  math.fabs(self.y2-other.y2) < Entity.delta and
+                  ia(self.ea2, other.ea2) >= 120):
                 return 1
         return 0 # doesn't fit!
 
@@ -111,9 +128,10 @@ class Entity:
         self.ymax += dy
 
     def swap(self):
-        """Swap (x1, y1) and (x2, y2)"""
-        (self.x1, self.x2) = (self.x2, self.x1)
-        (self.y1, self.y2) = (self.y2, self.y1)
+        """Swap (x1, y1) and (x2, y2) plus ea1 and ea2"""
+        self.x1, self.x2 = self.x2, self.x1
+        self.y1, self.y2 = self.y2, self.y1
+        self.ea1, self.ea2 = _ca(self.ea2 + 180), _ca(self.ea1 + 180)
         self.sw = not self.sw
 
     def dxfdata(self):
@@ -170,10 +188,15 @@ class Line(Entity):
     def __init__(self, x1, y1, x2, y2, index):
         """Creates a Line from (x1, y1) to (x2, y2)."""
         Entity.__init__(self, x1, y1, x2, y2, index)
+        # angles in degrees
+        self.ea1 = _ca(math.degrees(math.atan2(self.y2 - self.y1,
+                                               self.x2 - self.x1)))
+        self.ea2 = _ca(self.ea1 + 180)
 
     def __str__(self):
         fs = "#LINE from ({:.3f},{:.3f}) to ({:.3f},{:.3f}), index {}"
         fs =  fs.format(self.x1, self.y1, self.x2, self.y2, self.index)
+        fs += ' angles: {:.1f}, {:.1f}'.format(self.ea1, self.ea2)
         if self.sw:
             fs += " (swapped)"
         return fs
@@ -220,6 +243,10 @@ class Polyline(Entity):
         self.ymin = min(yvals)
         self.xmax = max(xvals)
         self.ymax = max(yvals)
+        self.ea1 = _ca(math.degrees(math.atan2(pnts[1][1] - pnts[0][1],
+                                               pnts[1][0] - pnts[0][0])))
+        self.ea2 = _ca(math.degrees(math.atan2(pnts[-2][1] - pnts[-1][1],
+                                               pnts[-2][0] - pnts[-1][0])))
 
     def __str__(self):
         s = "#POLYLINE from ({:.3f},{:.3f}) to ({:.3f},{:.3f}), index {}"
@@ -306,6 +333,8 @@ class Arc(Entity):
         x2 = cx+R*math.cos(math.radians(a2))
         y2 = cy+R*math.sin(math.radians(a2))
         Entity.__init__(self, x1, y1, x2, y2, index)
+        self.ea1 = _ca(self.a1 + 90)
+        self.ea2 = _ca(self.a2 - 90)
         # Refine bounding box
         A1 = int(a1)//90
         A2 = int(a2)//90
@@ -490,6 +519,19 @@ class Contour(Entity):
 def _mmtoci(d):
     """Converts dimensions in mm to 1/100 inches."""
     return int(round(float(d)*3.937007874015748))
+
+
+def _ca(ang):
+    """Clamp an angle between 0 and 360 degrees.
+
+    :ang: angle
+    :returns: clamped angle
+    """
+    while ang >= 360:
+        ang -= 360
+    while ang < 0:
+        ang += 360
+    return ang
 
 
 def merge_bb(a, b):
