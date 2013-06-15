@@ -51,6 +51,13 @@ def main(argv):
             print "Cannot read file: {}".format(e)
             print "Skipping file '{}'".format(f)
             continue
+        # experimental:
+        print 'entities:', len(entities)
+        conn = [e.connections(entities) for e in entities]
+        for c in conn:
+            print c
+        return
+        # conventional
         (contours, entities) = dxfgeom.find_contours(entities)
         # Sort in x1, then in y1.
         entities.sort()

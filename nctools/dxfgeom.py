@@ -66,6 +66,30 @@ class Entity:
         # index in the DXF file
         self.index = index
 
+
+    def ends(self):
+        """Return the end points."""
+        return (self.x1, self.y1), (self.x2, self.y2)
+
+
+    def connections(self, others):
+        # remove this object from the list.
+        others = [j for j in others if j != self]
+        fit = [(j, 1, 1) for j in others if 
+                math.fabs(self.x1 - j.x1) < Entity.delta and
+                math.fabs(self.y1 - j.y1) < Entity.delta]
+        fit += [(j, 1, 2) for j in others if 
+                 math.fabs(self.x1 - j.x2) < Entity.delta and
+                 math.fabs(self.y1 - j.y2) < Entity.delta]
+        fit += [(j, 2, 1) for j in others if 
+                math.fabs(self.x2 - j.x1) < Entity.delta and
+                math.fabs(self.y2 - j.y1) < Entity.delta]
+        fit += [(j, 2, 2) for j in others if 
+                 math.fabs(self.x2 - j.x2) < Entity.delta and
+                 math.fabs(self.y2 - j.y2) < Entity.delta]
+        return self, fit
+
+
     def fits(self, index, other):
         """Checks if another entity fits onto this one. An entity fits if the
         end points are less than Entity.delta apart and if the included angle
@@ -179,7 +203,7 @@ class Entity:
             return self.xmax < other.xmax
 
     def __eq__(self, other):
-        return self.xmax == other.xmas and self.ymin == other.ymin
+        return self.xmax == other.xmax and self.ymin == other.ymin
 
 
 class Line(Entity):
@@ -200,6 +224,10 @@ class Line(Entity):
         if self.sw:
             fs += " (swapped)"
         return fs
+
+    def __repr__(self):
+        fs = "<line from ({:.1f},{:.1f}) to ({:.1f},{:.1f})>"
+        return fs.format(self.x1, self.y1, self.x2, self.y2)
 
     def dxfdata(self):
         lines = ['  0', 'LINE', '  8', 'snijlijnen', ' 10', str(self.x1),
