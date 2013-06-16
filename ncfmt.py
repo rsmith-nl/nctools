@@ -29,18 +29,11 @@
 import sys
 import os
 import nctools.gerbernc as gerbernc
+import nctools.utils as utils
 
 __proginfo__ = ('ncfmt [ver. ' + '$Revision$'[11:-2] + 
                 '] ('+'$Date$'[7:-2]+')')
 
-def skip(error, filename):
-    """Skip a file in case of an error
-
-    :error: exception
-    :filename: name of file to skip
-    """
-    print "Cannot read file: {}".format(error)
-    print "Skipping file '{}'".format(filename)
 
 def main(argv):
     """Main program for the ncformat utility.
@@ -57,10 +50,10 @@ def main(argv):
         try:
             rd = gerbernc.Reader(fn)
         except IOError as e:
-            skip(e, fn)
+            utils.skip(e, fn)
             continue
         except ValueError as e:
-            skip(e, fn)
+            utils.skip(e, fn)
             continue
         print 'File:', fn
         for cmd in rd:

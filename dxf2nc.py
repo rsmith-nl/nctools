@@ -29,7 +29,7 @@
 
 import sys
 import nctools.dxfgeom as dxfgeom
-from nctools.fileutils import outname
+from nctools.utils import outname
 
 __proginfo__ = ('dxf2nc [ver. ' + '$Revision$'[11:-2] + 
                 '] ('+'$Date$'[7:-2]+')')

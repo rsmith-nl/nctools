@@ -29,7 +29,7 @@
 import sys
 import cairo
 import nctools.plot as plot
-from nctools.fileutils import outname
+from nctools.utils import outname
 
 
 __proginfo__ = ('nc2pdf [ver. ' + '$Revision$'[11:-2] + 

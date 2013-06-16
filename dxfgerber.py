@@ -30,7 +30,7 @@
 import sys
 import datetime
 import nctools.dxfgeom as dxfgeom
-from nctools.fileutils import outname
+from nctools.utils import outname
 
 __proginfo__ = ('dxfgerber [ver. ' + '$Revision$'[11:-2] +
                 '] (' + '$Date$'[7:-2] + ')')

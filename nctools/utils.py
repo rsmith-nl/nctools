@@ -24,7 +24,7 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
-"""Utilities for manipulating filenames."""
+"""Utilities for nctools."""
 
 import os.path
 
@@ -45,3 +45,14 @@ def outname(inname, extension, addenum=''):
     if not extension.startswith('.'):
         extension = '.' + extension
     return rv + addenum + extension
+
+
+def skip(error, filename):
+    """Skip a file in case of an error
+
+    :error: exception
+    :filename: name of file to skip
+    """
+    print "Cannot read file: {}".format(error)
+    print "Skipping file '{}'".format(filename)
+
