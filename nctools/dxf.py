@@ -53,7 +53,12 @@ class Reader(object):
     def __iter__(self):
         return self.entities
 
-    def ext(self):
+    @property
+    def length(self):
+        return len(self.entities)
+
+    @property
+    def extents(self):
         """Get the extents of the DXF file
 
         :returns: (xmin, xmax, ymin, ymax)
@@ -102,10 +107,12 @@ class Entity(object):
         return s.format(self.name, self.x[0], self.y[0], 
                         self.x[1], self.y[1], self.index, self.layer)
 
+    @property
     def ends(self):
         """Return the end points."""
         return (self.x[0], self.y[0]), (self.x[1], self.y[1])
 
+    @property
     def bbox(self):
         """Get the bounding box.
 
@@ -135,10 +142,12 @@ class Entity(object):
         """Returns the end point of the entity."""
         return self.x[-1], self.y[-1]
 
+    @property
     def dxfdata(self):
         """Returns a string containing the entity in DXF format."""
         raise NotImplementedError
 
+    @property
     def length(self):
         """Returns the length of the entity."""
         raise NotImplementedError
@@ -152,6 +161,7 @@ class Line(Entity):
         Entity.__init__(self, x1, y1, x2, y2, index, layer)
         self.name = 'line'
 
+    @property
     def dxfdata(self):
         lines = ['  0', 'LINE', '  8', 'snijlijnen', ' 10', str(self.x[0]),
                  ' 20', str(self.y[0]), ' 30', '0.0', ' 11', str(self.x[1]),
@@ -159,6 +169,7 @@ class Line(Entity):
         # empty string for adding a last newline with the join.
         return lines
 
+    @property
     def length(self):
         dx = self.x[1]-self.x[0]
         dy = self.y[1]-self.y[0]
@@ -182,6 +193,7 @@ class Line(Entity):
             rv.append(Line(x1, y1, x2, y2, i, layer))
         return rv
 
+
 class Polyline(Entity):
     """A class for a polyline entity, consisting if several linked line
     segments.
@@ -193,9 +205,11 @@ class Polyline(Entity):
         self.y = tuple(y for _, y in pnts)
         self.name = 'polyline'
 
+    @property
     def dxfdata(self):
         pass
 
+    @property
     def length(self):
         dx2 = [(a - b)**2 for a, b in zip(self.x, self.x[1:])]
         dy2 = [(c - d)**2 for c, d in zip(self.y, self.y[1:])]
@@ -224,15 +238,7 @@ class Polyline(Entity):
 class Arc(Entity):
     """A class for an arc entity, centering in (cx, cy) with radius R from
     angle a1 to a2.
-
-    Class properties: 
-
-        :Arc.dev: Maximum deviation from the true arc.
-        :Arc.as_segments: Whether an arc should be output as a list of
-                          connected line segments. True by default.
     """
-    dev = 1
-    as_segments = True
 
     def __init__(self, cx, cy, R, a1, a2, index, layer):
         """Creates a Arc centering in (cx, cy) with radius R and running from
@@ -251,7 +257,6 @@ class Arc(Entity):
         self.cy = float(cy)
         self.R = float(R)
         self.a = (float(a1), float(a2))
-        self.segments = None
         x1 = cx+R*math.cos(math.radians(a1))
         y1 = cy+R*math.sin(math.radians(a1))
         x2 = cx+R*math.cos(math.radians(a2))
@@ -263,12 +268,14 @@ class Arc(Entity):
         self.cx += dx
         self.cy += dy
 
+    @property
     def dxfdata(self):
         lines = ['  0', 'ARC', '  8', 'snijlijnen', ' 10', str(self.cx),
                  ' 20', str(self.cy), ' 30', '0.0', ' 40', str(self.R),
                  ' 50', str(self.a[0]), ' 51', str(self.a[1])]
         return lines
 
+    @property
     def length(self):
         angle = math.radians(self.a[1]-self.a[0])
         return self.R*angle

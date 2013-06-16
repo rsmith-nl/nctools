@@ -33,13 +33,15 @@ __version__ = '$Revision$'[11:-2]
 
 
 class Reader(object):
-    """Reads a subset of Gerber NC files. Only the commands H1, M20, N, M14,
-    M14, M0 and X...Y... are implemented.
+    """Reads a subset of Gerber NC files. It assumes coordinates in
+    centi-inches format.
     """
+
+    cmds = {'M0': 'end of file', 'M00': 'program stop', 
+            'M01': 'optional stop', 'M14': 'knife down', 'M15': 'knife up'} 
 
     def __init__(self, path):
         self.path = path
-        self.cut = False
         with open(path, 'rb') as f:
             c = f.read().split('*')
         if c[0] != 'H1' and c[1] != 'M20':
@@ -54,28 +56,24 @@ class Reader(object):
 
     def __iter__(self):
         for c in self.commands:
-            if c.startswith('N'):
+            if c in Reader.cmds.keys():
+                yield Reader.cmds[c]
+                if c == 'M0':
+                    raise StopIteration
+            elif c.startswith('N'):
                 idx = int(c[1:])
                 yield 'piece #{}'.format(idx)
-            elif c == 'M14':
-                self.cut = True
-                yield 'knife down'
-            elif c == 'M15':
-                self.cut = False
-                yield 'knife up'
             elif c.startswith('X'):
                 coords = c[1:].split('Y')
                 x, y = [float(c) * 25.4 / 100.0 for c in coords]
-                yield 'move to {}, {}'.format(x, y)
-            elif c == 'M0':
-                yield 'end of file'
-                raise StopIteration
+
+                yield 'move to {:.1f}, {:.1f}'.format(x, y)
             else:
-                raise ValueError('unknown command: "{}"'.format(c))
+                yield 'unknown command: "{}"'.format(c)
 
 
 class Writer(object):
-    """Writes Gerber NC files
+    """Writes Gerber NC files.
     """
 
     def __init__(self, path, name=None):
