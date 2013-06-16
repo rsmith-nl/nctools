@@ -50,7 +50,10 @@ def main(argv):
         except Exception as e: #pylint: disable=W0703
             utils.skip(e, f)
             continue
-        print 'File:', f
+        print 'Filename:', f
+        print 'Contains {} entities'.format(rd.length)
+        es = 'Extents: {:.1f} ≤ x ≤ {:.1f}, {:.1f} ≤ y ≤ {:.1f}'
+        print es.format(*rd.extents)
         for ent in rd:
             print ent
 

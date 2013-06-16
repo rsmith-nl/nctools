@@ -41,10 +41,21 @@ class Reader(object):
         """
         self.name = name
         with open(name, 'r') as f:
-            sdata = [s.strip() for s in f.readlines()]
-        soe = sdata.index('ENTITIES')+1
-        eoe = sdata.index('ENDSEC', soe)
-        self.lines = sdata[soe:eoe]
+            data = [s.strip() for s in f.readlines()]
+        num = data.index('$EXTMIN')
+        num = data.index('10', num) + 1
+        xmin = float(data[num])
+        num = data.index('20', num) + 1
+        ymin = float(data[num])
+        num = data.index('$EXTMAX')
+        num = data.index('10', num) + 1
+        xmax = float(data[num])
+        num = data.index('20', num) + 1
+        ymax = float(data[num])
+        self._extents = (xmin, xmax, ymin, ymax)
+        soe = data.index('ENTITIES')+1
+        eoe = data.index('ENDSEC', soe)
+        self.lines = data[soe:eoe]
         self.entities = Line.fromdata(self.lines)
         self.entities += Arc.fromdata(self.lines)
         self.entities += Polyline.fromdata(self.lines)
@@ -63,17 +74,7 @@ class Reader(object):
 
         :returns: (xmin, xmax, ymin, ymax)
         """
-        num = self.lines.index('$EXTMIN')
-        num = self.lines.index('10', num) + 1
-        xmin = float(self.lines[num])
-        num = self.lines.index('20', num) + 1
-        ymin = float(self.lines[num])
-        num = self.lines.index('$EXTMAX')
-        num = self.lines.index('10', num) + 1
-        xmax = float(self.lines[num])
-        num = self.lines.index('20', num) + 1
-        ymax = float(self.lines[num])
-        return (xmin, xmax, ymin, ymax)
+        return self._extents
 
 
 class Entity(object):
@@ -108,11 +109,6 @@ class Entity(object):
                         self.x[1], self.y[1], self.layer)
 
     @property
-    def ends(self):
-        """Return the end points."""
-        return (self.x[0], self.y[0]), (self.x[1], self.y[1])
-
-    @property
     def bbox(self):
         """Get the bounding box.
 
@@ -132,6 +128,19 @@ class Entity(object):
         self.x = tuple(j + dx for j in self.x)
         self.y = tuple(k + dy for k in self.y)
 
+    def otherpoint(self, pnt):
+        """If pnt is one of the ends, return the other.
+
+        :pnt: endpoint
+        :returns: other endpoint
+        """
+        if pnt == self.startpoint:
+            return self.endpoint
+        elif pnt == self.endpoint:
+            return self.startpoint
+        else:
+            raise ValueError('point not in entity')
+
     @property
     def startpoint(self):
         """Returns the start point of the entity."""
@@ -141,6 +150,11 @@ class Entity(object):
     def endpoint(self):
         """Returns the end point of the entity."""
         return self.x[-1], self.y[-1]
+
+#    @property
+#    def points(self):
+#        """Return both end points as a list of 2-tuples."""
+#        return [(self.x[0], self.y[0]), (self.x[-1], self.y[-1])]
 
     @property
     def dxfdata(self):
