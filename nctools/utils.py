@@ -27,6 +27,7 @@
 """Utilities for nctools."""
 
 import os.path
+import glob
 
 __version__ = '$Revision$'[11:-2]
 
@@ -56,3 +57,15 @@ def skip(error, filename):
     print "Cannot read file: {}".format(error)
     print "Skipping file '{}'".format(filename)
 
+
+def xpand(args):
+    """Expand command line arguments for operating systems incapable of doing
+    so.
+
+    :args: list of argument
+    :returns: expanded argument list
+    """
+    xa = []
+    for a in args:
+        xa += glob.glob(a)
+    return xa

@@ -27,8 +27,8 @@
 # SUCH DAMAGE.
 
 import sys 
-import nctools.dxfgeom as dxfgeom
-
+import nctools.dxf as dxf
+import nctools.utils as utils
 
 __proginfo__ = ('readdxf [ver. ' + '$Revision$'[11:-2] +
                 '] ('+'$Date$'[7:-2]+')')
@@ -41,34 +41,18 @@ def main(argv):
     """
     if len(argv) == 1:
         print __proginfo__
-        print "Usage: {} dxf-file(s)".format(sys.argv[0])
+        print "Usage: {} dxf-file(s)".format(argv[0])
         exit(1)
     del argv[0]
     for f in argv:
         try:
-            entities = dxfgeom.fromfile(f)
-        except IOError as e:
-            print "Cannot read file: {}".format(e)
-            print "Skipping file '{}'".format(f)
+            rd = dxf.Reader(f)
+        except Exception as e: #pylint: disable=W0703
+            utils.skip(e, f)
             continue
-        # experimental:
-        print 'entities:', len(entities)
-        conn = [e.connections(entities) for e in entities]
-        for c in conn:
-            print c
-        return
-        # conventional
-        (contours, entities) = dxfgeom.find_contours(entities)
-        # Sort in x1, then in y1.
-        entities.sort()
-        # Output
-        print "#File: {}".format(f)
-        for c in contours:
-            print c
-        for e in entities:
-            print e
-
+        print 'File:', f
+        for ent in rd:
+            print ent
 
 if __name__ == '__main__':
-    main(sys.argv)
-
+    main(utils.xpand(sys.argv))

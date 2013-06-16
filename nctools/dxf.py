@@ -51,7 +51,7 @@ class Reader(object):
         self.entities.sort(key=lambda x: x.index)
 
     def __iter__(self):
-        return self.entities
+        return iter(self.entities)
 
     @property
     def length(self):
@@ -103,9 +103,9 @@ class Entity(object):
         self.layer = layer
 
     def __repr__(self):
-        s = "<{} from ({},{}) to ({},{}), index {}, layer {}>"
+        s = "<{} from ({},{}) to ({},{}), layer {}>"
         return s.format(self.name, self.x[0], self.y[0], 
-                        self.x[1], self.y[1], self.index, self.layer)
+                        self.x[1], self.y[1], self.layer)
 
     @property
     def ends(self):
@@ -180,7 +180,7 @@ class Line(Entity):
         idx = [x for x in range(len(lines)) if lines[x] == 'LINE']
         rv = []
         for i in idx:
-            num = lines.index("  8", i) + 1
+            num = lines.index("8", i) + 1
             layer = lines[num]
             num = lines.index("10", num) + 1
             x1 = float(lines[num])
@@ -200,9 +200,12 @@ class Polyline(Entity):
     """
 
     def __init__(self, pnts, index, layer):
-        Entity.__init__(self, index=index, layer=layer)
-        self.x = tuple(x for x, _ in pnts)
-        self.y = tuple(y for _, y in pnts)
+        x = tuple(x for x, _ in pnts)
+        y = tuple(y for _, y in pnts)
+        Entity.__init__(self, x[0], y[0], x[-1], y[-1], 
+                        index=index, layer=layer)
+        self.x = x
+        self.y = y
         self.name = 'polyline'
 
     @property
@@ -220,7 +223,7 @@ class Polyline(Entity):
         idx = [x for x in range(len(lines)) if lines[x] == 'POLYLINE']
         rv = []
         for i in idx:
-            num = lines.index("  8", i) + 1
+            num = lines.index("8", i) + 1
             layer = lines[num]
             end = lines.index('SEQEND', i)
             vi = [w for w in range(i, end) if lines[w] == 'VERTEX']
@@ -262,6 +265,7 @@ class Arc(Entity):
         x2 = cx+R*math.cos(math.radians(a2))
         y2 = cy+R*math.sin(math.radians(a2))
         Entity.__init__(self, x1, y1, x2, y2, index, layer)
+        self.name = 'arc'
 
     def move(self, dx, dy):
         Entity.move(self, dx, dy)
@@ -285,7 +289,7 @@ class Arc(Entity):
         idx = [x for x in range(len(lines)) if lines[x] == 'ARC']
         rv = []
         for i in idx:
-            num = lines.index("  8", i) + 1
+            num = lines.index("8", i) + 1
             layer = lines[num]            
             num = lines.index("10", num) + 1
             cx = float(lines[num])
