@@ -37,25 +37,6 @@ def _newpiece(c):
     return 'newpiece() # {}'.format(c[1:])
 
 
-def _moveto(c):
-    x, y = [int(t) for t in c[1:].split('Y')]
-    p, q = cin2mm([x, y])
-    s = 'moveto({:.1f}, {:.1f})'
-    return s.format(p, q)
-
-
-def _arc(c):
-    if c[2] == '2':
-        direction = 'arc_cw'
-    elif c[2] == '3':
-        direction = 'arc_ccw'
-    ct = c[4:].replace('Y', ' ').replace('I', ' ').replace('J', ' ')
-    x, y, i, j = [int(n) for n in ct.split()]
-    p, q, r, s = cin2mm([x, y, i, j])
-    fs = '{}({:.1f}, {:.1f}, {:.1f}, {:.1f})'
-    return fs.format(direction, p, q, r, s)
-
-
 class Reader(object):
     """Reads a subset of Gerber NC files. It defaults to coordinates in
     centi-inches format.
@@ -64,9 +45,47 @@ class Reader(object):
     cmds = {'M0': '# end of file', 'M00': '# program stop', 
             'M01': '# optional stop', 'M14': 'down()', 'M15': 'up()'} 
 
-    start1 = {'N': _newpiece, 'X': _moveto}
+    def _newpiece(self, c):
+        """Parse the N instruction.
 
-    start3 = {'G02': _arc, 'G03': _arc}
+        :c: text to parse
+        :returns: text, (number of piece)
+        """
+        num = int(c[1:])
+        return 'newpiece() # {}'.format(c[1:]), (num)
+
+    def _moveto(self, c):
+        """Parse a lineair instruction.
+
+        :c: text to parse
+        :pnt: current (x,y) point
+        :returns: text, (startpoint, endpoint)
+        """
+        oldpos = self.pos
+        x, y = [int(t) for t in c[1:].split('Y')]
+        self.pos = (x, y)
+        p, q = cin2mm([x, y])
+        s = 'moveto({:.1f}, {:.1f})'
+        return s.format(p, q), (oldpos, self.pos)
+
+    def _arc(self, c):
+        """Parse an arc movement instruction.
+
+        :c: text to parse
+        :pnt: current (x,y) point
+        :returns: text, (startpoint, endpoint, center of arc)
+        """
+        oldpos = self.pos
+        if c[2] == '2':
+            direction = 'arc_cw'
+        elif c[2] == '3':
+            direction = 'arc_ccw'
+        ct = c[4:].replace('Y', ' ').replace('I', ' ').replace('J', ' ')
+        x, y, i, j = [int(n) for n in ct.split()]
+        p, q, r, s = cin2mm([x, y, i, j])
+        self.pos = (x, y)
+        fs = '{}({:.1f}, {:.1f}, {:.1f}, {:.1f})'
+        return fs.format(direction, p, q, r, s), (oldpos, self.pos, (i, j))
 
     def __init__(self, path):
         self.path = path
@@ -80,23 +99,30 @@ class Reader(object):
         self.length = float(ident[1][2:]) * 25.4 # mm
         self.width = float(ident[2][2:]) * 25.4 # mm
         self.commands = c
+        self.pos = None
 
     def __iter__(self):
-        yield '# Path: {}'. format(self.path)
-        yield '# Name of part: {}'.format(self.name)
+        """Iterate over the NC commands.
+
+        :yields: text, (other results)
+        """
+        yield '# Path: {}'. format(self.path), (self.path)
+        yield '# Name of part: {}'.format(self.name), (self.name)
         fs = '# Length: {:.1f} mm, width {:.1f} mm'
-        yield fs.format(self.length, self.width)
+        yield fs.format(self.length, self.width), (self.length, self.width)
         for c in self.commands:
             if c in Reader.cmds.keys():
-                yield Reader.cmds[c]
+                yield Reader.cmds[c], ()
                 if c == 'M0':
                     raise StopIteration
-            elif c[0] in Reader.start1.keys():
-                yield Reader.start1[c[0]](c)
-            elif c[:3] in Reader.start3.keys():
-                yield Reader.start3[c[:3]](c)
+            elif c[0] == 'N':
+                yield self._newpiece(c)
+            elif c[0] == 'X':
+                yield self._moveto(c)
+            elif c[:3] in ['G02', 'G03']:
+                yield self._arc(c)
             else:
-                yield 'unknown command: "{}"'.format(c)
+                yield 'unknown command: "{}"'.format(c), ()
 
 
 class Writer(object):
@@ -149,7 +175,7 @@ class Writer(object):
 
     def moveto(self, x, y):
         """Move the cutting head from the current position to the indicated
-        position.
+        position in a straight line.
 
         :x: x coordinate in mm
         :y: y coordinate in mm
@@ -242,9 +268,9 @@ if __name__ == '__main__':
         w.moveto(0, 100)
         w.moveto(0, 0)
         print w
-
+    # Read it back
     rd = Reader(nm)
-    for cmd in rd:
+    for cmd, _ in rd:
         print cmd
 
     remove(nm)

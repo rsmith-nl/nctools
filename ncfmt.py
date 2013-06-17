@@ -56,7 +56,7 @@ def main(argv):
             utils.skip(e, fn)
             continue
         # print the file
-        for cmd in rd:
+        for cmd, _ in rd:
             print cmd
 
 if __name__ == '__main__':

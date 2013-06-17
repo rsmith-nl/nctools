@@ -29,30 +29,18 @@
 import sys
 import cairo
 import nctools.plot as plot
-from nctools.utils import outname
-
+import nctools.gerbernc as gerbernc
+import nctools.utils as utils
 
 __proginfo__ = ('nc2pdf [ver. ' + '$Revision$'[11:-2] + 
                 '] ('+'$Date$'[7:-2]+')')
 
 
-def parsexy(m):
-    """Parse a movement string, return the coordinates in mm.
+def getcuts(rd):
+    """Make a list of cuts
 
-    :m: movement string
-    :returns: A tuple (x,y) of the coordinates in mm
-    """
-    x, y = m[1:].split('Y')
-    # Units are 1/100 inch. Convert to mm. 
-    x, y = float(x)*0.254, float(y)*0.254
-    return x, y
-
-
-def getcuts(glist):
-    """Make a list of cuts.
-
-    :glist: list of g-code strings
-    :returns: nested list of (x,y) tuples representing the cuts 
+    :rd: nctools.gerbernc.Reader object
+    :returns: list of (x,y) tuples representing the cuts.
     """
     cuts = []
     x = []
@@ -60,19 +48,19 @@ def getcuts(glist):
     section = None
     cutting = False
     pos = None
-    for g in glist:
-        if g == 'M14':
+    for c, args in rd:
+        if c.startswith('down'):
             cutting = True
             if not pos:
                 raise ValueError('Start of cutting without pos')
             section = [pos]
-        elif g == 'M15':
+        elif c.startswith('up'):
             cutting = False
             if section:
                 cuts.append(section)
-            section = []
-        elif g.startswith('X'):
-            newpos = parsexy(g)
+            section = None
+        elif c.startswith('moveto'):
+            _, newpos = args
             if cutting:
                 section.append(newpos)
             xv, yv = newpos
@@ -96,9 +84,8 @@ def main(argv):
     del argv[0]
     for fn in argv:
         try:
-            ofn = outname(fn, extension='.pdf', addenum='_nc')
-            with open(fn, 'r') as inf:
-                rd = inf.read()
+            ofn = utils.outname(fn, extension='.pdf', addenum='_nc')
+            rd = gerbernc.Reader(fn)
         except ValueError as e:
             print e
             fns = "Cannot construct output filename. Skipping file '{}'."
@@ -108,10 +95,7 @@ def main(argv):
             print "Cannot read file: {}".format(e)
             print "Skipping file '{}'".format(fn)
             continue
-        cmds = rd.split('*')
-        if len(cmds[-1]) == 0:
-            del cmds[-1]
-        cuts, xvals, yvals = getcuts(cmds)
+        cuts, xvals, yvals = getcuts(rd)
         cnt = len(cuts)
         print 'Got {} cuts'.format(cnt)
         minx, maxx = min(xvals), max(xvals)
@@ -152,4 +136,4 @@ def main(argv):
 
 
 if __name__ == '__main__':
-    main(sys.argv)
+    main(utils.xpand(sys.argv))
