@@ -1,6 +1,10 @@
-=================================
-Info about Gerber cutter NC codes
-=================================
+==================
+Concerning nctools
+==================
+
+
+Gerber NC code
+==============
 
 For reference, in NC code, "n" denotes a numeral.
 
@@ -14,4 +18,23 @@ interpolation. G03 should be counter-clockwise circular interpolation.
 It seems that our controller outputs a new piece code Nn every 200 commands
 or so.
 
+Entities in different kinds of files
+====================================
 
++------+--------------+-------------+------------------------+
+|      | DXF          | NC          | PDF                    |
++======+==============+=============+========================+
+|Line: | start, end   | (curr,) end | (curr,) end            |
++------+--------------+-------------+------------------------+
+|Arc:  | center, R,   | (curr,) end | center, radius,        |
+|      | start angle, | center      | start angle, end angle |
+|      | end angle    | or approx.  | (always CCW)           |
+|      | (always      | by lines    |                        |
+|      | CCW)         |             |                        |
++------+--------------+-------------+------------------------+
+
+
+So we define two kind of entities:
+  - lines from start point to end point
+  - arcs from start point to end point with a center (also contains radius and
+    angles
