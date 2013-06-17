@@ -55,7 +55,7 @@ def main(argv):
         except ValueError as e:
             utils.skip(e, fn)
             continue
-        print 'File:', fn
+        # print the file
         for cmd in rd:
             print cmd
 
