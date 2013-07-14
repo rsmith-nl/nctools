@@ -51,7 +51,7 @@ def main(argv):
             utils.skip(e, f)
             continue
         print 'Filename:', f
-        print 'Contains {} entities'.format(rd.length)
+        print 'Contains {} entities'.format(rd.count)
         es = 'Extents: {:.1f} ≤ x ≤ {:.1f}, {:.1f} ≤ y ≤ {:.1f}'
         print es.format(*rd.extents)
         for ent in rd:
