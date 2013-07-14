@@ -2,7 +2,7 @@
 #
 # Copyright © 2013 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # $Date$
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
 # are met:
@@ -11,7 +11,7 @@
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY AUTHOR AND CONTRIBUTORS ``AS IS'' AND
 # ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -36,7 +36,7 @@ def outname(inname, extension, addenum=''):
     """Creates the name of the output filename based on the input filename.
 
     :inname: name + path of the input file
-    :extension: extension of the output file. 
+    :extension: extension of the output file.
     :addenum: string to append to filename
     :returns: output file name.
     """

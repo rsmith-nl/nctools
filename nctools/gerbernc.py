@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Copyright © 2013 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # $Date$
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
 # are met:
@@ -11,7 +11,7 @@
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY AUTHOR AND CONTRIBUTORS ``AS IS'' AND
 # ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -42,8 +42,8 @@ class Reader(object):
     centi-inches format.
     """
 
-    cmds = {'M0': '# end of file', 'M00': '# program stop', 
-            'M01': '# optional stop', 'M14': 'down()', 'M15': 'up()'} 
+    cmds = {'M0': '# end of file', 'M00': '# program stop',
+            'M01': '# optional stop', 'M14': 'down()', 'M15': 'up()'}
 
     def _newpiece(self, c):
         """Parse the N instruction.
@@ -141,7 +141,7 @@ class Writer(object):
             self.name = op.splitext(op.basename(path))[0]
         self.cut = False
         self.pos = None
-        self.bbox = bbox.BBox()
+        self.bbox = None
         self.f = None
         self.piece = 1
         # commands[2] is an empty placeholder. The name, length and width of
@@ -170,7 +170,10 @@ class Writer(object):
         if not self.pos:
             raise ValueError('start cutting at unknown position')
         self.cut = True
-        self.bbox.addp(self.pos)
+        if self.bbox == None:
+            self.bbox = bbox.BBox(self.pos)
+        else:
+            self.bbox.update(self.pos)
         self.commands += ['M14']
 
     def moveto(self, x, y):
@@ -182,7 +185,7 @@ class Writer(object):
         """
         x, y = mm2cin([x, y])
         if self.cut: # We're cutting
-            self.bbox.addp((x, y))
+            self.bbox.update((x, y))
         self.commands += ['X{:.0f}Y{:.0f}'.format(x, y)]
         self.pos = (x, y)
 
@@ -193,8 +196,8 @@ class Writer(object):
         :i, j: center coordinates in mm
         """
         x, y, i, j = mm2cin([x, y, i, j])
-        if self.cut: 
-            self.bbox.addp((x, y))
+        if self.cut:
+            self.bbox.update((x, y))
         self.commands += ['G02X{:.0f}Y{:.0f}I{:.0f}J{:.0f}'.format(x, y, i, j)]
         self.pos = (x, y)
 
@@ -206,7 +209,7 @@ class Writer(object):
         """
         x, y, i, j = mm2cin([x, y, i, j])
         if self.cut:
-            self.bbox.addp((x, y))
+            self.bbox.update((x, y))
         self.commands += ['G03X{:.0f}Y{:.0f}I{:.0f}J{:.0f}'.format(x, y, i, j)]
         self.pos = (x, y)
 
@@ -223,8 +226,8 @@ class Writer(object):
 
     def __exit__(self, exc_type, exc_value, traceback):
         """Stop context manager."""
-        li = (self.bbox.xmax - self.bbox.xmin)/100.0
-        wi = (self.bbox.ymax - self.bbox.ymin)/100.0
+        li = (self.bbox.maxx- self.bbox.minx)/100.0
+        wi = (self.bbox.maxy - self.bbox.miny)/100.0
         self.commands[2] = '{}/L={:.3f}/W={:.3f}'.format(self.name, li, wi)
         if not self.commands[-1] == 'M15':
             self.commands.append('M15')

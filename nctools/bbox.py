@@ -58,7 +58,7 @@ class BBox(object):
                   (self.maxx, self.maxy)]
             self.__init__(tp)
         else: # dim == 3
-            tp += [(self.minx, self.miny, self.minz), 
+            tp += [(self.minx, self.miny, self.minz),
                    (self.maxx, self.maxy, self.maxz)]
             self.__init__(tp)
 

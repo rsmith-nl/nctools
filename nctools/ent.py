@@ -3,7 +3,7 @@
 #
 # Copyright © 2013 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # $Date$
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
 # are met:
@@ -12,7 +12,7 @@
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY AUTHOR AND CONTRIBUTORS AS IS'' AND
 # ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -35,13 +35,13 @@ __version__ = '$Revision$'[11:-2]
 class Line(object):
     """A class for a line entity, from point (x1, y1) to (x2, y2).
     The class attribute delta contains the maximum distance in x and y
-    direction between eindpoints that are considered coincident. 
+    direction between eindpoints that are considered coincident.
     """
 
     def __init__(self, x1=None, y1=None, x2=None, y2=None, index=None,
                  layer='0'):
         """Creates a line from (x1, y1) to (x2, y2).
-        
+
         :x1, y1: start point of the entity
         :x2, y2: end point of the entity
         :index: sequence number
@@ -57,12 +57,12 @@ class Line(object):
 
     def __repr__(self):
         s = "<{} from ({},{}) to ({},{}), layer {}>"
-        return s.format(self.name, self.x[0], self.y[0], 
+        return s.format(self.name, self.x[0], self.y[0],
                         self.x[-1], self.y[-1], self.layer)
 
     def move(self, dx, dy):
         """Move the entity.
-        
+
         :dx: movement in the x direction
         :dy: movement in the y direction
         """
@@ -99,7 +99,7 @@ class Polyline(Line):
     def __init__(self, pnts, index, layer):
         x = tuple(x for x, _ in pnts)
         y = tuple(y for _, y in pnts)
-        Line.__init__(self, x[0], y[0], x[-1], y[-1], 
+        Line.__init__(self, x[0], y[0], x[-1], y[-1],
                       index=index, layer=layer)
         self.x = x
         self.y = y
@@ -110,7 +110,7 @@ class Polyline(Line):
         sm = " to ({},{}),"
         se = " layer {}>"
         rv = [st.format(self.name, self.x[0], self.y[0])]
-        rv += [sm.format(self.x[i], self.y[i]) 
+        rv += [sm.format(self.x[i], self.y[i])
                for i in range(1, len(self.x))]
         rv += [se.format(self.layer)]
         return ''.join(rv)
@@ -130,8 +130,8 @@ class Arc(Line):
     def __init__(self, cx, cy, R, a1, a2, index, layer, ccw=True):
         """Creates a Arc centering in (cx, cy) with radius R and running from
         a1 degrees to a2 degrees. The default is ccw.
-        
-        :cx, cy: center point 
+
+        :cx, cy: center point
         :R: radius
         :a1: starting angle in degrees
         :a2: ending angle in degrees

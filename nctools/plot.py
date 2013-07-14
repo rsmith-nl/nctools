@@ -2,7 +2,7 @@
 #
 # Copyright © 2013 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # $Date$
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
 # are met:
@@ -11,7 +11,7 @@
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY AUTHOR AND CONTRIBUTORS ``AS IS'' AND
 # ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -78,7 +78,7 @@ def wavelen2rgb(nm): # pylint: disable=R0912
     else:
         factor = 0.3 + 0.7*(780.0 - nm) / (780.0 - 700.0)
     # Return the adjusted values
-    return (adjust(red, factor), adjust(green, factor), 
+    return (adjust(red, factor), adjust(green, factor),
             adjust(blue, factor))
 
 
@@ -139,7 +139,7 @@ def plotentities(context, offset, entities, colors, lw=0.5):
     for e, (r, g, b) in zip(entities, colors):
         context.new_path()
         context.set_source_rgb(r/255.0, g/255.0, b/255.0)
-        if isinstance(e, dxfgeom.Line): 
+        if isinstance(e, dxfgeom.Line):
             s, x = e.pdfdata()
             context.move_to(*s)
             context.line_to(*x)
@@ -153,7 +153,7 @@ def plotentities(context, offset, entities, colors, lw=0.5):
             context.move_to(*first)
             for r in rest:
                 context.line_to(*r)
-        context.stroke()        
+        context.stroke()
     context.restore()
 
 def plotcolorbar(context, width, nument, colors):
@@ -175,4 +175,4 @@ def plotcolorbar(context, width, nument, colors):
         context.rel_line_to(0, 5)
         context.stroke()
         xs += sw
- 
+
