@@ -32,20 +32,32 @@ class BBox(object):
     def __init__(self, pnts):
         if not pnts:
             raise ValueError('no points to create BBox')
+        if len(pnts) in (2, 3) and isinstance(pnts[0], (int, float)):
+            pnts = [pnts]
         if len(pnts[0]) == 2:
             self.dim = 2
             x, y = zip(*pnts)
             self.minx, self.maxx = min(x), max(x)
             self.miny, self.maxy = min(y), max(y)
             self.minz, self.maxz = None, None
+            #print 'DEBUG: setting 2D bbox.'
         elif len(pnts[0]) == 3:
             self.dim = 3
             x, y, z = zip(*pnts)
             self.minx, self.maxx = min(x), max(x)
             self.miny, self.maxy = min(y), max(y)
             self.minz, self.maxz = min(z), max(z)
+            #print 'DEBUG: setting 3D bbox.'
         else:
             raise ValueError('pnts must contain 2-tuples or 3-tuples')
+
+    def __str__(self):
+        s2 = '<BBox {}≤x≤{} {}≤y≤{} >'
+        s3 = '<BBox {}≤x≤{} {}≤y≤{} {}≤z≤{} >'
+        if self.dim == 2:
+            return s2.format(self.minx, self.maxx, self.miny, self.maxy)
+        s3.format(self.minx, self.maxx, self.miny, self.maxy, 
+                  self.minz, self.maxz)
 
     def update(self, pnts):
         if len(pnts) in (2, 3) and isinstance(pnts[0], (int, float)):
@@ -79,3 +91,19 @@ class BBox(object):
         if single:
             return rv[0]
         return rv
+
+    @property
+    def width(self):
+        """Returns the width of the bounding box
+        :returns: width of the bounding box
+        """
+        return self.maxx - self.minx
+
+    @property
+    def height(self):
+        """Returns the height of the bounding box
+        :returns: height of the bounding box
+        """
+        return self.maxy - self.miny
+
+

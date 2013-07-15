@@ -33,10 +33,6 @@ import os.path as op
 
 __version__ = '$Revision$'[11:-2]
 
-def _newpiece(c):
-    return 'newpiece() # {}'.format(c[1:])
-
-
 class Reader(object):
     """Reads a subset of Gerber NC files. It defaults to coordinates in
     centi-inches format.
@@ -226,8 +222,8 @@ class Writer(object):
 
     def __exit__(self, exc_type, exc_value, traceback):
         """Stop context manager."""
-        li = (self.bbox.maxx- self.bbox.minx)/100.0
-        wi = (self.bbox.maxy - self.bbox.miny)/100.0
+        li = self.bbox.width/100.0
+        wi = self.bbox.height/100.0
         self.commands[2] = '{}/L={:.3f}/W={:.3f}'.format(self.name, li, wi)
         if not self.commands[-1] == 'M15':
             self.commands.append('M15')
@@ -270,10 +266,9 @@ if __name__ == '__main__':
         w.moveto(100, 100)
         w.moveto(0, 100)
         w.moveto(0, 0)
-        print w
+        print 'NC code:', w
     # Read it back
     rd = Reader(nm)
     for cmd, _ in rd:
         print cmd
-
     remove(nm)
