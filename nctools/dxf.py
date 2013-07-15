@@ -31,50 +31,22 @@ import ent
 __version__ = '$Revision$'[11:-2]
 
 
-class Reader(object):
-    """A class for reading DXF entities."""
+def Reader(name):
+    """Read a DXF file.
 
-    def __init__(self, name):
-        """Associate a Reader with a file.
-
-        :name: path of the file to read.
-        """
-        self.name = name
-        with open(name, 'r') as f:
-            data = [s.strip() for s in f.readlines()]
-        num = data.index('$EXTMIN')
-        num = data.index('10', num) + 1
-        xmin = float(data[num])
-        num = data.index('20', num) + 1
-        ymin = float(data[num])
-        num = data.index('$EXTMAX')
-        num = data.index('10', num) + 1
-        xmax = float(data[num])
-        num = data.index('20', num) + 1
-        ymax = float(data[num])
-        self._extents = (xmin, xmax, ymin, ymax)
-        soe = data.index('ENTITIES')+1
-        eoe = data.index('ENDSEC', soe)
-        self.lines = data[soe:eoe]
-        self.entities = _get_lines(self.lines)
-        self.entities += _get_arcs(self.lines)
-        self.entities += _get_polylines(self.lines)
-        self.entities.sort(key=lambda x: x.index)
-
-    def __iter__(self):
-        return iter(self.entities)
-
-    @property
-    def count(self):
-        return len(self.entities)
-
-    @property
-    def extents(self):
-        """Get the extents of the DXF file
-
-        :returns: (xmin, xmax, ymin, ymax)
-        """
-        return self._extents
+    :name: The name of the file to read.
+    :returns: A list of entities.
+    """
+    with open(name, 'r') as f:
+        data = [s.strip() for s in f.readlines()]
+    soe = data.index('ENTITIES')+1
+    eoe = data.index('ENDSEC', soe)
+    lines = data[soe:eoe]
+    entities = _get_lines(lines)
+    entities += _get_arcs(lines)
+    entities += _get_polylines(lines)
+    entities.sort(key=lambda x: x.index)
+    return entities
 
 
 def _get_lines(lines):
@@ -92,6 +64,7 @@ def _get_lines(lines):
         num = lines.index("21", num) + 1
         y2 = float(lines[num])
         rv.append(ent.Line(x1, y1, x2, y2, i, layer))
+    #print 'DEBUG: dxf.Reader found {} lines'.format(len(rv))
     return rv
 
 
@@ -114,6 +87,7 @@ def _get_arcs(lines):
         if a2 < a1:
             a2 += 360.0
         rv.append(ent.Arc(cx, cy, R, a1, a2, i, layer))
+    #print 'DEBUG: dxf.Reader found {} arcs'.format(len(rv))
     return rv
 
 
@@ -123,16 +97,29 @@ def _get_polylines(lines):
     for i in idx:
         num = lines.index("8", i) + 1
         layer = lines[num]
+        num = lines.index("70", num) + 1
+        closed = int(lines[num]) & 1
         end = lines.index('SEQEND', i)
         vi = [w for w in range(i, end) if lines[w] == 'VERTEX']
+        vi = zip(vi, vi[1:]+[end])
         pnts = []
-        for j in vi:
+        bulges = []
+        for j, k in vi:
             num = lines.index("10", j) + 1
             x = float(lines[num])
             num = lines.index("20", num) + 1
             y = float(lines[num])
             pnts.append((x, y))
-        rv.append(ent.Polyline(pnts, i, layer))
+            try:
+                num = lines.index("42", num) + 1
+                if num < k:
+                    bulges.append(float(lines[num]))
+                else:
+                    bulges.append(0)
+            except ValueError:
+                bulges.append(0)
+        rv.append(ent.Polyline(pnts, bulges, i, layer, closed))
+    #print 'DEBUG: dxf.Reader found {} polylines'.format(len(rv))
     return rv
 
 

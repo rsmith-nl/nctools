@@ -69,6 +69,12 @@ class Line(object):
         self.x = tuple(j + dx for j in self.x)
         self.y = tuple(k + dy for k in self.y)
 
+    def flip(self):
+        """Reverse the direction of a line.
+        """
+        self.x = tuple(list(self.x).reverse())
+        self.y = tuple(list(self.y).reverse())
+
     @property
     def points(self):
         """Returns the end points of the entity."""
@@ -96,24 +102,38 @@ class Polyline(Line):
     segments.
     """
 
-    def __init__(self, pnts, index, layer):
-        x = tuple(x for x, _ in pnts)
-        y = tuple(y for _, y in pnts)
+    def __init__(self, pnts, bulges, index, layer, closed=False):
+        x = [x for x, _ in pnts]
+        y = [y for _, y in pnts]
         Line.__init__(self, x[0], y[0], x[-1], y[-1],
                       index=index, layer=layer)
-        self.x = x
-        self.y = y
+        self.angles = tuple(math.atan(b)*4 for b in bulges)
         self.name = 'polyline'
+        self.closed = closed
+        if closed:
+            x.append(x[0])
+            y.append(y[0])
+        self.x = tuple(x)
+        self.y = tuple(y)
+
+    def _fmt(self, i):
+        if self.angles[i-1] == 0.0:
+            return " line to ({},{}),".format(self.x[i], self.y[i])
+        a = math.degrees(self.angles[i-1])
+        return " arc {}° to ({}, {}),".format(a, self.x[i], self.y[i])
 
     def __repr__(self):
         st = "<{} from ({},{})"
-        sm = " to ({},{}),"
         se = " layer {}>"
         rv = [st.format(self.name, self.x[0], self.y[0])]
-        rv += [sm.format(self.x[i], self.y[i])
-               for i in range(1, len(self.x))]
+        rv += [self._fmt(i) for i in range(1, len(self.x))]
         rv += [se.format(self.layer)]
         return ''.join(rv)
+
+    def flip(self):
+        Line.flip(self)
+        self.angles = tuple(-self.angles[i] for i in 
+                            xrange(len(self.angles)-1, -1, -1))
 
     @property
     def length(self):
@@ -153,6 +173,13 @@ class Arc(Line):
         Line.move(self, dx, dy)
         self.cx += dx
         self.cy += dy
+
+    def flip(self):
+        """Reverse the direction of a line.
+        """
+        Line.flip(self)
+        self.ccw = not self.ccw
+        self.a = (self.a[1], self.a[0])
 
     @property
     def bbox(self):

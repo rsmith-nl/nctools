@@ -28,7 +28,8 @@
 
 import sys 
 import cairo
-import nctools.dxfgeom as dxfgeom
+import nctools.dxf as dxf
+import nctools.bbox as bbox
 import nctools.plot as plot
 from nctools.utils import outname
 
@@ -50,7 +51,7 @@ def main(argv): # pylint: disable=R0912
     for f in argv:
         try:
             ofn = outname(f, extension='.pdf', addenum='_dxf')
-            entities = dxfgeom.fromfile(f)
+            entities = dxf.Reader(f)
         except ValueError as e:
             print e
             fns = "Cannot construct output filename. Skipping file '{}'."
@@ -61,12 +62,11 @@ def main(argv): # pylint: disable=R0912
             print "Cannot open the file '{}'. Skipping it.".format(f)
             continue
         # Output
-        bb = entities[0].getbb()
-        for e in entities:
-            bb = dxfgeom.merge_bb(bb, e.getbb())
+        pnts = [p for e in entities for p in e.points]
+        bb = bbox.BBox(pnts)
         # bb = xmin, ymin, xmax, ymax
-        w = bb[2] - bb[0] + offset
-        h = bb[3] - bb[1] + offset
+        w = bb.width + offset
+        h = bb.height + offset
         xf = cairo.Matrix(xx=1.0, yy=-1.0, y0=h)
         out = cairo.PDFSurface(ofn, w, h)
         ctx = cairo.Context(out)
@@ -77,7 +77,7 @@ def main(argv): # pylint: disable=R0912
         plot.plotgrid(ctx, w, h)
         colors = plot.crange(380, 650, len(entities))
         # Plot in colors
-        plot.plotentities(ctx, (offset/2-bb[0], offset/2-bb[1]), 
+        plot.plotentities(ctx, (offset/2-bb.minx, offset/2-bb.miny), 
                           entities, colors)
         # plot the color bar
         plot.plotcolorbar(ctx, w, len(entities), colors)

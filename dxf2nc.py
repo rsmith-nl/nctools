@@ -3,7 +3,7 @@
 # Optimizes lines and arcs from a DXF file for cutting on a Gerber cutter,
 # outputs G-codes for the Gerber cutter..
 #
-# Copyright © 2012 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+# Copyright © 2012, 2013 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # $Date$
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -28,7 +28,7 @@
 # SUCH DAMAGE.
 
 import sys
-import nctools.dxfgeom as dxfgeom
+import nctools.dxf as dxf
 from nctools.utils import outname
 
 __proginfo__ = ('dxf2nc [ver. ' + '$Revision$'[11:-2] + 
@@ -67,7 +67,7 @@ def main(argv): #pylint: disable=R0912
         try:
             ofn = outname(f, extension='.nc')
             # Find entities
-            entities = dxfgeom.fromfile(f)
+            entities = dxf.Reader(f)
         except ValueError:
             fns = "Cannot construct output filename. Skipping file '{}'."
             print fns.format(f)

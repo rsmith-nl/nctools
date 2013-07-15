@@ -105,5 +105,3 @@ class BBox(object):
         :returns: height of the bounding box
         """
         return self.maxy - self.miny
-
-

@@ -6,8 +6,11 @@
 
 from distutils.core import setup
 
-with open('README.txt') as f:
-    ld = f.read()
+ld = """These modules and programs are designed to read DXF files and read and
+write g-code files for Gerber cloth cutters (not PCB machines). Also included
+is the ability to create PDF files from either XDF or g-code. See the included
+README.txt for a longer explanation."""
+
 
 setup(name='nctools',
       version='$Revision$'[11:-2],

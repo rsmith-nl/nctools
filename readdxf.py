@@ -28,6 +28,7 @@
 
 import sys 
 import nctools.dxf as dxf
+import nctools.bbox as bbox
 import nctools.utils as utils
 
 __proginfo__ = ('readdxf [ver. ' + '$Revision$'[11:-2] +
@@ -46,15 +47,17 @@ def main(argv):
     del argv[0]
     for f in argv:
         try:
-            rd = dxf.Reader(f)
+            entities = dxf.Reader(f)
         except Exception as e: #pylint: disable=W0703
             utils.skip(e, f)
             continue
         print 'Filename:', f
-        print 'Contains {} entities'.format(rd.count)
+        print 'Contains {} entities'.format(len(entities))
+        pnts = [p for e in entities for p in e.points]
+        bb = bbox.BBox(pnts)
         es = 'Extents: {:.1f} ≤ x ≤ {:.1f}, {:.1f} ≤ y ≤ {:.1f}'
-        print es.format(*rd.extents)
-        for ent in rd:
+        print es.format(bb.minx, bb.maxx, bb.miny, bb.maxy)
+        for ent in entities:
             print ent
 
 if __name__ == '__main__':

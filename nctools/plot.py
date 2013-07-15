@@ -26,8 +26,9 @@
 
 """Utilities for plotting."""
 
-import dxfgeom
+import nctools.ent as ent
 import cairo
+import math
 
 gamma = 0.8
 maxc = 255
@@ -90,6 +91,8 @@ def crange(start, stop, count):
     :count: length of the returned list
     :returns: a list of (R,G,B) tuples
     """
+    if count == 1:
+        return [wavelen2rgb(start)]
     step = (stop-start)/float(count-1)
     return [wavelen2rgb(start + j*step) for j in xrange(1, count+1)]
 
@@ -139,22 +142,53 @@ def plotentities(context, offset, entities, colors, lw=0.5):
     for e, (r, g, b) in zip(entities, colors):
         context.new_path()
         context.set_source_rgb(r/255.0, g/255.0, b/255.0)
-        if isinstance(e, dxfgeom.Line):
-            s, x = e.pdfdata()
+        if isinstance(e, ent.Arc):
+            #print 'DEBUG: plotting an arc'
+            context.new_sub_path()
+            a0 = math.radians(e.a[0])
+            a1 = math.radians(e.a[1])
+            if e.ccw:
+                context.arc(e.cx, e.cy, e.R, a0, a1)
+            else:
+                context.arc_negative(e.xc, e.cy, e.R, a0, a1)
+        elif isinstance(e, ent.Polyline):
+            #print 'DEBUG: plotting a polyline'
+            _plotpoly(e, context)
+        # Line needs to go _last_ because all entities as subclasses of line!
+        elif isinstance(e, ent.Line):
+            #print 'DEBUG: plotting a line'
+            s, x = e.points
             context.move_to(*s)
             context.line_to(*x)
-        elif isinstance(e, dxfgeom.Arc):
-            p = e.pdfdata()
-            context.new_sub_path()
-            context.arc(*p)
-        elif isinstance(e, dxfgeom.Polyline):
-            rest = e.pdfdata()
-            first = rest.pop(0)
-            context.move_to(*first)
-            for r in rest:
-                context.line_to(*r)
         context.stroke()
     context.restore()
+
+
+def _plotpoly(e, ctx):
+    comb = zip(e.x, e.y, e.angles)
+    comb = zip(comb, comb[1:])
+    ctx.move_to(e.x[0], e.y[1])
+    for (xs, ys, angs), (xe, ye, _) in comb:
+        if angs == 0.0:
+            ctx.line_to(xe, ye)
+        else:
+            xm, ym = (xs + xe)/2.0, (ys + ye)/2.0
+            xp, yp = xm - xs, ym - ys
+            lp = math.sqrt(xp**2 + yp**2)
+            lq = lp/math.tan(angs/2.0)
+            f = lq/lp
+            if angs > 0:
+                xc, yc = xm - f * yp, ym + f * xp
+            else:
+                xc, yc = xm + f * yp, ym - f * xp
+            R = math.sqrt((xc-xs)**2, (yc-ys)**2)
+            a0 = math.atan2(ys - yc, xs - xc)
+            a1 = math.atan2(ye - yc, xe - xc)
+            if angs < 0:
+                ctx.arc_negative(xc, yc, R, a0, a1)
+            else:
+                ctx.arc(xc, yc, R, a0, a1)
+
 
 def plotcolorbar(context, width, nument, colors):
     """Plot a color bar
