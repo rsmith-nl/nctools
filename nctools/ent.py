@@ -72,8 +72,8 @@ class Line(object):
     def flip(self):
         """Reverse the direction of a line.
         """
-        self.x = tuple(list(self.x).reverse())
-        self.y = tuple(list(self.y).reverse())
+        self.x = tuple(reversed(self.x))
+        self.y = tuple(reversed(self.x))
 
     @property
     def points(self):
