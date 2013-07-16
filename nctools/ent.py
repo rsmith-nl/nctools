@@ -181,6 +181,27 @@ class Arc(Line):
         self.ccw = not self.ccw
         self.a = (self.a[1], self.a[0])
 
+    def segments(self, devlim=1):
+        """Create a list of points that approximates the arc.
+
+        :devlim: Maximum distance that the line segments are to deviate from
+                 the arc.
+        :returns: A list of points
+        """
+        devlim = float(devlim)
+        da = self.a[1]-self.a[0]
+        step = math.degrees(2*math.acos(1-devlim/float(self.R)))
+        cnt = da//step + 1
+        step = da/cnt
+        sa = self.a[0]
+        if not self.ccw:
+            sa = self.a[1]
+            step = -step
+        angs = [sa+i*step for i in range(int(cnt)+1)]
+        pnts = [(self.cx+self.R*math.cos(math.radians(a)), 
+                 self.cy+self.R*math.sin(math.radians(a))) for a in angs]
+        return pnts
+
     @property
     def bbox(self):
         """Get the bounding box.
@@ -211,3 +232,86 @@ class Arc(Line):
         else:
             angle = math.radians(self.a[0]-self.a[1])
         return self.R*angle
+
+
+class Contour(Line):
+    """A contour is a list of connected entities."""
+
+    def __init__(self, entities):
+        """Create a Contour from a list of entities.
+
+        :entities: A list of connected entities.
+        """
+        x0, y0 = entities[0].points[0]
+        x1, y1 = entities[-1].points[1]
+        Line.__init__(self, x0, y0, x1, y1, entities[0].index)
+        # Flip the entities if necessary.
+        for a, b in zip(entities, entities[1:]):
+            if b.points[0] != a.points[-1]:
+                b.flip()
+        self.entities = tuple(entities)
+
+    @property
+    def bbox(self):
+        bbox.merge([e.bbox for e in self.entities])
+
+    @property
+    def length(self):
+        return sum(e.length for e in self.entities)
+
+
+def findcontours(ent):
+    """Finds contours in a list of entities
+
+    :ent: A list of entities
+    :returns: A list of contours and a list of remaining entities
+    """
+    entities = ent[:]
+    uniquepoints = list(set(p for e in entities for p in e.points))
+    xrefs = {p: [e for e in entities if p in e.points] 
+             for p in uniquepoints}
+    starters = [p for p in uniquepoints if len(xrefs[p]) == 1]
+    contours = [_mkcontour(p, xrefs, entities) for p in starters]
+    contours = [c for c in contours if c != None]
+    return contours, entities
+
+
+def _mkcontour(sp, xref, ent):
+    """Find the contour (if any) that starts with sp.
+
+    Starting with a starting point (sp) we find the entity it belongs to.
+    This entity is the start of our contour. The starting point is then 
+    removed from the xref dict.
+
+    Now we start looping over the points that are the keys in xref.
+    If the last entry in the ce list is found in a particular dict value, 
+    it is removed. If the dict then has remaining values, the first one of
+    those is appended to the ce list and removed from the entities list. 
+    We then resume the loop from the first key in the dict with a new last 
+    entry in ce. If no new entity is found, we quit the loop.
+
+    :sp: Starting point.
+    :xref: Dictionary of entities by their points
+    :ent: List of entities
+    :returns: A Contour or None.
+    """
+    ce = [xref[sp][0]]
+    del xref[sp] # It has only one entity, and that's used now!
+    ent.remove(ce[0])
+    cont = True
+    while cont:
+        cont = False
+        for p in xref.keys():
+            if ce[-1] in xref[p]:
+                xref[p].remove(ce[-1])
+                if len(xref[p]) > 0:
+                    ce.append(xref[p].pop(0)) # New entity, continue
+                    ent.remove(ce[-1])
+                    cont = True
+                    break
+                else:
+                    del xref[p] # It's empty. End of the contour!
+    if len(ce) == 1:
+        ent.append(ce[0])
+        return None
+    return Contour(ce)
