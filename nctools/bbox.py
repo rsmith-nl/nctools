@@ -105,3 +105,20 @@ class BBox(object):
         :returns: height of the bounding box
         """
         return self.maxy - self.miny
+
+    @property
+    def points(self):
+        if self.dim == 2:
+            return (self.minx, self.miny), (self.maxx, self.maxy)
+        return ((self.minx, self.miny, self.minz), 
+                (self.maxx, self.maxy, self.maxz))
+
+
+def merge(bbs):
+    """Merge a list of bounding boxes
+
+    :bbs: A tuple or list of bounding boxes.
+    :returns: A new BBox then encompasses them all.
+    """
+    pnts = [p for b in bbs for p in b.points]
+    return BBox(pnts)
