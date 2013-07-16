@@ -28,8 +28,9 @@
 The language and file format for PCB machines is different!
 """
 
-import bbox
+import math
 import os.path as op
+import bbox
 
 __version__ = '$Revision$'[11:-2]
 
@@ -124,7 +125,7 @@ class Reader(object):
 class Writer(object):
     """Writes Gerber NC files."""
 
-    def __init__(self, path, name=None):
+    def __init__(self, path, name=None, anglim=60):
         """Initialize the writer.
 
         :path: the output file
@@ -137,8 +138,10 @@ class Writer(object):
             self.name = op.splitext(op.basename(path))[0]
         self.cut = False
         self.pos = None
+        self.ang = None
         self.bbox = None
         self.f = None
+        self.anglim = float(anglim)
         self.piece = 1
         # commands[2] is an empty placeholder. The name, length and width of
         # the program need to be put there before writing.
@@ -155,6 +158,7 @@ class Writer(object):
         """Stop cutting.
         """
         self.cut = False
+        self.ang = None
         self.commands += ['M15']
         # Check if we need a break
         if len(self.commands)//200 > self.piece:
@@ -182,32 +186,40 @@ class Writer(object):
         x, y = mm2cin([x, y])
         if self.cut: # We're cutting
             self.bbox.update((x, y))
+            dx, dy = x - self.pos[0], y - self.pos[1]
+            newang = math.degrees(math.atan2(dy, dx))
+            if newang < 0.0:
+                newang += 360.0
+            if self.ang and math.fabs(newang-self.ang) > self.anglim:
+                #print 'DEBUG: add up/down'
+                self.commands += ['M15', 'M14']
+            self.ang = newang
         self.commands += ['X{:.0f}Y{:.0f}'.format(x, y)]
         self.pos = (x, y)
 
-    def arc_cw(self, x, y, i, j):
-        """Create a clockwise arc, starting from the current position.
-
-        :x, y: end coordinates in mm
-        :i, j: center coordinates in mm
-        """
-        x, y, i, j = mm2cin([x, y, i, j])
-        if self.cut:
-            self.bbox.update((x, y))
-        self.commands += ['G02X{:.0f}Y{:.0f}I{:.0f}J{:.0f}'.format(x, y, i, j)]
-        self.pos = (x, y)
-
-    def arc_ccw(self, x, y, i, j):
-        """Create a counter clockwise arc, starting from the current position.
-
-        :x, y: end coordinates in mm
-        :i, j: center coordinates in mm
-        """
-        x, y, i, j = mm2cin([x, y, i, j])
-        if self.cut:
-            self.bbox.update((x, y))
-        self.commands += ['G03X{:.0f}Y{:.0f}I{:.0f}J{:.0f}'.format(x, y, i, j)]
-        self.pos = (x, y)
+#    def arc_cw(self, x, y, i, j):
+#        """Create a clockwise arc, starting from the current position.
+#
+#        :x, y: end coordinates in mm
+#        :i, j: center coordinates in mm
+#        """
+#        x, y, i, j = mm2cin([x, y, i, j])
+#        if self.cut:
+#            self.bbox.update((x, y))
+#        self.commands += ['G02X{:.0f}Y{:.0f}I{:.0f}J{:.0f}'.format(x, y, i, j)]
+#        self.pos = (x, y)
+#
+#    def arc_ccw(self, x, y, i, j):
+#        """Create a counter clockwise arc, starting from the current position.
+#
+#        :x, y: end coordinates in mm
+#        :i, j: center coordinates in mm
+#        """
+#        x, y, i, j = mm2cin([x, y, i, j])
+#        if self.cut:
+#            self.bbox.update((x, y))
+#        self.commands += ['G03X{:.0f}Y{:.0f}I{:.0f}J{:.0f}'.format(x, y, i, j)]
+#        self.pos = (x, y)
 
     def write(self):
         """Write the NC file.

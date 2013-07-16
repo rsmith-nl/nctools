@@ -59,6 +59,4 @@ clean::
 backup::
 	sh tools/genbackup
 
-.git/hooks/post-commit: tools/post-commit
-	install -m 755 $> $@
 #endskip
