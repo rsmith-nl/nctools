@@ -172,18 +172,7 @@ def _plotpoly(e, ctx):
         if angs == 0.0:
             ctx.line_to(xe, ye)
         else:
-            xm, ym = (xs + xe)/2.0, (ys + ye)/2.0
-            xp, yp = xm - xs, ym - ys
-            lp = math.sqrt(xp**2 + yp**2)
-            lq = lp/math.tan(angs/2.0)
-            f = lq/lp
-            if angs > 0:
-                xc, yc = xm - f * yp, ym + f * xp
-            else:
-                xc, yc = xm + f * yp, ym - f * xp
-            R = math.sqrt((xc-xs)**2, (yc-ys)**2)
-            a0 = math.atan2(ys - yc, xs - xc)
-            a1 = math.atan2(ye - yc, xe - xc)
+            (xc, yc), R, a0, a1 = ent.arcdata((xs, ys), (xe, ye), angs)
             if angs < 0:
                 ctx.arc_negative(xc, yc, R, a0, a1)
             else:
@@ -209,4 +198,3 @@ def plotcolorbar(context, width, nument, colors):
         context.rel_line_to(0, 5)
         context.stroke()
         xs += sw
-

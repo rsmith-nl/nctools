@@ -73,7 +73,7 @@ class Line(object):
         """Reverse the direction of a line.
         """
         self.x = tuple(reversed(self.x))
-        self.y = tuple(reversed(self.x))
+        self.y = tuple(reversed(self.y))
 
     @property
     def points(self):
@@ -137,9 +137,21 @@ class Polyline(Line):
 
     @property
     def length(self):
-        dx2 = [(a - b)**2 for a, b in zip(self.x, self.x[1:])]
-        dy2 = [(c - d)**2 for c, d in zip(self.y, self.y[1:])]
-        return sum(x2 + y2 for x2, y2 in zip(dx2, dy2))**0.5
+        dx2 = [(a - b)**2 for a, b, h in 
+               zip(self.x, self.x[1:], self.angles) if h == 0]
+        dy2 = [(c - d)**2 for c, d, h in 
+               zip(self.y, self.y[1:], self.angles) if h == 0]
+        slen = sum(math.sqrt(x2 + y2) for x2, y2 in zip(dx2, dy2))
+
+        p = [(a, b, h) for a, b, h in
+             zip(self.x, self.x[1:], self.angles) if h != 0]
+        q = [(c, d) for c, d, h in
+             zip(self.y, self.y[1:], self.angles) if h != 0]
+        alen = []
+        for (xs, xe, ang), (ys, ye) in zip(p, q):
+            _, R, _, _ = arcdata((xs, ys), (xe, ye), ang)
+            alen.append(math.fabs(ang*R))
+        return slen + sum(alen)
 
 
 class Arc(Line):
@@ -242,14 +254,30 @@ class Contour(Line):
 
         :entities: A list of connected entities.
         """
-        x0, y0 = entities[0].points[0]
-        x1, y1 = entities[-1].points[1]
-        Line.__init__(self, x0, y0, x1, y1, entities[0].index)
+        if len(entities) == 1:
+            raise ValueError('a contour should have more than one entity')
         # Flip the entities if necessary.
+        if entities[0].points[1] not in entities[1].points:
+            entities[0].flip()
         for a, b in zip(entities, entities[1:]):
             if b.points[0] != a.points[-1]:
                 b.flip()
         self.entities = tuple(entities)
+        # Now initiate the base class.
+        x0, y0 = entities[0].points[0]
+        x1, y1 = entities[-1].points[1]
+        Line.__init__(self, x0, y0, x1, y1, entities[0].index)
+        self.name = 'contour'
+
+    def move(self, dx, dy):
+        Line.move(self, dx, dy)
+        for e in self.entities:
+            e.move(dx, dy)
+
+    def flip(self):
+        """Contour cannot be reversed.
+        """
+        pass
 
     @property
     def bbox(self):
@@ -267,10 +295,13 @@ def findcontours(ent):
     :returns: A list of contours and a list of remaining entities
     """
     entities = ent[:]
+    #print 'DEBUG: #entities:', len(entities)
     uniquepoints = list(set(p for e in entities for p in e.points))
+    #print 'DEBUG: #uniquepoints:', len(uniquepoints)
     xrefs = {p: [e for e in entities if p in e.points] 
              for p in uniquepoints}
     starters = [p for p in uniquepoints if len(xrefs[p]) == 1]
+    #print 'DEBUG: #starters:', len(starters)
     contours = [_mkcontour(p, xrefs, entities) for p in starters]
     contours = [c for c in contours if c != None]
     return contours, entities
@@ -295,7 +326,12 @@ def _mkcontour(sp, xref, ent):
     :ent: List of entities
     :returns: A Contour or None.
     """
-    ce = [xref[sp][0]]
+    try:
+        #print 'DEBUG: sp', sp
+        #print 'DEBUG: xref[sp]', xref[sp]
+        ce = [xref[sp][0]]
+    except KeyError:
+        return None
     del xref[sp] # It has only one entity, and that's used now!
     ent.remove(ce[0])
     cont = True
@@ -315,3 +351,30 @@ def _mkcontour(sp, xref, ent):
         ent.append(ce[0])
         return None
     return Contour(ce)
+
+
+def arcdata(sp, ep, angs):
+    """Calculate arc properties for a curved polyline section
+
+    :sp: startpoint
+    :ep: endpoint
+    :angs: enclosed angle. positive = CCW, negative = CW
+    :returns: center point, radius, start angle, end angle
+    """
+    xs, ys = sp
+    xe, ye = ep
+    if angs == 0.0:
+        raise ValueError('not a curved section')
+    xm, ym = (xs + xe)/2.0, (ys + ye)/2.0
+    xp, yp = xm - xs, ym - ys
+    lp = math.sqrt(xp**2 + yp**2)
+    lq = lp/math.tan(angs/2.0)
+    f = lq/lp
+    if angs > 0:
+        xc, yc = xm - f * yp, ym + f * xp
+    else:
+        xc, yc = xm + f * yp, ym - f * xp
+    R = math.sqrt((xc-xs)**2 + (yc-ys)**2)
+    a0 = math.atan2(ys - yc, xs - xc)
+    a1 = math.atan2(ye - yc, xe - xc)
+    return (xc, yc), R, a0, a1

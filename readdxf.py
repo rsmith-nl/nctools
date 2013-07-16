@@ -28,6 +28,7 @@
 
 import sys 
 import nctools.dxf as dxf
+import nctools.ent as ent
 import nctools.bbox as bbox
 import nctools.utils as utils
 
@@ -43,7 +44,7 @@ def main(argv):
     if len(argv) == 1:
         print __proginfo__
         print "Usage: {} dxf-file(s)".format(argv[0])
-        exit(1)
+        sys.exit(1)
     del argv[0]
     for f in argv:
         try:
@@ -51,14 +52,31 @@ def main(argv):
         except Exception as e: #pylint: disable=W0703
             utils.skip(e, f)
             continue
+        num = len(entities)
         print 'Filename:', f
-        print 'Contains {} entities'.format(len(entities))
-        pnts = [p for e in entities for p in e.points]
-        bb = bbox.BBox(pnts)
+        if num == 0:
+            print 'No entities found!'
+            sys.exit(1)
+        if num > 1:
+            print 'Contains: {} entities'.format(num)
+            bbe = [e.bbox for e in entities]
+            bb = bbox.merge(bbe)
+            contours, rement = ent.findcontours(entities)
+            ncon = 'Found {} contours, {} remaining single entities'
+            print ncon.format(len(contours), len(rement))
+            entities = contours + rement
+        else:
+            print 'Contains: 1 entity'
+            bb = entities[0].bbox
         es = 'Extents: {:.1f} ≤ x ≤ {:.1f}, {:.1f} ≤ y ≤ {:.1f}'
         print es.format(bb.minx, bb.maxx, bb.miny, bb.maxy)
-        for ent in entities:
-            print ent
+        length = sum(e.length for e in entities)
+        print 'Total length of entities: {:.0f} mm'.format(length)
+        for e in entities:
+            print e
+            if isinstance(e, ent.Contour):
+                for c in e.entities:
+                    print '..', c
 
 if __name__ == '__main__':
     main(utils.xpand(sys.argv))
