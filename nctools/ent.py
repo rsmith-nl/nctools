@@ -107,6 +107,7 @@ class Polyline(Line):
         y = [y for _, y in pnts]
         Line.__init__(self, x[0], y[0], x[-1], y[-1],
                       index=index, layer=layer)
+        # self.angles in radians here!
         self.angles = tuple(math.atan(b)*4 for b in bulges)
         self.name = 'polyline'
         self.closed = closed
@@ -140,6 +141,7 @@ class Polyline(Line):
         (start_point, end_point, start_angle)
         """
         pnts = zip(self.x, self.y)
+        print 'DEBUG: Polyline.segments():', len(pnts)-1
         return zip(pnts, pnts[1:], self.angles)
 
     @property
@@ -168,12 +170,12 @@ class Arc(Line):
 
     def __init__(self, cx, cy, R, a1, a2, index=None, layer='0', ccw=True):
         """Creates a Arc centering in (cx, cy) with radius R and running from
-        a1 degrees to a2 degrees. The default is ccw.
+        a1 to a2 radians. The default is ccw.
 
         :cx, cy: center point
         :R: radius
-        :a1: starting angle in degrees
-        :a2: ending angle in degrees
+        :a1: starting angle in radians. It should be in [0, 2π]
+        :a2: ending angle in radians. It should be in [0, 2π]
         :index: sequence of the element in the DXF file.
         """
         self.ccw = ccw
@@ -181,10 +183,10 @@ class Arc(Line):
         self.cy = float(cy)
         self.R = float(R)
         self.a = (float(a1), float(a2))
-        x1 = cx+R*math.cos(math.radians(a1))
-        y1 = cy+R*math.sin(math.radians(a1))
-        x2 = cx+R*math.cos(math.radians(a2))
-        y2 = cy+R*math.sin(math.radians(a2))
+        x1 = cx+R*math.cos(a1)
+        y1 = cy+R*math.sin(a1)
+        x2 = cx+R*math.cos(a2)
+        y2 = cy+R*math.sin(a2)
         Line.__init__(self, x1, y1, x2, y2, index, layer)
         self.name = 'arc'
 
@@ -207,18 +209,19 @@ class Arc(Line):
                  the arc.
         :returns: A list of points
         """
+        print 'DEBUG: Arc.segments()'
         devlim = float(devlim)
         da = self.a[1]-self.a[0]
-        step = math.degrees(2*math.acos(1-devlim/float(self.R)))
-        cnt = da//step + 1
-        step = da/cnt
+        step = 2*math.acos(1-devlim/float(self.R))
+        cnt = int(da/step) + 1
+        step = da/float(cnt)
         sa = self.a[0]
         if not self.ccw:
             sa = self.a[1]
             step = -step
         angs = [sa+i*step for i in range(int(cnt)+1)]
-        pnts = [(self.cx+self.R*math.cos(math.radians(a)),
-                 self.cy+self.R*math.sin(math.radians(a))) for a in angs]
+        pnts = [(self.cx+self.R*math.cos(a),
+                 self.cy+self.R*math.sin(a)) for a in angs]
         return pnts
 
     @property
@@ -227,8 +230,10 @@ class Arc(Line):
 
         :returns: bounding box of the entity in the form of a 4-tuple (xmin,
         xmax, ymin, ymax)
+
+        We're using degrees here because it is convenient for the calculation.
         """
-        a0, a1 = self.a[0], self.a[1]
+        a0, a1 = math.degrees(self.a[0]), math.degrees(self.a[1])
         if self.ccw:
             if a0 > a1:
                 a0 -= 360.0
@@ -247,9 +252,9 @@ class Arc(Line):
     @property
     def length(self):
         if self.ccw:
-            angle = math.radians(self.a[1]-self.a[0])
+            angle = self.a[1]-self.a[0]
         else:
-            angle = math.radians(self.a[0]-self.a[1])
+            angle = self.a[0]-self.a[1]
         return self.R*angle
 
 
@@ -384,6 +389,17 @@ def arcdata(sp, ep, angs):
     else:
         xc, yc = xm + f * yp, ym - f * xp
     R = math.sqrt((xc-xs)**2 + (yc-ys)**2)
+    twopi = 2*math.pi
     a0 = math.atan2(ys - yc, xs - xc)
     a1 = math.atan2(ye - yc, xe - xc)
+    if angs > 0:
+        if a0 < 0:
+            a0 += twopi
+        if a1 <= 0:
+            a1 += twopi
+    else:
+        if a0 <= 0:
+            a0 += twopi
+        if a1 < 0:
+            a1 += twopi
     return (xc, yc), R, a0, a1

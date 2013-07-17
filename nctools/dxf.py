@@ -26,6 +26,7 @@
 
 """Module for reading DXF files and extracting supported entities."""
 
+import math
 import ent
 
 __version__ = '$Revision$'[11:-2]
@@ -81,11 +82,11 @@ def _get_arcs(lines):
         num = lines.index("40", num) + 1
         R = float(lines[num])
         num = lines.index("50", num) + 1
-        a1 = float(lines[num])
+        a1 = math.radians(float(lines[num]))
         num = lines.index("51", num) + 1
-        a2 = float(lines[num])
+        a2 = math.radians(float(lines[num]))
         if a2 < a1:
-            a2 += 360.0
+            a2 += 2*math.pi
         rv.append(ent.Arc(cx, cy, R, a1, a2, i, layer))
     #print 'DEBUG: dxf.Reader found {} arcs'.format(len(rv))
     return rv

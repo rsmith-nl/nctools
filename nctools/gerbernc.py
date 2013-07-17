@@ -60,8 +60,8 @@ class Reader(object):
         """
         oldpos = self.pos
         x, y = [int(t) for t in c[1:].split('Y')]
-        self.pos = (x, y)
         p, q = cin2mm([x, y])
+        self.pos = (p, q)
         s = 'moveto({:.1f}, {:.1f})'
         return s.format(p, q), (oldpos, self.pos)
 
@@ -80,7 +80,7 @@ class Reader(object):
         ct = c[4:].replace('Y', ' ').replace('I', ' ').replace('J', ' ')
         x, y, i, j = [int(n) for n in ct.split()]
         p, q, r, s = cin2mm([x, y, i, j])
-        self.pos = (x, y)
+        self.pos = (p, q)
         fs = '{}({:.1f}, {:.1f}, {:.1f}, {:.1f})'
         return fs.format(direction, p, q, r, s), (oldpos, self.pos, (i, j))
 
@@ -146,6 +146,7 @@ class Writer(object):
         # commands[2] is an empty placeholder. The name, length and width of
         # the program need to be put there before writing.
         self.commands = ['H1', 'M20', '', 'N1', 'M15']
+        #print 'DEBUG: Writer.__init__()'
 
     def __str__(self):
         return '*'.join(self.commands)
@@ -157,6 +158,7 @@ class Writer(object):
     def up(self):
         """Stop cutting.
         """
+        #print 'DEBUG: Writer.up()'
         self.cut = False
         self.ang = None
         self.commands += ['M15']
@@ -167,6 +169,7 @@ class Writer(object):
     def down(self):
         """Start cutting.
         """
+        #print 'DEBUG: Writer.down()'
         if not self.pos:
             raise ValueError('start cutting at unknown position')
         self.cut = True
@@ -183,20 +186,23 @@ class Writer(object):
         :x: x coordinate in mm
         :y: y coordinate in mm
         """
+        #print 'DEBUG: Writer.moveto()'
         x, y = mm2cin([x, y])
         if self.cut: # We're cutting
+            #print 'DEBUG: Writer.moveto() cutting'
             self.bbox.update((x, y))
             dx, dy = x - self.pos[0], y - self.pos[1]
             newang = math.degrees(math.atan2(dy, dx))
             if newang < 0.0:
                 newang += 360.0
             if self.ang and math.fabs(newang-self.ang) > self.anglim:
-                #print 'DEBUG: add up/down'
+                #print 'DEBUG: Writer.moveto() add up/down'
                 self.commands += ['M15', 'M14']
             self.ang = newang
         self.commands += ['X{:.0f}Y{:.0f}'.format(x, y)]
         self.pos = (x, y)
 
+# These are not supported by the controller of our machine. R.S.
 #    def arc_cw(self, x, y, i, j):
 #        """Create a clockwise arc, starting from the current position.
 #
@@ -229,11 +235,13 @@ class Writer(object):
 
     def __enter__(self):
         """Start context manager."""
+        #print 'DEBUG: Writer.__enter__() start'
         self.f = open(self.path, 'wb')
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         """Stop context manager."""
+        #print 'DEBUG: Writer.__exit__() start'
         li = self.bbox.width/100.0
         wi = self.bbox.height/100.0
         self.commands[2] = '{}/L={:.3f}/W={:.3f}'.format(self.name, li, wi)

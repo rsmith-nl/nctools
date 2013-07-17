@@ -28,7 +28,6 @@
 
 import nctools.ent as ent
 import cairo
-import math
 
 gamma = 0.8
 maxc = 255
@@ -143,8 +142,8 @@ def plotentities(context, offset, entities, colors, lw=0.5):
         if isinstance(e, ent.Arc):
             #print 'DEBUG: plotting an arc'
             context.new_sub_path()
-            a0 = math.radians(e.a[0])
-            a1 = math.radians(e.a[1])
+            a0 = e.a[0]
+            a1 = e.a[1]
             if e.ccw:
                 context.arc(e.cx, e.cy, e.R, a0, a1)
             else:
