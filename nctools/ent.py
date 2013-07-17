@@ -132,14 +132,21 @@ class Polyline(Line):
 
     def flip(self):
         Line.flip(self)
-        self.angles = tuple(-self.angles[i] for i in 
+        self.angles = tuple(-self.angles[i] for i in
                             xrange(len(self.angles)-1, -1, -1))
+
+    def segments(self):
+        """Returns a list detailing each segment in the form
+        (start_point, end_point, start_angle)
+        """
+        pnts = zip(self.x, self.y)
+        return zip(pnts, pnts[1:], self.angles)
 
     @property
     def length(self):
-        dx2 = [(a - b)**2 for a, b, h in 
+        dx2 = [(a - b)**2 for a, b, h in
                zip(self.x, self.x[1:], self.angles) if h == 0]
-        dy2 = [(c - d)**2 for c, d, h in 
+        dy2 = [(c - d)**2 for c, d, h in
                zip(self.y, self.y[1:], self.angles) if h == 0]
         slen = sum(math.sqrt(x2 + y2) for x2, y2 in zip(dx2, dy2))
 
@@ -210,7 +217,7 @@ class Arc(Line):
             sa = self.a[1]
             step = -step
         angs = [sa+i*step for i in range(int(cnt)+1)]
-        pnts = [(self.cx+self.R*math.cos(math.radians(a)), 
+        pnts = [(self.cx+self.R*math.cos(math.radians(a)),
                  self.cy+self.R*math.sin(math.radians(a))) for a in angs]
         return pnts
 
@@ -298,7 +305,7 @@ def findcontours(ent):
     #print 'DEBUG: #entities:', len(entities)
     uniquepoints = list(set(p for e in entities for p in e.points))
     #print 'DEBUG: #uniquepoints:', len(uniquepoints)
-    xrefs = {p: [e for e in entities if p in e.points] 
+    xrefs = {p: [e for e in entities if p in e.points]
              for p in uniquepoints}
     starters = [p for p in uniquepoints if len(xrefs[p]) == 1]
     #print 'DEBUG: #starters:', len(starters)
@@ -311,14 +318,14 @@ def _mkcontour(sp, xref, ent):
     """Find the contour (if any) that starts with sp.
 
     Starting with a starting point (sp) we find the entity it belongs to.
-    This entity is the start of our contour. The starting point is then 
+    This entity is the start of our contour. The starting point is then
     removed from the xref dict.
 
     Now we start looping over the points that are the keys in xref.
-    If the last entry in the ce list is found in a particular dict value, 
+    If the last entry in the ce list is found in a particular dict value,
     it is removed. If the dict then has remaining values, the first one of
-    those is appended to the ce list and removed from the entities list. 
-    We then resume the loop from the first key in the dict with a new last 
+    those is appended to the ce list and removed from the entities list.
+    We then resume the loop from the first key in the dict with a new last
     entry in ce. If no new entity is found, we quit the loop.
 
     :sp: Starting point.
