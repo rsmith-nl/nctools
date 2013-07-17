@@ -100,11 +100,10 @@ def crange(start, stop, count):
 def plotgrid(context, width, height, size=100):
     """Plot a grid
 
-    :context: PDF drawing context
+    :context: Cairo context
     :width: width of the context
     :height: height of the context
     :size: grid cell size
-    :returns: @todo
     """
     context.save()
     context.new_path()
@@ -124,12 +123,11 @@ def plotgrid(context, width, height, size=100):
 def plotentities(context, offset, entities, colors, lw=0.5):
     """Draw the entities
 
-    :context: PDF drawing context
+    :context: Cairo context
     :offset: tuple for translating the coordinate system
-    :entities: list of entities
+    :entities: list of nctools.ent entities
     :colors: list of (r,g,b) tuples or one (r,g,b) tuple
     :lw: line width
-    :returns: nothing
     """
     if isinstance(colors, tuple) and len(colors) == 3:
         colors = [colors]*len(entities)
@@ -165,14 +163,17 @@ def plotentities(context, offset, entities, colors, lw=0.5):
 
 
 def _plotpoly(e, ctx):
-    comb = zip(e.x, e.y, e.angles)
-    comb = zip(comb, comb[1:])
+    """Plot a Polyline
+
+    :e: nctools.ent.Polyline
+    :ctx: Cairo context
+    """    
     ctx.move_to(e.x[0], e.y[1])
-    for (xs, ys, angs), (xe, ye, _) in comb:
+    for sp, (xe, ye), angs in e.segments():
         if angs == 0.0:
             ctx.line_to(xe, ye)
         else:
-            (xc, yc), R, a0, a1 = ent.arcdata((xs, ys), (xe, ye), angs)
+            (xc, yc), R, a0, a1 = ent.arcdata(sp, (xe, ye), angs)
             if angs < 0:
                 ctx.arc_negative(xc, yc, R, a0, a1)
             else:
@@ -182,11 +183,10 @@ def _plotpoly(e, ctx):
 def plotcolorbar(context, width, nument, colors):
     """Plot a color bar
 
-    :context: plotting context
+    :context: Cairo context
     :width: width of the canvas
     :nument: number of entities
     :colors: list of colors
-    :returns: nothing
     """
     sw = width/float(2*nument)
     context.set_line_cap(cairo.LINE_CAP_BUTT)
