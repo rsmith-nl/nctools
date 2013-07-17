@@ -102,7 +102,7 @@ class Polyline(Line):
     segments.
     """
 
-    def __init__(self, pnts, bulges, index, layer, closed=False):
+    def __init__(self, pnts, bulges, index=None, layer='0', closed=False):
         x = [x for x, _ in pnts]
         y = [y for _, y in pnts]
         Line.__init__(self, x[0], y[0], x[-1], y[-1],
@@ -166,7 +166,7 @@ class Arc(Line):
     angle a1 to a2.
     """
 
-    def __init__(self, cx, cy, R, a1, a2, index, layer, ccw=True):
+    def __init__(self, cx, cy, R, a1, a2, index=None, layer='0', ccw=True):
         """Creates a Arc centering in (cx, cy) with radius R and running from
         a1 degrees to a2 degrees. The default is ccw.
 
@@ -256,7 +256,7 @@ class Arc(Line):
 class Contour(Line):
     """A contour is a list of connected entities."""
 
-    def __init__(self, entities):
+    def __init__(self, entities, index=None, layer='0'):
         """Create a Contour from a list of entities.
 
         :entities: A list of connected entities.
@@ -273,7 +273,9 @@ class Contour(Line):
         # Now initiate the base class.
         x0, y0 = entities[0].points[0]
         x1, y1 = entities[-1].points[1]
-        Line.__init__(self, x0, y0, x1, y1, entities[0].index)
+        if index == None:
+            index = entities[0].index
+        Line.__init__(self, x0, y0, x1, y1, index, layer)
         self.name = 'contour'
 
     def move(self, dx, dy):

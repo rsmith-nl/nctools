@@ -71,7 +71,20 @@ def _cutpoly(e, wr):
     :wr: nctoos.gerbernc.Writer
     """
     wr.down()
-    # not implemented yet
+    for sp, (xe, ye), ang in e.segments():
+        if ang == 0.0:
+            wr.moveto(xe, ye)
+        else:
+            (xc, yc), R, a0, a1 = ent.arcdata(sp, (xe, ye), ang)
+            if ang > 0:
+                ccw = True
+            else:
+                ccw = False
+            a = ent.Arc(xc, yc, R, a0, a1, ccw=ccw)
+            pnts = a.segments()
+            pnts.pop(0)
+            for x, y in pnts:
+                wr.moveto(x, y)
     wr.up()
 
 def _cutcontour(e, wr):
