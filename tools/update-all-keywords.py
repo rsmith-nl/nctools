@@ -9,7 +9,7 @@
 # published from the Netherlands. 
 # See http://creativecommons.org/publicdomain/zero/1.0/
 
-"""Remove and check out all files that contain keywords."""
+"""Remove and check out all files under git's control that contain keywords."""
 
 from __future__ import print_function, division
 import os
@@ -38,29 +38,23 @@ def checkfor(args):
         sys.exit(1)
 
 
-def normalfiles(top='.', exlist=None):
-    """Find ordinary files. Exclude files whose paths contain one of the
-    parts of the exlist
+def git_ls_files():
+    """Find ordinary files that are controlled by git. 
 
-    :top: Directory to start in
-    :exlist: List of paths to skip
-    :returns: @todo
+    :returns: A list of files
     """
-    if exlist == None:
-        exlist = ['.git', '__pycache__']
-    flist = []
-    for root, _, files in os.walk(top):
-        if all([not b in root for b in exlist]):
-            flist += [os.path.join(root, f) for f in files]
+    args = ['git', 'ls-files']
+    flist = subprocess.check_output(args).splitlines()
     return flist
 
 
 def gitmodified():
     """Find files that are modified by git.
+
     :returns: A list of modified files.
     """
     lns = subprocess.check_output(['git', 'status', '-s']).splitlines()
-    lns = ['./' + l.split()[-1] for l in lns]
+    lns = [l.split()[-1] for l in lns]
     return lns
 
 
@@ -92,8 +86,8 @@ def main():
     if not os.access('.git', os.F_OK):
         print('No .git directory found!')
         sys.exit(1)
-    # Get all files
-    files = normalfiles()
+    # Get all files that are controlled by git.
+    files = git_ls_files()
     # Remove those that aren't checked in
     mod = gitmodified()
     #print('DEBUG: modified files = ', mod)
@@ -105,9 +99,10 @@ def main():
     for fn in kwfn:
         #print('DEBUG: removing', fn)
         os.remove(fn)
-    #print('DEBUG: checking out files')
+    #print('DEBUG: checking out files', kwfn)
     args = ['git', 'checkout', '-f'] + kwfn
     subprocess.call(args)
+
 
 if __name__ == '__main__':
     main()
