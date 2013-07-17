@@ -111,13 +111,15 @@ def _cutcontour(e, wr):
     print 'DEBUG: _cutcontour()'
     wr.moveto(e.entities[0].x[0], e.entities[0].y[0])
     wr.down()
-    for ce in e.entities[1:]:
+    for ce in e.entities:
         if isinstance(ce, ent.Arc):
-            pnts = e.segments()
+            print 'DEBUG: _cutcontour arc segment'
+            pnts = ce.segments()
             pnts.pop(0)
             for x, y in pnts:
                 wr.moveto(x, y)
         elif isinstance(ce, ent.Line):
+            print 'DEBUG: _cutcontour line segment'
             wr.moveto(e.x[1], e.y[1])
     wr.up()
 

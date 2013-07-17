@@ -146,12 +146,13 @@ class Polyline(Line):
 
     @property
     def length(self):
+        # Straight line segments
         dx2 = [(a - b)**2 for a, b, h in
                zip(self.x, self.x[1:], self.angles) if h == 0]
         dy2 = [(c - d)**2 for c, d, h in
                zip(self.y, self.y[1:], self.angles) if h == 0]
         slen = sum(math.sqrt(x2 + y2) for x2, y2 in zip(dx2, dy2))
-
+        # Curved segments
         p = [(a, b, h) for a, b, h in
              zip(self.x, self.x[1:], self.angles) if h != 0]
         q = [(c, d) for c, d, h in
