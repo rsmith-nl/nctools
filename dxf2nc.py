@@ -50,6 +50,7 @@ def _cutline(e, wr):
     wr.moveto(e.x[1], e.y[1])
     wr.up()
 
+
 def _cutarc(e, wr):
     """Cut an ent.Arc
 
@@ -63,6 +64,7 @@ def _cutarc(e, wr):
     for x, y in pnts:
         wr.moveto(x, y)
     wr.up()
+
 
 def _cutpoly(e, wr):
     """Cut a ent.Polyline
@@ -87,6 +89,7 @@ def _cutpoly(e, wr):
                 wr.moveto(x, y)
     wr.up()
 
+
 def _cutcontour(e, wr):
     """Cut a ent.Contour
 
@@ -104,6 +107,7 @@ def _cutcontour(e, wr):
         elif isinstance(ce, ent.Line):
             wr.moveto(e.x[1], e.y[1])
     wr.up()
+
 
 def main(argv):
     """Main program for the dxf2nc utility.
