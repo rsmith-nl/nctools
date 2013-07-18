@@ -303,71 +303,6 @@ class Contour(Line):
         return sum(e.length for e in self.entities)
 
 
-def findcontours(ent):
-    """Finds contours in a list of entities
-
-    :ent: A list of entities
-    :returns: A list of contours and a list of remaining entities
-    """
-    entities = ent[:]
-    #print 'DEBUG: #entities:', len(entities)
-    uniquepoints = list(set(p for e in entities for p in e.points))
-    #print 'DEBUG: #uniquepoints:', len(uniquepoints)
-    xrefs = {p: [e for e in entities if p in e.points]
-             for p in uniquepoints}
-    starters = [p for p in uniquepoints if len(xrefs[p]) == 1]
-    #print 'DEBUG: #starters:', len(starters)
-    contours = [_mkcontour(p, xrefs, entities) for p in starters]
-    contours = [c for c in contours if c != None]
-    return contours, entities
-
-
-def _mkcontour(sp, xref, ent):
-    """Find the contour (if any) that starts with sp.
-
-    Starting with a starting point (sp) we find the entity it belongs to.
-    This entity is the start of our contour. The starting point is then
-    removed from the xref dict.
-
-    Now we start looping over the points that are the keys in xref.
-    If the last entry in the ce list is found in a particular dict value,
-    it is removed. If the dict then has remaining values, the first one of
-    those is appended to the ce list and removed from the entities list.
-    We then resume the loop from the first key in the dict with a new last
-    entry in ce. If no new entity is found, we quit the loop.
-
-    :sp: Starting point.
-    :xref: Dictionary of entities by their points
-    :ent: List of entities
-    :returns: A Contour or None.
-    """
-    try:
-        #print 'DEBUG: sp', sp
-        #print 'DEBUG: xref[sp]', xref[sp]
-        ce = [xref[sp][0]]
-    except KeyError:
-        return None
-    del xref[sp] # It has only one entity, and that's used now!
-    ent.remove(ce[0])
-    cont = True
-    while cont:
-        cont = False
-        for p in xref.keys():
-            if ce[-1] in xref[p]:
-                xref[p].remove(ce[-1])
-                if len(xref[p]) > 0:
-                    ce.append(xref[p].pop(0)) # New entity, continue
-                    ent.remove(ce[-1])
-                    cont = True
-                    break
-                else:
-                    del xref[p] # It's empty. End of the contour!
-    if len(ce) == 1:
-        ent.append(ce[0])
-        return None
-    return Contour(ce)
-
-
 def arcdata(sp, ep, angs):
     """Calculate arc properties for a curved polyline section
 
@@ -404,3 +339,70 @@ def arcdata(sp, ep, angs):
         if a1 < 0:
             a1 += twopi
     return (xc, yc), R, a0, a1
+
+
+def _dist2(a, b):
+    """Calculate the square of the distance between two points. Since this
+    measure is only used for comparison purposes, there is no need to perform
+    the square root calculation.
+
+    :a: first point (a 2-tuple)
+    :b: second point
+    :returns: the square of the distance between the points
+    """
+    x, y = a
+    j, k = b
+    return (x-j)**2 + (y-k)**2
+
+
+def _chkdist(p, e):
+    """Check wether a point is near enough to other points to
+
+    :p: a point (2-tuple)
+    :e: either a point or a 2-tuple of points
+    :returns: True is the distance to one of the endpoints is ≤ 0.5.
+    """
+    lim = 0.25
+    if isinstance(e[0], tuple):
+        a, b = e
+        return min(_dist2(p, a), _dist2(p, b)) <= lim
+    return _dist2(p, e) <= lim
+
+
+def _contour(se, ent):
+    ent.remove(se)
+    cl = [se]
+    while True:
+        # Look for connections at the end point
+        _, ep = cl[-1].points
+        ce = [e for e in ent if _chkdist(ep, e.points)]
+        if ce:
+            newend = ce[0]
+            if _chkdist(ep, newend.points[1]):
+                newend.flip()
+            ent.remove(newend)
+            cl.append(newend)
+        else:
+            # Look for connections at the start point
+            sp, _ = cl[0].points
+            cs = [e for e in ent if _chkdist(sp, e.points)]
+            if cs:
+                newstart = cs[0]
+                if _chkdist(sp, newstart.points[0]):
+                    newstart.flip()
+                ent.remove(newstart)
+                cl.insert(0, newstart)
+            else:
+                break
+    # If no additional entities are found, it's not a contour.
+    if len(cl) == 1:
+        ent.append(se)
+        return None
+    return Contour(cl)
+
+
+def findcontours(entities):
+    ent = entities[:]
+    contours = [_contour(e, ent) for e in ent]
+    contours = [c for c in contours if c != None]
+    return contours, ent
