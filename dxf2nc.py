@@ -45,7 +45,6 @@ def _cutline(e, wr):
     :ent: nctools.ent.Line
     :wr: nctoos.gerbernc.Writer
     """
-    print 'DEBUG: _cutline()'
     wr.moveto(e.x[0], e.y[0])
     wr.down()
     wr.moveto(e.x[1], e.y[1])
@@ -58,7 +57,6 @@ def _cutarc(e, wr):
     :ent: nctools.ent.Arc
     :wr: nctoos.gerbernc.Writer
     """
-    print 'DEBUG: _cutarc()'
     pnts = e.segments()
     x, y = pnts.pop(0)
     wr.moveto(x, y)
@@ -74,20 +72,15 @@ def _cutpoly(e, wr):
     :ent: nctools.ent.Polyline
     :wr: nctoos.gerbernc.Writer
     """
-    print 'DEBUG: _cutpoly()'
     d = e.segments()
     (xs, ys), _, _ = d[0]
     wr.moveto(xs, ys)
     wr.down()
-    print 'DEBUG: #segments:', len(d)
     for sp, (xe, ye), ang in d:
-        #print 'DEBUG: sp, (xe, ye), ang =', sp, (xe, ye), ang
         if ang == 0.0:
-            print 'DEBUG: line segment'
             wr.moveto(xe, ye)
         else:
             (xc, yc), R, a0, a1 = ent.arcdata(sp, (xe, ye), ang)
-            print 'DEBUG (xc, yc), R, a0, a1:', (xc, yc), R, a0, a1
             if ang > 0:
                 ccw = True
             else:
@@ -95,11 +88,9 @@ def _cutpoly(e, wr):
             a = ent.Arc(xc, yc, R, a0, a1, ccw=ccw)
             pnts = a.segments()
             pnts.pop(0)
-            print 'DEBUG: arc segment ({} pieces)'.format(len(pnts))
             for x, y in pnts:
                 wr.moveto(x, y)
     wr.up()
-    print 'DEBUG: _cutpoly() finished'
 
 
 def _cutcontour(e, wr):
@@ -108,19 +99,16 @@ def _cutcontour(e, wr):
     :ent: nctools.ent.Contour
     :wr: nctoos.gerbernc.Writer
     """
-    print 'DEBUG: _cutcontour()'
     wr.moveto(e.entities[0].x[0], e.entities[0].y[0])
     wr.down()
     for ce in e.entities:
         if isinstance(ce, ent.Arc):
-            print 'DEBUG: _cutcontour arc segment'
             pnts = ce.segments()
             pnts.pop(0)
             for x, y in pnts:
                 wr.moveto(x, y)
         elif isinstance(ce, ent.Line):
-            print 'DEBUG: _cutcontour line segment'
-            wr.moveto(e.x[1], e.y[1])
+            wr.moveto(ce.x[1], ce.y[1])
     wr.up()
 
 

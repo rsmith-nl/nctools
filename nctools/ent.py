@@ -38,8 +38,7 @@ class Line(object):
     direction between eindpoints that are considered coincident.
     """
 
-    def __init__(self, x1=None, y1=None, x2=None, y2=None, index=None,
-                 layer='0'):
+    def __init__(self, x1, y1, x2, y2, index=None, layer='0'):
         """Creates a line from (x1, y1) to (x2, y2).
 
         :x1, y1: start point of the entity
@@ -141,7 +140,6 @@ class Polyline(Line):
         (start_point, end_point, start_angle)
         """
         pnts = zip(self.x, self.y)
-        print 'DEBUG: Polyline.segments():', len(pnts)-1
         return zip(pnts, pnts[1:], self.angles)
 
     @property
@@ -179,11 +177,24 @@ class Arc(Line):
         :a2: ending angle in radians. It should be in [0, 2π]
         :index: sequence of the element in the DXF file.
         """
+        a1 = float(a1)
+        a2 = float(a2)
         self.ccw = ccw
         self.cx = float(cx)
         self.cy = float(cy)
         self.R = float(R)
-        self.a = (float(a1), float(a2))
+        self.a = (a1, a2)
+        self.sa = a1
+        if ccw:
+            if a2 > a1:
+                self.da = a2 - a1
+            else:
+                self.da = 2 * math.pi - a1 + a2
+        else: # CW
+            if a1 < a2:
+                self.da = a2 - a1
+            else:
+                self.da = a2 - a1 - 2 * math.pi
         x1 = cx+R*math.cos(a1)
         y1 = cy+R*math.sin(a1)
         x2 = cx+R*math.cos(a2)
@@ -202,6 +213,8 @@ class Arc(Line):
         Line.flip(self)
         self.ccw = not self.ccw
         self.a = (self.a[1], self.a[0])
+        self.sa = self.sa + self.da
+        self.da = -self.da
 
     def segments(self, devlim=1):
         """Create a list of points that approximates the arc.
@@ -210,16 +223,13 @@ class Arc(Line):
                  the arc.
         :returns: A list of points
         """
-        print 'DEBUG: Arc.segments()'
         devlim = float(devlim)
-        da = self.a[1]-self.a[0]
         step = 2*math.acos(1-devlim/float(self.R))
-        cnt = int(da/step) + 1
-        step = da/float(cnt)
-        sa = self.a[0]
-        if not self.ccw:
-            sa = self.a[1]
+        sa, da = self.sa, self.da
+        if da < 0:
             step = -step
+        cnt = int(math.fabs(da/step)) + 1
+        step = da/float(cnt)
         angs = [sa+i*step for i in range(int(cnt)+1)]
         pnts = [(self.cx+self.R*math.cos(a),
                  self.cy+self.R*math.sin(a)) for a in angs]
@@ -269,12 +279,6 @@ class Contour(Line):
         """
         if len(entities) == 1:
             raise ValueError('a contour should have more than one entity')
-        # Flip the entities if necessary.
-        if entities[0].points[1] not in entities[1].points:
-            entities[0].flip()
-        for a, b in zip(entities, entities[1:]):
-            if b.points[0] != a.points[-1]:
-                b.flip()
         self.entities = tuple(entities)
         # Now initiate the base class.
         x0, y0 = entities[0].points[0]
@@ -401,8 +405,7 @@ def _contour(se, ent):
     return Contour(cl)
 
 
-def findcontours(entities):
-    ent = entities[:]
+def findcontours(ent):
     contours = [_contour(e, ent) for e in ent]
     contours = [c for c in contours if c != None]
     return contours, ent
