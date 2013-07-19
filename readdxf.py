@@ -27,10 +27,7 @@
 # SUCH DAMAGE.
 
 import sys 
-import nctools.dxf as dxf
-import nctools.ent as ent
-import nctools.bbox as bbox
-import nctools.utils as utils
+from nctools import bbox, dxf, ent, utils
 
 __proginfo__ = ('readdxf [ver. ' + '$Revision$'[11:-2] +
                 '] ('+'$Date$'[7:-2]+')')

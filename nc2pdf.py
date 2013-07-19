@@ -28,9 +28,7 @@
 
 import sys
 import cairo
-import nctools.plot as plot
-import nctools.gerbernc as gerbernc
-import nctools.utils as utils
+from nctools import gerbernc, plot, utils
 
 __proginfo__ = ('nc2pdf [ver. ' + '$Revision$'[11:-2] + 
                 '] ('+'$Date$'[7:-2]+')')

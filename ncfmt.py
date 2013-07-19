@@ -28,8 +28,7 @@
 
 import sys
 import os
-import nctools.gerbernc as gerbernc
-import nctools.utils as utils
+from nctools import gerbernc, utils
 
 __proginfo__ = ('ncfmt [ver. ' + '$Revision$'[11:-2] + 
                 '] ('+'$Date$'[7:-2]+')')

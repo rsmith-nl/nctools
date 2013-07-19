@@ -28,11 +28,7 @@
 
 import sys 
 import cairo
-import nctools.dxf as dxf
-import nctools.bbox as bbox
-import nctools.plot as plot
-from nctools.utils import outname
-
+from nctools import bbox, dxf, plot, utils
 
 __proginfo__ = ('dxf2pdf [ver. ' + '$Revision$'[11:-2] +
                 '] ('+'$Date$'[7:-2]+')')
@@ -50,7 +46,7 @@ def main(argv): # pylint: disable=R0912
     del argv[0]
     for f in argv:
         try:
-            ofn = outname(f, extension='.pdf', addenum='_dxf')
+            ofn = utils.outname(f, extension='.pdf', addenum='_dxf')
             entities = dxf.Reader(f)
         except ValueError as e:
             print e
@@ -62,8 +58,8 @@ def main(argv): # pylint: disable=R0912
             print "Cannot open the file '{}'. Skipping it.".format(f)
             continue
         # Output
-        pnts = [p for e in entities for p in e.points]
-        bb = bbox.BBox(pnts)
+        bbx = [e.bbox for e in entities]
+        bb = bbox.merge(bbx)
         # bb = xmin, ymin, xmax, ymax
         w = bb.width + offset
         h = bb.height + offset
