@@ -47,9 +47,11 @@ def wavelen2rgb(nm): # pylint: disable=R0912
         elif rv > maxc:
             rv = maxc
         return rv
-    # Check if a valid wavelength was given.
-    if nm < 380 or nm > 780:
-        raise ValueError('wavelength outside of visible range')
+    # Clamp the wavelength
+    if nm < 380:
+        nm = 380
+    elif nm > 780:
+        nm = 780
     # Calculate intensities in the different wavelength bands.
     red, green, blue = 0.0, 0.0, 0.0
     if nm < 440:
@@ -93,6 +95,7 @@ def crange(start, stop, count):
     if count == 1:
         return [wavelen2rgb(start)]
     step = (stop-start)/float(count-1)
+
     return [wavelen2rgb(start + j*step) for j in xrange(1, count+1)]
 
 
