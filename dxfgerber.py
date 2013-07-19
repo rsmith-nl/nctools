@@ -71,7 +71,7 @@ def main(argv):
             bb = entities[0].bbox
         es = 'Extents: {:.1f} ≤ x ≤ {:.1f}, {:.1f} ≤ y ≤ {:.1f}'
         print es.format(bb.minx, bb.maxx, bb.miny, bb.maxy)
-        dxf.Writer(ofn, entities)
+        dxf.Writer(ofn, 'dxfgerber', entities)
 
 
 if __name__ == '__main__':
