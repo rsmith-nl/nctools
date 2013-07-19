@@ -223,12 +223,15 @@ class Arc(Line):
                  the arc.
         :returns: A list of points
         """
-        devlim = float(devlim)
-        step = 2*math.acos(1-devlim/float(self.R))
         sa, da = self.sa, self.da
-        if da < 0:
-            step = -step
-        cnt = int(math.fabs(da/step)) + 1
+        devlim = float(devlim)
+        if devlim > self.R:
+            cnt = 1
+        else:
+            step = 2*math.acos(1-devlim/float(self.R))
+            if da < 0:
+                step = -step
+            cnt = int(math.fabs(da/step)) + 1
         step = da/float(cnt)
         angs = [sa+i*step for i in range(int(cnt)+1)]
         pnts = [(self.cx+self.R*math.cos(a),
