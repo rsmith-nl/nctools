@@ -2,6 +2,7 @@
 NCtools
 ========
 
+
 Introduction
 ============
 These programs and modules were created because the existing software to 
@@ -16,9 +17,9 @@ millimeters. It also only writes nc code in centi-inches. All of these
 programs require the Python 2.7 interpreter. They might work with Python 3.x
 after conversion with 2to3 but that has not been tested.
 
+
 The programs
 ============
-
 All these programs can read files in other directories. They will however only
 write files in the current working directory. The output filename will be
 generated from the input filename by removing any directories and the
@@ -96,14 +97,11 @@ In this case, the output filename for the input file 'foo.nc' will be
 'foo_nc.pdf'
 
 
-ncfmt
------
-Gerber numeric code files are basically text files but do not contain
-line breaks, which makes them hard to read. This utility can be used
-to display the file in a more human-readable format.
-
-This program reads a Gerber NC file outputs it in a more human-readable
-manner.
+readnc 
+------ 
+Gerber numeric code files are basically text files but do not contain line
+breaks, which makes them hard to read. This utility can be used to display the
+file in a more human-readable format.
 
 Usage: ncfmt.py [file ...]
 
@@ -127,6 +125,7 @@ up()
 down()
 moveto(800.1, 960.1)
 up()
+...
 
 
 readdxf
@@ -148,4 +147,5 @@ Extents: 784.4 ≤ x ≤ 10880.3, 3360.1 ≤ y ≤ 4610.1
 <line from (1383.8176224,4610.09630948) to (1002.20840991,4610.09630948), layer CSM450>
 <line from (2007.21029717,4610.09630948) to (2007.21029717,3672.16739857), layer CSM450>
 <line from (844.009099688,4610.09630948) to (784.440222017,3360.90245434), layer CSM450>
+...
 

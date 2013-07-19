@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Formats G-codes for the Gerber cutter for human readability.
 #
-# Copyright © 2012 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+# Copyright © 2012, 2013 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # $Date$
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -30,12 +30,12 @@ import sys
 import os
 from nctools import gerbernc, utils
 
-__proginfo__ = ('ncfmt [ver. ' + '$Revision$'[11:-2] + 
+__proginfo__ = ('readnc [ver. ' + '$Revision$'[11:-2] + 
                 '] ('+'$Date$'[7:-2]+')')
 
 
 def main(argv):
-    """Main program for the ncformat utility.
+    """Main program for the readnc utility.
     
     :argv: command line arguments
     """
@@ -57,6 +57,7 @@ def main(argv):
         # print the file
         for cmd, _ in rd:
             print cmd
+
 
 if __name__ == '__main__':
     main(utils.xpand(sys.argv))
