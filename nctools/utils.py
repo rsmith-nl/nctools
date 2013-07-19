@@ -43,7 +43,7 @@ def outname(inname, extension, addenum=''):
     rv = os.path.splitext(os.path.basename(inname))[0]
     if rv.startswith('.') or rv.isspace():
         raise ValueError("Invalid file name!")
-    if not extension.startswith('.'):
+    if extension and not extension.startswith('.'):
         extension = '.' + extension
     return rv + addenum + extension
 

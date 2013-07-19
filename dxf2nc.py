@@ -124,7 +124,7 @@ def main(argv):
     del argv[0]
     for f in argv:
         try:
-            ofn = utils.outname(f, extension='.nc')
+            ofn = utils.outname(f, extension='')
             entities = dxf.Reader(f)
         except Exception as e: #pylint: disable=W0703
             utils.skip(e, f)
@@ -142,6 +142,7 @@ def main(argv):
             ncon = 'Found {} contours, {} remaining single entities'
             print ncon.format(len(contours), len(rement))
             entities = contours + rement
+            entities.sort(key=lambda x: x.bbox.minx)
         else:
             print 'Contains: 1 entity'
             bb = entities[0].bbox

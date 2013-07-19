@@ -244,20 +244,15 @@ class Arc(Line):
 
         We're using degrees here because it is convenient for the calculation.
         """
-        a0, a1 = math.degrees(self.a[0]), math.degrees(self.a[1])
-        if self.ccw:
-            if a0 > a1:
-                a0 -= 360.0
-            a1, a0 = int(a1), int(a0) + 1
+        sa = math.degrees(self.sa)
+        da = int(math.degrees(self.da))
+        if da > 0:
+            angles = [sa + t for t in range(0, da+1, 1)]
         else:
-            if a1 > a0:
-                a1 -= 360.0
-            a0, a1 = int(a1), int(a0) + 1
-        R = self.R
+            angles = [sa + t for t in range(0, da-1, -1)]
+        cx, cy, R = self.cx, self.cy, self.R
         sin, cos, rad = math.sin, math.cos, math.radians
-        points = [(R*cos(rad(k)), R*sin(rad(k))) for k in range(a0, a1)]
-        points += zip(self.x, self.y)
-        points += [(self.cx, self.cy)]
+        points = [(cx+R*cos(rad(k)), cy+R*sin(rad(k))) for k in angles]
         return bbox.BBox(points)
 
     @property
@@ -300,7 +295,7 @@ class Contour(Line):
 
     @property
     def bbox(self):
-        bbox.merge([e.bbox for e in self.entities])
+        return bbox.merge([e.bbox for e in self.entities])
 
     @property
     def length(self):

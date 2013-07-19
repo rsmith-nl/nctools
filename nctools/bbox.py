@@ -52,8 +52,8 @@ class BBox(object):
             raise ValueError('pnts must contain 2-tuples or 3-tuples')
 
     def __str__(self):
-        s2 = '<BBox {}≤x≤{} {}≤y≤{} >'
-        s3 = '<BBox {}≤x≤{} {}≤y≤{} {}≤z≤{} >'
+        s2 = '<BBox {} ≤ x ≤ {}, {} ≤ y ≤ {} >'
+        s3 = '<BBox {} ≤ x ≤ {}, {} ≤ y ≤ {}, {} ≤ z ≤ {} >'
         if self.dim == 2:
             return s2.format(self.minx, self.maxx, self.miny, self.maxy)
         s3.format(self.minx, self.maxx, self.miny, self.maxy, 

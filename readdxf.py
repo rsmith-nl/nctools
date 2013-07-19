@@ -65,6 +65,7 @@ def main(argv):
             ncon = 'Found {} contours, {} remaining single entities'
             print ncon.format(len(contours), len(rement))
             entities = contours + rement
+            entities.sort(key=lambda x: x.bbox.minx)
         else:
             print 'Contains: 1 entity'
             bb = entities[0].bbox
