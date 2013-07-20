@@ -108,6 +108,26 @@ def _cutcontour(e, wr):
     wr.up()
 
 
+def write_entities(fn, ents):
+    """@todo: Docstring for write_entities
+
+    :fn: output file name
+    :ents: list of entities
+    :returns: @todo
+
+    """
+    with gerbernc.Writer(fn) as w:
+        for e in ents:
+            if isinstance(e, ent.Contour):
+                _cutcontour(e, w)
+            elif isinstance(e, ent.Polyline):
+                _cutpoly(e, w)
+            elif isinstance(e, ent.Arc):
+                _cutarc(e, w)
+            elif isinstance(e, ent.Line):
+                _cutline(e, w)
+
+
 def main(argv):
     """Main program for the dxf2nc utility.
     
@@ -142,20 +162,18 @@ def main(argv):
         else:
             print 'Contains: 1 entity'
             bb = entities[0].bbox
-        es = 'Extents: {:.1f} ≤ x ≤ {:.1f}, {:.1f} ≤ y ≤ {:.1f}'
+        es = 'Original extents: {:.1f} ≤ x ≤ {:.1f} mm,' \
+             ' {:.1f} ≤ y ≤ {:.1f} mm'
         print es.format(bb.minx, bb.maxx, bb.miny, bb.maxy)
+        # move entities so that the bounding box begins at 0,0
+        if bb.minx != 0 or bb.miny != 0:
+            ms = 'Moving all entities by ({:.1f}, {:.1f}) mm'
+            print ms.format(-bb.minx, -bb.miny)
+            for e in entities:
+                e.move(-bb.minx, -bb.miny)
         length = sum(e.length for e in entities)
         print 'Total length of entities: {:.0f} mm'.format(length)
-        with gerbernc.Writer(ofn) as w:
-            for e in entities:
-                if isinstance(e, ent.Contour):
-                    _cutcontour(e, w)
-                elif isinstance(e, ent.Polyline):
-                    _cutpoly(e, w)
-                elif isinstance(e, ent.Arc):
-                    _cutarc(e, w)
-                elif isinstance(e, ent.Line):
-                    _cutline(e, w)
+        write_entities(ofn, entities)
 
 if __name__ == '__main__':
     main(utils.xpand(sys.argv))
