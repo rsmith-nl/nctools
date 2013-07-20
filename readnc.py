@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Formats G-codes for the Gerber cutter for human readability.
 #
 # Copyright © 2012, 2013 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # $Date$
@@ -25,6 +24,9 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
+
+"""Reads a Gerber cloth cutter NC file and print the contents in
+human-readable form."""
 
 import sys
 import os

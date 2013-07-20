@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Optimizes lines and arcs from a DXF file for cutting on a Gerber cutter,
-# outputs G-codes for the Gerber cutter.
 #
 # Copyright © 2012,2013 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # $Date$
@@ -26,6 +24,8 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
+
+"""Converts a DXF file to a cutting program for a Gerber cloth cutter."""
 
 import sys 
 from nctools import bbox, dxf, ent, gerbernc, utils

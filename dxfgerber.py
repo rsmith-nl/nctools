@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Optimizes lines and arcs from a DXF file for cutting on a Gerber cutter,
-# outputs another DXF file.
 #
 # Copyright © 2011-2013 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # $Date$
@@ -26,6 +24,9 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
+
+"""Reads DXF files and re-orders the entities so that entities that fit
+together are stored as a chain in the output DXF file."""
 
 import sys 
 from nctools import bbox, dxf, ent, utils

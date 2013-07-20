@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Converts lines and arcs from a DXF file and prints them.
 #
-# Copyright © 2011,2012 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+# Copyright © 2011-2013 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # $Date$
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -25,6 +24,8 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
+
+"""Reads DXF files and prints the entities in human-readable form."""
 
 import sys 
 from nctools import bbox, dxf, ent, utils
