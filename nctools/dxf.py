@@ -24,7 +24,8 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
-"""Module for reading DXF files and extracting supported entities."""
+"""Module for reading and writing DXF files. Only a subset of entities is
+supported; LINE, ARC and POLYLINE."""
 
 import datetime
 import math
@@ -161,7 +162,7 @@ def _dxfline(e):
     """
     lns = ['  0', 'LINE', '  8', 'snijlijnen', ' 10', str(e.x[0]),
            ' 20', str(e.y[0]), ' 30', '0.0', ' 11', str(e.x[1]),
-           ' 21', str(e.y[1]), ' 31', '0.0', '']
+           ' 21', str(e.y[1]), ' 31', '0.0']
     return lns
 
 
@@ -174,7 +175,8 @@ def _dxfarc(e):
         e.flip()
     lns = ['  0', 'ARC', '  8', 'snijlijnen', ' 10', str(e.cx),
            ' 20', str(e.cy), ' 30', '0.0', ' 40', str(e.R),
-           ' 50', str(e.a[0]), ' 51', str(e.a[1]), '']
+           ' 50', str(math.degrees(e.a[0])), 
+           ' 51', str(math.degrees(e.a[1]))]
     return lns
 
 
