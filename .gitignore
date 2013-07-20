@@ -1,8 +1,8 @@
 *.pyc
 *.pyo
-*~
 backup-*.tar.gz
 build
 dist
-*.1.pdf
 MANIFEST
+tools/update-all-keywords.py
+tools/update-modified-keywords.py
