@@ -8,7 +8,7 @@ Introduction
 These programs and modules were created because the existing software to 
 generate NC code for our gerber cloth cutter has some deficiencies.
 
-Note that this software does _not_ deal with Gerber PCB milling machines!
+Note that this software was _not_ written fot Gerber PCB milling machines!
 
 All programs use the `nctools` modules. The dxf submodule can extract LINE,
 ARC and POLYLINE entities from a DXF file. Note that it does *not* handle
@@ -18,14 +18,24 @@ programs require the Python 2.7 interpreter. They might work with Python 3.x
 after conversion with 2to3 but that has not been tested.
 
 
-The programs
-============
+General remarks about the programs 
+==================================
 All these programs can read files in other directories. They will however only
 write files in the current working directory. The output filename will be
 generated from the input filename by removing any directories and the
-extension. Where necessary, new extensions are added. So an input file
-'..\foo\bar.dxf' will generally result in an output file named 'bar' with the
-appropriate extension.
+extension. Where necessary, new extensions and/or modifiers are added. So an
+input file '..\foo\bar.dxf' will generally result in an output file named
+'bar' with the appropriate extension.
+
+Those programs that produce output files in general all perform the following
+actions:
+
+* Read entities. 
+* Assemble connected entities into contours.
+* Sort entities in by the minimum x value of their bounding box in ascending
+  order.
+* Move all entities so that the lower left corner for the bounding box 
+  for all entities is at (0,0).
 
 
 dxf2nc
@@ -36,24 +46,29 @@ essentially cuts lines in the order it finds them in the dxf file.
 
 This program reads a dxf file. The name of the file must end in .dxf or .DXF
 otherwise the program will report an error and quit. It extracts all the LINE,
-ARC and POLYLINE entities from it It then searches through all these entities
+ARC and POLYLINE entities from it. It then searches through all these entities
 and assembles connected entities into lists called contours. If necessary, the
 direction of entities in a contour is changed so that all entities can be cut
-in one continuous movement.
+in one continuous movement. 
 
 These contours and any remaining lines and arcs are then sorted in ascending
-order from the left-bottom corner of their bounding box.
+order from the left edge of their bounding box.
 
-It also converts arcs into line segments. By default the length of these
+The machine that these programs were originally written for is an older
+machine, whose controllen doesn't even understand arcs, only straight lines.
+So it also converts arcs into line segments. By default the length of these
 segments is such that the deviation from the curve is not more than 1 mm. It
 ignores the $MEASUREMENT variable in the dxf file because that is often not
 set correctly and assumes that the units in the dxf file are millimeters.
 
 Gerber numeric code files are basically text files but do not contain line
-breaks, which makes them hard to read. The ncfmt utility can be used to
+breaks, which makes them hard to read. The readnc utility can be used to
 display the file in a more human-readable format.
 
 Usage: dxf2nc.py [file.dxf ...]
+
+The software for our machine doesn't use extensions for nc files, so this
+program just strips the dxf extension from the filename.
 
 
 dxf2pdf
@@ -103,7 +118,7 @@ Gerber numeric code files are basically text files but do not contain line
 breaks, which makes them hard to read. This utility can be used to display the
 file in a more human-readable format.
 
-Usage: ncfmt.py [file ...]
+Usage: readnc.py [file ...]
 
 Example output:
 
@@ -130,22 +145,29 @@ up()
 
 readdxf
 -------
-Reads a DXF file and outputs the entities that it finds. This is more a
-debugging tool than a really useful program.
+Reads a DXF file and outputs the entities that it finds. This is more of a
+debugging tool for the nctools module than a really useful program. It 
+gathers entities into contours for testing purposes of that functionality. A
+visual alternative would be to use dxf2pdf.
 
 Usage: ./readdxf.py [file.dxf ...]
 
 Example output:
 
 Filename: test/snijden-CSM1.dxf
-Contains 103 entities
+Contains: 103 entities
+Found 11 contours, 11 remaining single entities
 Extents: 784.4 ≤ x ≤ 10880.3, 3360.1 ≤ y ≤ 4610.1
-<line from (784.440222017,3360.90245434) to (1983.19502279,3360.90245434), layer CSM450>
-<line from (1746.80876285,3672.16739857) to (2007.21029717,3672.16739857), layer CSM450>
-<line from (1983.19502279,3360.90245434) to (1959.98199674,3672.16739857), layer CSM450>
-<line from (1383.8176224,4610.09630948) to (2007.21029717,4610.09630948), layer CSM450>
-<line from (1383.8176224,4610.09630948) to (1002.20840991,4610.09630948), layer CSM450>
-<line from (2007.21029717,4610.09630948) to (2007.21029717,3672.16739857), layer CSM450>
-<line from (844.009099688,4610.09630948) to (784.440222017,3360.90245434), layer CSM450>
+Total length of entities: 45267 mm
+<contour from (1746.80876285,3672.16739857) to (1959.98199674,3672.16739857), layer 0>
+.. <line from (1746.80876285,3672.16739857) to (2007.21029717,3672.16739857), layer CSM450>
+.. <line from (2007.21029717,3672.16739857) to (2007.21029717,4610.09630948), layer CSM450>
+.. <line from (2007.21029717,4610.09630948) to (1383.8176224,4610.09630948), layer CSM450>
+.. <line from (1383.8176224,4610.09630948) to (1002.20840991,4610.09630948), layer CSM450>
+.. <line from (1002.20840991,4610.09630948) to (844.009099688,4610.09630948), layer CSM450>
+.. <line from (844.009099688,4610.09630948) to (784.440222017,3360.90245434), layer CSM450>
+.. <line from (784.440222017,3360.90245434) to (1983.19502279,3360.90245434), layer CSM450>
+.. <line from (1983.19502279,3360.90245434) to (1959.98199674,3672.16739857), layer CSM450>
+<line from (1002.20840991,4610.09630948) to (1002.20840991,4570.09630948), layer CSM450>
 ...
 

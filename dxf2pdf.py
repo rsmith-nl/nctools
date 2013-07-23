@@ -34,7 +34,7 @@ from nctools import bbox, dxf, plot, utils
 __proginfo__ = ('dxf2pdf [ver. ' + '$Revision$'[11:-2] +
                 '] ('+'$Date$'[7:-2]+')')
 
-def main(argv): # pylint: disable=R0912
+def main(argv):
     """Main program for the readdxf utility.
     
     :argv: command line arguments

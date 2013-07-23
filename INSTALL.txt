@@ -20,7 +20,5 @@ Installation on Windows
 Installation on UNIX/Linux
 ==========================
 
-- Install Python
+- Install Python 
 - Run 'make install'
-
-This will also install the manual pages.

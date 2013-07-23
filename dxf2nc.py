@@ -27,6 +27,7 @@
 
 """Converts a DXF file to a cutting program for a Gerber cloth cutter."""
 
+import argparse
 import sys 
 from nctools import bbox, dxf, ent, gerbernc, utils
 
@@ -133,12 +134,19 @@ def main(argv):
     
     :argv: command line arguments
     """
-    if len(argv) == 1:
-        print __proginfo__
-        print "Usage: {} [dxf-file ...]".format(argv[0])
-        sys.exit(1)
-    del argv[0]
-    for f in argv:
+    parser = argparse.ArgumentParser(description=__doc__)
+    argtxt = """maximum distance between two points considered equal when 
+    searching for contours (defaults to 0.5 mm)"""
+    parser.add_argument('-l', '--limit', nargs=1, help=argtxt, dest='limit',
+                       metavar='F', type=float, default=0.5)
+    parser.add_argument('files', nargs='*', help='one or more file names',
+                        metavar='file')
+    pv = parser.parse_args(argv)
+    lim = pv.limit**2
+    if not pv.files:
+        parser.print_help()
+        sys.exit(0)
+    for f in utils.xpand(pv.files):
         try:
             ofn = utils.outname(f, extension='')
             entities = dxf.Reader(f)
@@ -154,7 +162,7 @@ def main(argv):
             print 'Contains: {} entities'.format(num)
             bbe = [e.bbox for e in entities]
             bb = bbox.merge(bbe)
-            contours, rement = ent.findcontours(entities)
+            contours, rement = ent.findcontours(entities, lim)
             ncon = 'Found {} contours, {} remaining single entities'
             print ncon.format(len(contours), len(rement))
             entities = contours + rement
@@ -176,4 +184,4 @@ def main(argv):
         write_entities(ofn, entities)
 
 if __name__ == '__main__':
-    main(utils.xpand(sys.argv))
+    main(sys.argv[1:])

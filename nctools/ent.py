@@ -357,40 +357,46 @@ def _dist2(a, b):
     return (x-j)**2 + (y-k)**2
 
 
-def _chkdist(p, e):
+def _chkdist(p, e, lim):
     """Check wether a point is near enough to other points to
 
     :p: a point (2-tuple)
     :e: either a point or a 2-tuple of points
+    :lim: maximum square of the distance between two points considered equal
     :returns: True is the distance to one of the endpoints is ≤ 0.5.
     """
-    lim = 0.25
     if isinstance(e[0], tuple):
         a, b = e
         return min(_dist2(p, a), _dist2(p, b)) <= lim
     return _dist2(p, e) <= lim
 
 
-def _contour(se, ent):
+def _contour(se, ent, lim):
+    """Find a contour in a list of entities.
+
+    :se: starting entity
+    :ent: list of entities
+    :lim: maximum square of the distance between two points considered equal
+    """
     ent.remove(se)
     cl = [se]
     while True:
         # Look for connections at the end point
         _, ep = cl[-1].points
-        ce = [e for e in ent if _chkdist(ep, e.points)]
+        ce = [e for e in ent if _chkdist(ep, e.points, lim)]
         if ce:
             newend = ce[0]
-            if _chkdist(ep, newend.points[1]):
+            if _chkdist(ep, newend.points[1], lim):
                 newend.flip()
             ent.remove(newend)
             cl.append(newend)
         else:
             # Look for connections at the start point
             sp, _ = cl[0].points
-            cs = [e for e in ent if _chkdist(sp, e.points)]
+            cs = [e for e in ent if _chkdist(sp, e.points, lim)]
             if cs:
                 newstart = cs[0]
-                if _chkdist(sp, newstart.points[0]):
+                if _chkdist(sp, newstart.points[0], lim):
                     newstart.flip()
                 ent.remove(newstart)
                 cl.insert(0, newstart)
@@ -403,7 +409,12 @@ def _contour(se, ent):
     return Contour(cl)
 
 
-def findcontours(ent):
-    contours = [_contour(e, ent) for e in ent]
+def findcontours(ent, lim=0.25):
+    """Find contours in a list of entities.
+
+    :ent: list of entities
+    :lim: maximum square of the distance between two points considered equal
+    """
+    contours = [_contour(e, ent, lim) for e in ent]
     contours = [c for c in contours if c != None]
     return contours, ent
