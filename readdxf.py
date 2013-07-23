@@ -45,6 +45,8 @@ def main(argv):
     searching for contours (defaults to 0.5 mm)"""
     parser.add_argument('-l', '--limit', nargs='?', help=argtxt, dest='limit', 
                         type=float, default=0.5)
+    parser.add_argument('-v', '--version', action='version', 
+                        version=__proginfo__)
     parser.add_argument('files', nargs='*', help='one or more file names',
                         metavar='file')
     pv = parser.parse_args(argv)
