@@ -109,15 +109,16 @@ def _cutcontour(e, wr):
     wr.up()
 
 
-def write_entities(fn, ents):
+def write_entities(fn, ents, alim):
     """@todo: Docstring for write_entities
 
     :fn: output file name
     :ents: list of entities
+    :alim: minimum turning angle where the knife needs to be lifted
     :returns: @todo
 
     """
-    with gerbernc.Writer(fn) as w:
+    with gerbernc.Writer(fn, anglim=alim) as w:
         for e in ents:
             if isinstance(e, ent.Contour):
                 _cutcontour(e, w)
@@ -137,8 +138,12 @@ def main(argv):
     parser = argparse.ArgumentParser(description=__doc__)
     argtxt = """maximum distance between two points considered equal when 
     searching for contours (defaults to 0.5 mm)"""
-    parser.add_argument('-l', '--limit', nargs=1, help=argtxt, dest='limit',
+    argtxt2 = u"""minimum rotation angle in degrees where the knife needs 
+    to be lifted to prevent breaking (defaults to 60°)"""
+    parser.add_argument('-l', '--limit', help=argtxt, dest='limit',
                        metavar='F', type=float, default=0.5)
+    parser.add_argument('-a', '--angle', help=argtxt2, dest='ang',
+                       metavar='F', type=float, default=60)
     parser.add_argument('-v', '--version', action='version', 
                         version=__proginfo__)
     parser.add_argument('files', nargs='*', help='one or more file names',
@@ -183,7 +188,7 @@ def main(argv):
                 e.move(-bb.minx, -bb.miny)
         length = sum(e.length for e in entities)
         print 'Total length of entities: {:.0f} mm'.format(length)
-        write_entities(ofn, entities)
+        write_entities(ofn, entities, pv.ang)
 
 if __name__ == '__main__':
     main(sys.argv[1:])
