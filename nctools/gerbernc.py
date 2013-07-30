@@ -186,7 +186,8 @@ class Writer(object):
         :x: x coordinate in mm
         :y: y coordinate in mm
         """
-        #print 'DEBUG: Writer.moveto()'
+        #print 'DEBUG: Writer.moveto({}, {})'.format(x, y)
+        #print 'DEBUG: self.ang', self.ang
         x, y = mm2cin([x, y])
         if self.cut: # We're cutting
             #print 'DEBUG: Writer.moveto() cutting'
@@ -195,9 +196,14 @@ class Writer(object):
             newang = math.degrees(math.atan2(dy, dx))
             if newang < 0.0:
                 newang += 360.0
-            if self.ang and math.fabs(newang-self.ang) > self.anglim:
-                #print 'DEBUG: Writer.moveto() add up/down'
-                self.commands += ['M15', 'M14']
+            if self.ang != None:
+                angdif = math.fabs(newang-self.ang)
+                if angdif > 180:
+                    angdif = 360 - angdif
+                #print 'DEBUG: angle diff:', angdif
+                if angdif > self.anglim:
+                    #print 'DEBUG: Writer.moveto() add up/down'
+                    self.commands += ['M15', 'M14']
             self.ang = newang
         self.commands += ['X{:.0f}Y{:.0f}'.format(x, y)]
         self.pos = (x, y)
