@@ -251,6 +251,8 @@ class Writer(object):
         li = self.bbox.width/100.0
         wi = self.bbox.height/100.0
         self.commands[2] = '{}/L={:.3f}/W={:.3f}'.format(self.name, li, wi)
+        if self.commands[-1].startswith('N'):
+            del self.commands[-1] # Remove unnecessary newpiece()
         if not self.commands[-1] == 'M15':
             self.commands.append('M15')
         self.commands.append('M0')

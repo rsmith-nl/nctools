@@ -148,8 +148,11 @@ def _get_polylines(lines):
     for i in idx:
         num = lines.index("8", i) + 1
         layer = lines[num]
-        num = lines.index("70", num) + 1
-        closed = int(lines[num]) & 1
+        try:
+            num = lines.index("70", num) + 1
+            closed = int(lines[num]) & 1
+        except ValueError:
+            closed = False
         end = lines.index('SEQEND', i)
         vi = [w for w in range(i, end) if lines[w] == 'VERTEX']
         vi = zip(vi, vi[1:]+[end])

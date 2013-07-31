@@ -63,16 +63,18 @@ def _cutarc(e, wr):
     wr.up()
 
 
-def _cutpoly(e, wr):
+def _cutpoly(e, wr, skip = False):
     """Cut a ent.Polyline
 
     :ent: nctools.ent.Polyline
     :wr: nctoos.gerbernc.Writer
     """
     d = e.segments()
-    (xs, ys), _, _ = d[0]
-    wr.moveto(xs, ys)
-    wr.down()
+    #print 'DEBUG: # poly segments:', len(d)
+    if not skip:
+        (xs, ys), _, _ = d[0]
+        wr.moveto(xs, ys)
+        wr.down()
     for sp, (xe, ye), ang in d:
         if ang == 0.0:
             wr.moveto(xe, ye)
@@ -87,7 +89,8 @@ def _cutpoly(e, wr):
             pnts.pop(0)
             for x, y in pnts:
                 wr.moveto(x, y)
-    wr.up()
+    if not skip:
+        wr.up()
 
 
 def _cutcontour(e, wr):
@@ -99,7 +102,9 @@ def _cutcontour(e, wr):
     wr.moveto(e.entities[0].x[0], e.entities[0].y[0])
     wr.down()
     for ce in e.entities:
-        if isinstance(ce, ent.Arc):
+        if isinstance(ce, ent.Polyline):
+            _cutpoly(ce, wr, True)
+        elif isinstance(ce, ent.Arc):
             pnts = ce.segments()
             pnts.pop(0)
             for x, y in pnts:

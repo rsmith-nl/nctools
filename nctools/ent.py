@@ -132,8 +132,9 @@ class Polyline(Line):
 
     def flip(self):
         Line.flip(self)
-        self.angles = tuple(-self.angles[i] for i in
-                            xrange(len(self.angles)-1, -1, -1))
+        self.angles = tuple(-a for a in reversed(self.angles))
+        #self.angles = tuple(-self.angles[i] for i in
+        #                    xrange(len(self.angles)-1, -1, -1))
 
     def segments(self):
         """Returns a list detailing each segment in the form
