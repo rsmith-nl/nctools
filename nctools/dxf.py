@@ -47,6 +47,7 @@ def Reader(name):
     lines = data[soe:eoe]
     entities = _get_lines(lines)
     entities += _get_arcs(lines)
+    entities += _get_circles(lines)
     entities += _get_polylines(lines)
     entities.sort(key=lambda x: x.index)
     return entities
@@ -121,6 +122,23 @@ def _get_arcs(lines):
             a2 += 2*math.pi
         rv.append(ent.Arc(cx, cy, R, a1, a2, i, layer))
     #print 'DEBUG: dxf.Reader found {} arcs'.format(len(rv))
+    return rv
+
+
+def _get_circles(lines):
+    idx = [x for x in range(len(lines)) if lines[x] == 'CIRCLE']
+    rv = []
+    for i in idx:
+        num = lines.index("8", i) + 1
+        layer = lines[num]
+        num = lines.index("10", num) + 1
+        cx = float(lines[num])
+        num = lines.index("20", num) + 1
+        cy = float(lines[num])
+        num = lines.index("40", num) + 1
+        R = float(lines[num])
+        rv.append(ent.Arc(cx, cy, R, 0, 2*math.pi, i, layer))
+    #print 'DEBUG: dxf.Reader found {} circles'.format(len(rv))
     return rv
 
 
