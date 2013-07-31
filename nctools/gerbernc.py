@@ -163,8 +163,8 @@ class Writer(object):
         self.ang = None
         self.commands += ['M15']
         # Check if we need a break
-        if len(self.commands)//200 > self.piece:
-            self.newpiece()
+        #if len(self.commands)//200 > self.piece:
+        #    self.newpiece()
 
     def down(self):
         """Start cutting.
@@ -254,8 +254,8 @@ class Writer(object):
         if not self.commands[-1] == 'M15':
             self.commands.append('M15')
         self.commands.append('M0')
-        self.commands.append('')
         self.f.write('*'.join(self.commands))
+        self.f.write('*')
         self.f.close()
 
 

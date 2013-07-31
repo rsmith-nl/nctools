@@ -107,6 +107,7 @@ def _cutcontour(e, wr):
         elif isinstance(ce, ent.Line):
             wr.moveto(ce.x[1], ce.y[1])
     wr.up()
+    wr.newpiece()
 
 
 def write_entities(fn, ents, alim):

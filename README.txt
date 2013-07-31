@@ -8,14 +8,16 @@ Introduction
 These programs and modules were created because the existing software to 
 generate NC code for our gerber cloth cutter has some deficiencies.
 
-Note that this software was _not_ written fot Gerber PCB milling machines!
+Note that this software was _not_ written fot Gerber PCB milling machines! The
+generated code was tested on a Gerber Garment Technology S-3000 cutter, with
+the C-200MT controller software.
 
 All programs use the `nctools` modules. The dxf submodule can extract LINE,
-ARC and POLYLINE entities from a DXF file. Note that it does *not* handle
-other entities like BLOCK. The module _assumes_ that the units in the file are
-millimeters. It also only writes nc code in centi-inches. All of these
-programs require the Python 2.7 interpreter. They might work with Python 3.x
-after conversion with 2to3 but that has not been tested.
+ARC, CIRCLE and POLYLINE entities from a DXF file. Note that it does *not*
+handle other entities like BLOCK. The module _assumes_ that the units in the
+file are millimeters. It also only writes nc code in centi-inches. All of
+these programs require the Python 2.7 interpreter. They might work with Python
+3.x after conversion with 2to3 but that has not been tested.
 
 
 General remarks about the programs 
