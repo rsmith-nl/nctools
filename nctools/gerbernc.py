@@ -254,6 +254,7 @@ class Writer(object):
         if not self.commands[-1] == 'M15':
             self.commands.append('M15')
         self.commands.append('M0')
+        self.commands.append('')
         self.f.write('*'.join(self.commands))
         self.f.close()
 
