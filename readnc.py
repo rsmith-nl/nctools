@@ -28,8 +28,8 @@
 """Reads a Gerber cloth cutter NC file and print the contents in
 human-readable form."""
 
+import argparse
 import sys
-import os
 from nctools import gerbernc, utils
 
 __proginfo__ = ('readnc [ver. ' + '$Revision$'[11:-2] + 
@@ -41,13 +41,16 @@ def main(argv):
     
     :argv: command line arguments
     """
-    if len(argv) == 1:
-        binary = os.path.basename(argv[0])
-        print __proginfo__
-        print "Usage: {} [file ...]".format(binary)
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('-v', '--version', action='version', 
+                        version=__proginfo__)
+    parser.add_argument('files', nargs='*', help='one or more file names',
+                        metavar='file')
+    pv = parser.parse_args(argv)
+    if not pv.files:
+        parser.print_help()
         sys.exit(0)
-    del argv[0]
-    for fn in argv:
+    for fn in utils.xpand(pv.files):
         try:
             rd = gerbernc.Reader(fn)
         except IOError as e:
@@ -62,4 +65,4 @@ def main(argv):
 
 
 if __name__ == '__main__':
-    main(utils.xpand(sys.argv))
+    main(sys.argv[1:])

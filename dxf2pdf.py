@@ -27,7 +27,8 @@
 
 """Reads DXF files and renders them as PDF files."""
 
-import sys 
+import argparse
+import sys
 import cairo
 from nctools import bbox, dxf, plot, utils
 
@@ -39,13 +40,17 @@ def main(argv):
     
     :argv: command line arguments
     """
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('-v', '--version', action='version', 
+                        version=__proginfo__)
+    parser.add_argument('files', nargs='*', help='one or more file names',
+                        metavar='file')
+    pv = parser.parse_args(argv)
+    if not pv.files:
+        parser.print_help()
+        sys.exit(0)
     offset = 40
-    if len(argv) == 1:
-        print __proginfo__
-        print "Usage: {} dxf-file(s)".format(sys.argv[0])
-        exit(1)
-    del argv[0]
-    for f in argv:
+    for f in utils.xpand(pv.files):
         try:
             ofn = utils.outname(f, extension='.pdf', addenum='_dxf')
             entities = dxf.Reader(f)
@@ -83,5 +88,5 @@ def main(argv):
 
 
 if __name__ == '__main__':
-    main(sys.argv)
+    main(sys.argv[1:])
 

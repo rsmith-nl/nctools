@@ -27,6 +27,7 @@
 
 """Plot cuts from a Gerber cloth cutter NC file to a PDF."""
 
+import argparse
 import sys
 import cairo
 from nctools import gerbernc, plot, utils
@@ -74,14 +75,17 @@ def main(argv):
 
     :argv: command line arguments
     """
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('-v', '--version', action='version', 
+                        version=__proginfo__)
+    parser.add_argument('files', nargs='*', help='one or more file names',
+                        metavar='file')
+    pv = parser.parse_args(argv)
     offset = 40
-    if len(argv) == 1:
-        print __proginfo__
-        print "Usage: nc2pdf.py [file ...]"
-        print
+    if not pv.files:
+        parser.print_help()
         sys.exit(0)
-    del argv[0]
-    for fn in argv:
+    for fn in utils.xpand(pv.files):
         try:
             ofn = utils.outname(fn, extension='.pdf', addenum='_nc')
             rd = gerbernc.Reader(fn)
@@ -135,4 +139,4 @@ def main(argv):
 
 
 if __name__ == '__main__':
-    main(utils.xpand(sys.argv))
+    main(sys.argv[1:])
