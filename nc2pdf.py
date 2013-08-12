@@ -28,6 +28,9 @@
 """Plot cuts from a Gerber cloth cutter NC file to a PDF."""
 
 import argparse
+import datetime
+import os.path
+import time
 import sys
 import cairo
 from nctools import gerbernc, plot, utils
@@ -134,6 +137,24 @@ def main(argv):
         ctx.restore()
         # plot the color bar
         plot.plotcolorbar(ctx, w, cnt, colors)
+        # Plot the filename
+        ctx.save()
+        ctx.set_matrix(cairo.Matrix(xx=1.0, yy=1.0))
+        ctx.select_font_face('Sans')
+        fh = min(10, h/40)
+        ctx.set_source_rgb(0.0, 0.0, 0.0)
+        ctx.set_font_size(fh)
+        ctx.move_to(5, fh+5)
+        txt = ' '.join([__proginfo__[:-27], str(datetime.datetime.now())[:-10]])
+        ctx.show_text(txt)
+        ctx.stroke()
+        fh = min(30, h/20)
+        ctx.move_to(5, h-20)
+        txt = ' '.join([fn, '['+time.ctime(os.path.getmtime(fn))+']'])
+        ctx.show_text(txt)
+        ctx.stroke()
+        ctx.restore()
+        # Finish the page.
         out.show_page()
         out.finish()
 

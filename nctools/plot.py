@@ -100,7 +100,7 @@ def crange(start, stop, count):
 
 
 def plotgrid(context, width, height, size=100):
-    """Plot a grid
+    """Plot a grid in black with a dotted line.
 
     :context: Cairo context
     :width: width of the context
@@ -117,7 +117,8 @@ def plotgrid(context, width, height, size=100):
         context.line_to(width, y)
     context.close_path()
     context.set_line_width(0.25)
-    context.set_source_rgb(1, 0, 0)
+    context.set_source_rgb(0.5, 0.5, 0.5)
+    context.set_dash([20.0, 20.0])
     context.stroke()
     context.restore()
 
