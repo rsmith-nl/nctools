@@ -1,7 +1,2 @@
-include dxfgerber.1
-include dxfgerber.1.pdf
-include dxf2nc.1
-include dxf2nc.1.pdf
-include ncfmt.1
-include ncfmt.1.pdf
 include INSTALL.txt
+include Makefile

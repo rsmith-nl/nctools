@@ -29,7 +29,7 @@ install: ${ALL}
 	mv $(BINDIR)/dxf2pdf.py $(BINDIR)/dxf2pdf
 	mv $(BINDIR)/dxfgerber.py $(BINDIR)/dxfgerber
 	mv $(BINDIR)/nc2pdf.py $(BINDIR)/nc2pdf
-	mv $(BINDIR)/ncfmt.py $(BINDIR)/ncfmt
+	mv $(BINDIR)/readnc.py $(BINDIR)/readnc
 	mv $(BINDIR)/readdxf.py $(BINDIR)/readdxf
 	rm -rf build
 
@@ -39,8 +39,9 @@ deinstall::
 		exit 1; \
 	fi
 	rm -f ${PYSITE}/nctools
+	rm -f ${PYSITE}/nctools-*.egg-info
 	rm -f $(BINDIR)/dxf2nc* $(BINDIR)/dxf2pdf* $(BINDIR)/dxfgerber* \
-	    $(BINDIR)/nc2pdf* $(BINDIR)/ncfmt* $(BINDIR)/readdxf*
+	    $(BINDIR)/nc2pdf* $(BINDIR)/readnc* $(BINDIR)/readdxf*
 
 #beginskip
 dist: ${ALL}
