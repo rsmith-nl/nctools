@@ -30,7 +30,6 @@ install: ${ALL}
 	mv $(BINDIR)/dxfgerber.py $(BINDIR)/dxfgerber
 	mv $(BINDIR)/nc2pdf.py $(BINDIR)/nc2pdf
 	mv $(BINDIR)/readnc.py $(BINDIR)/readnc
-	mv $(BINDIR)/readdxf.py $(BINDIR)/readdxf
 	rm -rf build
 
 deinstall::
@@ -38,10 +37,10 @@ deinstall::
 		echo "You must be root to deinstall the program!"; \
 		exit 1; \
 	fi
-	rm -f ${PYSITE}/nctools
+	rm -rf ${PYSITE}/nctools
 	rm -f ${PYSITE}/nctools-*.egg-info
 	rm -f $(BINDIR)/dxf2nc* $(BINDIR)/dxf2pdf* $(BINDIR)/dxfgerber* \
-	    $(BINDIR)/nc2pdf* $(BINDIR)/readnc* $(BINDIR)/readdxf*
+	    $(BINDIR)/nc2pdf* $(BINDIR)/readnc*
 
 #beginskip
 dist: ${ALL}
