@@ -35,8 +35,8 @@ import sys
 import cairo
 from nctools import gerbernc, plot, utils
 
-__proginfo__ = ('nc2pdf [ver. ' + '$Revision$'[11:-2] + 
-                '] ('+'$Date$'[7:-2]+')')
+_proginfo = ('nc2pdf [ver. ' + '$Revision$'[11:-2] + 
+             '] ('+'$Date$'[7:-2]+')')
 
 
 def getcuts(rd):
@@ -78,9 +78,10 @@ def main(argv):
 
     :argv: command line arguments
     """
+    msg = utils.Msg()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('-v', '--version', action='version', 
-                        version=__proginfo__)
+                        version=_proginfo)
     parser.add_argument('files', nargs='*', help='one or more file names',
                         metavar='file')
     pv = parser.parse_args(argv)
@@ -89,28 +90,30 @@ def main(argv):
         parser.print_help()
         sys.exit(0)
     for fn in utils.xpand(pv.files):
+        msg.say('Starting file "{}"'.format(fn))
         try:
             ofn = utils.outname(fn, extension='.pdf', addenum='_nc')
             rd = gerbernc.Reader(fn)
         except ValueError as e:
-            print e
+            msg.say(str(e))
             fns = "Cannot construct output filename. Skipping file '{}'."
-            print fns.format(fn)
+            msg.say(fns.format(fn))
             continue
         except IOError as e:
-            print "Cannot read file: {}".format(e)
-            print "Skipping file '{}'".format(fn)
+            msg.say("Cannot read file: {}".format(e))
+            msg.say("Skipping file '{}'".format(fn))
             continue
         cuts, xvals, yvals = getcuts(rd)
         cnt = len(cuts)
-        print 'Got {} cuts'.format(cnt)
+        msg.say('Got {} cuts'.format(cnt))
         minx, maxx = min(xvals), max(xvals)
         miny, maxy = min(yvals), max(yvals)
         bs = '{} range from {:.1f} mm to {:.1f} mm'
-        print bs.format('X', minx, maxx)
-        print bs.format('Y', miny, maxy)
+        msg.say(bs.format('X', minx, maxx))
+        msg.say(bs.format('Y', miny, maxy))
         w = maxx - minx + offset
         h = maxy - miny + offset
+        msg.say('Plotting the cuts')
         # Produce PDF output. Scale factor is 1 mm real = 
         # 1 PostScript point in the PDF file
         xf = cairo.Matrix(xx=1.0, yy=-1.0, y0=h)
@@ -145,7 +148,7 @@ def main(argv):
         ctx.set_source_rgb(0.0, 0.0, 0.0)
         ctx.set_font_size(fh)
         ctx.move_to(5, fh+5)
-        txt = ' '.join(['Produced by:', __proginfo__[:-27], 'on',
+        txt = ' '.join(['Produced by:', _proginfo[:-27], 'on',
                         str(datetime.datetime.now())[:-10]])
         ctx.show_text(txt)
         ctx.stroke()
@@ -157,7 +160,9 @@ def main(argv):
         ctx.restore()
         # Finish the page.
         out.show_page()
+        msg.say('Writing output file "{}"'.format(ofn))
         out.finish()
+        msg.say('File "{}" done.'.format(fn))
 
 
 if __name__ == '__main__':

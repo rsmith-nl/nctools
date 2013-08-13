@@ -74,9 +74,9 @@ def Writer(name, progname, entities):
         elif isinstance(e, ent.Arc):
             lines += _dxfarc(e)
         elif isinstance(e, ent.Line):
-            lines = ['  0', 'LINE', '  8', 'snijlijnen', ' 10', str(e.x[0]),
-                     ' 20', str(e.y[0]), ' 30', '0.0', ' 11', str(e.x[1]),
-                    ' 21', str(e.y[1]), ' 31', '0.0', '']
+            lines += ['  0', 'LINE', '  8', 'snijlijnen', ' 10', str(e.x[0]),
+                      ' 20', str(e.y[0]), ' 30', '0.0', ' 11', str(e.x[1]),
+                      ' 21', str(e.y[1]), ' 31', '0.0', '']
     lines += ['  0', 'ENDSEC', '  0', 'EOF']
     lines.append('')
     with open(name, 'w+') as outf:

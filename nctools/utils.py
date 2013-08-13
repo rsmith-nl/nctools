@@ -26,10 +26,28 @@
 
 """Utilities for nctools."""
 
+from __future__ import print_function
 import os.path
 import glob
+from datetime import datetime
 
 __version__ = '$Revision$'[11:-2]
+
+
+class Msg(object):
+    """Message printer"""
+
+    def __init__(self):
+        """Start the timer"""
+        self.start = datetime.now()
+
+    def say(self, *args):
+        """Print a message prepended by the elapsed time.
+
+        :*args: stuff to print
+        """
+        delta = datetime.now() - self.start
+        print('['+str(delta)[:-4]+']:', *args)
 
 
 def outname(inname, extension, addenum=''):
@@ -54,8 +72,8 @@ def skip(error, filename):
     :error: exception
     :filename: name of file to skip
     """
-    print "Cannot read file: {}".format(error)
-    print "Skipping file '{}'".format(filename)
+    print("Cannot read file: {}".format(error))
+    print("Skipping file '{}'".format(filename))
 
 
 def xpand(args):
@@ -67,5 +85,12 @@ def xpand(args):
     """
     xa = []
     for a in args:
-        xa += glob.glob(a)
+        g = glob.glob(a)
+        if g:
+            xa += g
+        else:
+            xa += [a]
     return xa
+
+
+

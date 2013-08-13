@@ -29,26 +29,27 @@
 together are stored as a chain in the output DXF file."""
 
 import argparse
-import sys 
+import sys
 from nctools import bbox, dxf, ent, utils
 
-__proginfo__ = ('dxfgerber [ver. ' + 
-                '$Revision$'[11:-2] + '] (' + 
-                '$Date$'[7:-2]+')')
+_proginfo = ('dxfgerber [ver. ' + 
+             '$Revision$'[11:-2] + '] (' + 
+             '$Date$'[7:-2]+')')
 
 
 def main(argv):
     """Main program for the dxfgerber utility.
-    
+
     :argv: command line arguments
     """
+    msg = utils.Msg()
     parser = argparse.ArgumentParser(description=__doc__)
     argtxt = """maximum distance between two points considered equal when 
     searching for contours (defaults to 0.5 mm)"""
     parser.add_argument('-l', '--limit', nargs=1, help=argtxt, dest='limit',
                        metavar='F', type=float, default=0.5)
     parser.add_argument('-v', '--version', action='version', 
-                        version=__proginfo__)
+                        version=_proginfo)
     parser.add_argument('files', nargs='*', help='one or more file names',
                         metavar='file')
     pv = parser.parse_args(argv)
@@ -57,6 +58,7 @@ def main(argv):
         parser.print_help()
         sys.exit(0)
     for f in utils.xpand(pv.files):
+        msg.say('Starting file "{}"'.format(f))
         try:
             ofn = utils.outname(f, extension='.dxf', addenum='_mod')
             entities = dxf.Reader(f)
@@ -64,34 +66,37 @@ def main(argv):
             utils.skip(e, f)
             continue
         num = len(entities)
-        print 'Filename:', f
         if num == 0:
-            print 'No entities found!'
-            sys.exit(1)
+            msg.say('No entities found!')
+            continue
         if num > 1:
-            print 'Contains: {} entities'.format(num)
+            msg.say('Contains {} entities'.format(num))
             bbe = [e.bbox for e in entities]
             bb = bbox.merge(bbe)
+            msg.say('Gathering connected entities into contours')
             contours, rement = ent.findcontours(entities, lim)
             ncon = 'Found {} contours, {} remaining single entities'
-            print ncon.format(len(contours), len(rement))
+            msg.say(ncon.format(len(contours), len(rement)))
             entities = contours + rement
-            entities.sort(key=lambda x: x.bbox.minx)
+            msg.say('Sorting entities')
+            entities.sort(key=lambda e: (e.bbox.minx, e.bbox.miny))
         else:
-            print 'Contains: 1 entity'
+            msg.say('Contains: 1 entity')
             bb = entities[0].bbox
         es = 'Original extents: {:.1f} ≤ x ≤ {:.1f} mm,' \
              ' {:.1f} ≤ y ≤ {:.1f} mm'
-        print es.format(bb.minx, bb.maxx, bb.miny, bb.maxy)
+        msg.say(es.format(bb.minx, bb.maxx, bb.miny, bb.maxy))
         # move entities so that the bounding box begins at 0,0
         if bb.minx != 0 or bb.miny != 0:
             ms = 'Moving all entities by ({:.1f}, {:.1f}) mm'
-            print ms.format(-bb.minx, -bb.miny)
+            msg.say(ms.format(-bb.minx, -bb.miny))
             for e in entities:
                 e.move(-bb.minx, -bb.miny)
         length = sum(e.length for e in entities)
-        print 'Total length of entities: {:.0f} mm'.format(length)
+        msg.say('Total length of entities: {:.0f} mm'.format(length))
+        msg.say('Writing output to "{}"'.format(ofn))
         dxf.Writer(ofn, 'dxfgerber', entities)
+        msg.say('File "{}" done.'.format(f))
 
 
 if __name__ == '__main__':

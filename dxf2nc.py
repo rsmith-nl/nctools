@@ -141,6 +141,7 @@ def main(argv):
 
     :argv: command line arguments
     """
+    msg = utils.Msg()
     parser = argparse.ArgumentParser(description=__doc__)
     argtxt = """maximum distance between two points considered equal when 
     searching for contours (defaults to 0.5 mm)"""
@@ -160,6 +161,7 @@ def main(argv):
         parser.print_help()
         sys.exit(0)
     for f in utils.xpand(pv.files):
+        msg.say('Starting file "{}"'.format(f))
         try:
             ofn = utils.outname(f, extension='')
             entities = dxf.Reader(f)
@@ -167,35 +169,38 @@ def main(argv):
             utils.skip(e, f)
             continue
         num = len(entities)
-        print 'Filename:', f
         if num == 0:
-            print 'No entities found!'
-            sys.exit(1)
+            msg.say('No entities found!')
+            continue
         if num > 1:
-            print 'Contains: {} entities'.format(num)
+            msg.say('Contains {} entities'.format(num))
             bbe = [e.bbox for e in entities]
             bb = bbox.merge(bbe)
+            msg.say('Gathering connected entities into contours')
             contours, rement = ent.findcontours(entities, lim)
             ncon = 'Found {} contours, {} remaining single entities'
-            print ncon.format(len(contours), len(rement))
+            msg.say(ncon.format(len(contours), len(rement)))
             entities = contours + rement
+            msg.say('Sorting entities')
             # Sort first in x, then in y
             entities.sort(key=lambda e: (e.bbox.minx, e.bbox.miny))
         else:
-            print 'Contains: 1 entity'
+            msg.say('Contains: 1 entity')
             bb = entities[0].bbox
         es = 'Original extents: {:.1f} ≤ x ≤ {:.1f} mm,' \
              ' {:.1f} ≤ y ≤ {:.1f} mm'
-        print es.format(bb.minx, bb.maxx, bb.miny, bb.maxy)
+        msg.say(es.format(bb.minx, bb.maxx, bb.miny, bb.maxy))
         # move entities so that the bounding box begins at 0,0
         if bb.minx != 0 or bb.miny != 0:
             ms = 'Moving all entities by ({:.1f}, {:.1f}) mm'
-            print ms.format(-bb.minx, -bb.miny)
+            msg.say(ms.format(-bb.minx, -bb.miny))
             for e in entities:
                 e.move(-bb.minx, -bb.miny)
         length = sum(e.length for e in entities)
-        print 'Total length of entities: {:.0f} mm'.format(length)
+        msg.say('Total length of entities: {:.0f} mm'.format(length))
+        msg.say('Writing output to "{}"'.format(ofn))
         write_entities(ofn, entities, pv.ang)
+        msg.say('File "{}" done.'.format(f))
 
 if __name__ == '__main__':
     main(sys.argv[1:])
