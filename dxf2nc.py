@@ -31,9 +31,9 @@ import argparse
 import sys 
 from nctools import bbox, dxf, ent, gerbernc, utils
 
-__proginfo__ = ('dxf2nc [ver. ' + 
-                '$Revision$'[11:-2] + '] (' + 
-                '$Date$'[7:-2]+')')
+_proginfo = ('dxf2nc [ver. ' + 
+             '$Revision$'[11:-2] + '] (' + 
+             '$Date$'[7:-2]+')')
 
 
 def _cutline(e, wr):
@@ -151,7 +151,7 @@ def main(argv):
     parser.add_argument('-a', '--angle', help=argtxt2, dest='ang',
                        metavar='F', type=float, default=60)
     parser.add_argument('-v', '--version', action='version', 
-                        version=__proginfo__)
+                        version=_proginfo)
     parser.add_argument('files', nargs='*', help='one or more file names',
                         metavar='file')
     pv = parser.parse_args(argv)
@@ -179,10 +179,10 @@ def main(argv):
             ncon = 'Found {} contours, {} remaining single entities'
             print ncon.format(len(contours), len(rement))
             entities = contours + rement
-            # Sort first in x,
-            entities.sort(key=lambda e: e.bbox.minx)
-            # then in y. Sorts in Python are stable.
+            # Sort first in y,
             entities.sort(key=lambda e: e.bbox.miny)
+            # then in x. Sorts in Python are stable.
+            entities.sort(key=lambda e: e.bbox.minx)
         else:
             print 'Contains: 1 entity'
             bb = entities[0].bbox
