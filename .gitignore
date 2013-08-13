@@ -4,5 +4,3 @@ backup-*.tar.gz
 build
 dist
 MANIFEST
-tools/update-all-keywords.py
-tools/update-modified-keywords.py
