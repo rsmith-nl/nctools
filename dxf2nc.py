@@ -179,7 +179,10 @@ def main(argv):
             ncon = 'Found {} contours, {} remaining single entities'
             print ncon.format(len(contours), len(rement))
             entities = contours + rement
-            entities.sort(key=lambda x: x.bbox.minx)
+            # Sort first in x,
+            entities.sort(key=lambda e: e.bbox.minx)
+            # then in y. Sorts in Python are stable.
+            entities.sort(key=lambda e: e.bbox.miny)
         else:
             print 'Contains: 1 entity'
             bb = entities[0].bbox
