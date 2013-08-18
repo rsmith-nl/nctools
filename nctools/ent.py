@@ -161,6 +161,31 @@ class Arc(Line):
         self.sa = self.sa + self.da
         self.da = -self.da
 
+
+    def hsplit(self, x):
+        xfrac = (x - self.cx)/self.R
+        if xfrac > 1 or xfrac < -1:
+            # no split
+            return [self]
+        start = self.sa
+        p0 = math.acos(xfrac)
+        p1 = _clamp(math.pi*2-p0 - start)
+        p0 = _clamp(p0 - start)
+        print "p0: {}, p1: {}".format(p0, p1)
+        if self.da > 0:
+            ip = [j for j in (p0,  p1) if 0 <= j <= self.da]
+        else:
+            ip = [j for j in (p0, p1) if self.da <= j <= 0]
+        ip.insert(0, 0.0)
+        ip.append(self.da)
+        ip = [_clamp(i + start) for i in ip]
+        rv = []
+        for sa, ea in zip(ip, ip[1:]):
+            rv.append(Arc(self.cx, self.cy, self.R, sa, ea, self.index,
+                          self.layer))
+        return rv
+
+
     def segments(self, devlim=1):
         """Create a list of points that approximates the arc.
 
@@ -286,6 +311,20 @@ def arcdata(sp, ep, angs):
         if a1 < 0:
             a1 += twopi
     return (xc, yc), R, a0, a1
+
+
+def _clamp(a):
+    """Clamp an angle to the range [0,2π]
+
+    :a: angle in radians
+    :returns: angle in the range [0,2π]
+    """
+    c = 2*math.pi
+    while a < 0.0:
+        a += c
+    while a > c:
+        a -= c
+    return a
 
 
 def _dist2(a, b):

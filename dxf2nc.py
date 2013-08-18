@@ -104,26 +104,24 @@ def write_entities(fn, ents, alim):
                 raise ValueError('unknown entity')
 
 
-def mkbites(ents, bb, blen):
+def splitents(ents, nb, blen):
     """Divide entities in sub-lists for each bite.
 
     :ents: list of entities, bound at x=0 and y=0
-    :bb: bounding box of ents
+    :nb: number of bites
     :blen: length of a bite
-    :returns: list of lists of entities
+    :returns: modified list of entities
     """
     ec = ents[:]
-    nbites = bb.width//blen + 1
-    blen = bb.width/float(nbites)
-    borders = [i*blen for i in range(1, nbites)]
+    borders = [i*blen for i in range(1, nb+1)]
     for b in borders:
-        tosplit = [e for e in ents if e.bbox.maxx > b and e.bbox.minx < b]
+        tosplit = [e for e in ec if e.bbox.maxx > b and e.bbox.minx < b]
         for e in tosplit:
             ec.remove(e)
-            a, c = e.hsplit(b)
-            e.append(a)
-            e.append(c)
-
+            r = e.hsplit(b)
+            for j in r:
+                ec.insert(0, j)
+    return ec
 
 
 def main(argv):
@@ -180,11 +178,27 @@ def main(argv):
                 for e in entities:
                     e.move(-bb.minx, -bb.miny)
             # chop entities in bites
-            nbites = bb.width//pv.bite + 1
+            nbites = int(bb.width//pv.bite + 1)
             bitelen = bb.width/float(nbites)
             if nbites > 1:
                 m = 'Cut length divided into {} bites of {} mm'
                 msg.say(m.format(nbites, bitelen))
+                msg.say('Splitting entities in bites')
+                se = splitents(entities, nbites, bitelen)
+                msg.say('{} entities after splitting'.format(len(se)))
+                entities = []
+                ncon = ' '.join(['Bite {}:', 'found {} contours,'
+                                '{} remaining entities.'])
+                for b in range(1, (nbites+1)):
+                    be = [e for e in se if 
+                          (b-1)*bitelen < e.bbox.minx < b*bitelen]
+                    msg.say('Bite {}, {} entities'.format(b, len(be)))
+                    contours, rement = ent.findcontours(be, lim)
+                    be = contours + rement
+                    msg.say(ncon.format(b, len(contours), len(rement)))
+                    #msg.say('Bite {}: sorting entities'.format(b))
+                    be.sort(key=lambda e: (e.bbox.minx, e.bbox.miny))
+                    entities += se
             else:
                 msg.say('Gathering connected entities into contours')
                 contours, rement = ent.findcontours(entities, lim)
