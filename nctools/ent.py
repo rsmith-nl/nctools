@@ -77,7 +77,13 @@ class Line(object):
     def hsplit(self, x):
         b = self.bbox
         if x < b.minx or x >  b.maxx:
-            raise ValueError('cannot split')
+            return [self] # no split
+        else:
+            frac = (x - self.x[0])/(self.x[1] - self.x[0])
+            y = self.y[0] + frac*(self.y[1] - self.y[0])
+            a = Line(self.x[0], self.y[0], x, y, self.index, self.layer)
+            b = Line(x, y, self.x[1], self.y[1], self.index, self.layer)
+            return [a, b]
 
     @property
     def points(self):
