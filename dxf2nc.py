@@ -3,7 +3,7 @@
 #
 # Copyright © 2012,2013 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # $Date$
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
 # are met:
@@ -12,7 +12,7 @@
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY AUTHOR AND CONTRIBUTORS ``AS IS'' AND
 # ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -28,7 +28,7 @@
 """Converts a DXF file to a cutting program for a Gerber cloth cutter."""
 
 import argparse
-import sys 
+import sys
 from nctools import bbox, dxf, ent, gerbernc, utils
 
 _proginfo = ('dxf2nc [ver. ' + 
@@ -136,6 +136,28 @@ def write_entities(fn, ents, alim):
                 _cutline(e, w)
 
 
+def mkbites(ents, bb, blen):
+    """Divide entities in sub-lists for each bite.
+
+    :ents: list of entities, bound at x=0 and y=0
+    :bb: bounding box of ents
+    :blen: length of a bite
+    :returns: list of lists of entities
+    """
+    ec = ents[:]
+    nbites = bb.width//blen + 1
+    blen = bb.width/float(nbites)
+    borders = [i*blen for i in range(1, nbites)]
+    for b in borders:
+        tosplit = [e for e in ents if e.bbox.maxx > b and e.bbox.minx < b]
+        for e in tosplit:
+            ec.remove(e)
+            a, c = e.hsplit(b)
+            e.append(a)
+            e.append(c)
+
+
+
 def main(argv):
     """Main program for the dxf2nc utility.
 
@@ -147,10 +169,14 @@ def main(argv):
     searching for contours (defaults to 0.5 mm)"""
     argtxt2 = u"""minimum rotation angle in degrees where the knife needs 
     to be lifted to prevent breaking (defaults to 60°)"""
+    argtxt3 = """length of the cutting table that can be cut before the 
+    conveyor has to move (defaults to 1000 mm)"""
     parser.add_argument('-l', '--limit', help=argtxt, dest='limit',
                        metavar='F', type=float, default=0.5)
     parser.add_argument('-a', '--angle', help=argtxt2, dest='ang',
                        metavar='F', type=float, default=60)
+    parser.add_argument('-b', '--bite', help=argtxt3, dest='bite',
+                       metavar='N', type=int, default=1300)
     parser.add_argument('-v', '--version', action='version', 
                         version=_proginfo)
     parser.add_argument('files', nargs='*', help='one or more file names',
@@ -176,26 +202,32 @@ def main(argv):
             msg.say('Contains {} entities'.format(num))
             bbe = [e.bbox for e in entities]
             bb = bbox.merge(bbe)
-            msg.say('Gathering connected entities into contours')
-            contours, rement = ent.findcontours(entities, lim)
-            ncon = 'Found {} contours, {} remaining single entities'
-            msg.say(ncon.format(len(contours), len(rement)))
-            entities = contours + rement
-            msg.say('Sorting entities')
-            # Sort first in x, then in y
-            entities.sort(key=lambda e: (e.bbox.minx, e.bbox.miny))
+            es = 'Original extents: {:.1f} ≤ x ≤ {:.1f} mm,' \
+                ' {:.1f} ≤ y ≤ {:.1f} mm'
+            msg.say(es.format(bb.minx, bb.maxx, bb.miny, bb.maxy))
+            # move entities so that the bounding box begins at 0,0
+            if bb.minx != 0 or bb.miny != 0:
+                ms = 'Moving all entities by ({:.1f}, {:.1f}) mm'
+                msg.say(ms.format(-bb.minx, -bb.miny))
+                for e in entities:
+                    e.move(-bb.minx, -bb.miny)
+            # chop entities in bites
+            nbites = bb.width//pv.bite + 1
+            bitelen = bb.width/float(nbites)
+            if nbites > 1:
+                m = 'Cut length divided into {} bites of {} mm'
+                msg.say(m.format(nbites, bitelen))
+            else:
+                msg.say('Gathering connected entities into contours')
+                contours, rement = ent.findcontours(entities, lim)
+                ncon = 'Found {} contours, {} remaining single entities'
+                msg.say(ncon.format(len(contours), len(rement)))
+                entities = contours + rement
+                msg.say('Sorting entities')
+                entities.sort(key=lambda e: (e.bbox.minx, e.bbox.miny))
         else:
             msg.say('Contains: 1 entity')
             bb = entities[0].bbox
-        es = 'Original extents: {:.1f} ≤ x ≤ {:.1f} mm,' \
-             ' {:.1f} ≤ y ≤ {:.1f} mm'
-        msg.say(es.format(bb.minx, bb.maxx, bb.miny, bb.maxy))
-        # move entities so that the bounding box begins at 0,0
-        if bb.minx != 0 or bb.miny != 0:
-            ms = 'Moving all entities by ({:.1f}, {:.1f}) mm'
-            msg.say(ms.format(-bb.minx, -bb.miny))
-            for e in entities:
-                e.move(-bb.minx, -bb.miny)
         length = sum(e.length for e in entities)
         msg.say('Total length of entities: {:.0f} mm'.format(length))
         msg.say('Writing output to "{}"'.format(ofn))

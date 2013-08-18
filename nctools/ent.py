@@ -74,6 +74,11 @@ class Line(object):
         self.x = tuple(reversed(self.x))
         self.y = tuple(reversed(self.y))
 
+    def hsplit(self, x):
+        b = self.bbox
+        if x < b.minx or x >  b.maxx:
+            raise ValueError('cannot split')
+
     @property
     def points(self):
         """Returns the end points of the entity."""
