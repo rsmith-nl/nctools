@@ -69,8 +69,6 @@ def Writer(name, progname, entities):
     for e in entities:
         if isinstance(e, ent.Contour):
             lines += _dxfcontour(e)
-        elif isinstance(e, ent.Polyline):
-            lines += _dxfpoly(e)
         elif isinstance(e, ent.Arc):
             lines += _dxfarc(e)
         elif isinstance(e, ent.Line):
@@ -157,7 +155,7 @@ def _get_polylines(lines):
         vi = [w for w in range(i, end) if lines[w] == 'VERTEX']
         vi = zip(vi, vi[1:]+[end])
         pnts = []
-        bulges = []
+        angles = []
         for j, k in vi:
             num = lines.index("10", j) + 1
             x = float(lines[num])
@@ -167,13 +165,21 @@ def _get_polylines(lines):
             try:
                 num = lines.index("42", num) + 1
                 if num < k:
-                    bulges.append(float(lines[num]))
+                    angles.append(math.atan(float(lines[num]))*4)
                 else:
-                    bulges.append(0)
+                    angles.append(0)
             except ValueError:
-                bulges.append(0)
-        rv.append(ent.Polyline(pnts, bulges, i, layer, closed))
-    #print 'DEBUG: dxf.Reader found {} polylines'.format(len(rv))
+                angles.append(0)
+        if closed:
+            pnts.append(pnts[0])
+            #angles.append(0)
+        ends = zip(pnts, pnts[1:], angles)
+        for sp, ep, a in ends:
+            if a == 0:
+                rv.append(ent.Line(sp[0], sp[1], ep[0], ep[1], i, layer))
+            else:
+                (xc, yc), R, a0, a1 = ent.arcdata(sp, ep, a)
+                rv.append(ent.Arc(xc, yc, R, a0, a1, i, layer))
     return rv
 
 def _dxfline(e):
@@ -200,29 +206,6 @@ def _dxfarc(e):
            ' 51', str(math.degrees(e.a[1]))]
     return lns
 
-
-def _dxfpoly(e):
-    """Generate DXF for a ent.Polyline
-
-    :e: nctools.ent.Polyline
-    """
-    x, y = list(e.x), list(e.y)
-    bulges = [math.tan(a/4.0) for a in e.angles]
-    lns = ['  0', 'POLYLINE', '  8', 'snijlijnen', ' 70']
-    if x[0] == x[-1] and y[0] == y[-1]:
-        lns += ['    1']
-        x.pop(-1)
-        y.pop(-1)
-    else:
-        lns += ['    0']
-    lns += [' 10', '0.0', ' 20', '0.0', ' 30', '0.0']
-    for vx, vy, b in zip(x, y, bulges):
-        lns += ['  0', 'VERTEX', ' 10', str(vx), '20', str(vy), 
-                ' 30', '0.0']
-        if b != 0.0:
-            lns += [' 42', str(b)]
-    lns += ['  0', 'SEQEND']
-    return lns
 
 def _dxfcontour(e):
     """Generate DXF for a ent.Contour

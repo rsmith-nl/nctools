@@ -152,9 +152,6 @@ def plotentities(context, offset, entities, colors, lw=0.5):
                 context.arc(e.cx, e.cy, e.R, a0, a1)
             else:
                 context.arc_negative(e.xc, e.cy, e.R, a0, a1)
-        elif isinstance(e, ent.Polyline):
-            #print 'DEBUG: plotting a polyline'
-            _plotpoly(e, context)
         # Line needs to go _last_ because all entities as subclasses of line!
         elif isinstance(e, ent.Line):
             #print 'DEBUG: plotting a line'
@@ -163,24 +160,6 @@ def plotentities(context, offset, entities, colors, lw=0.5):
             context.line_to(*x)
         context.stroke()
     context.restore()
-
-
-def _plotpoly(e, ctx):
-    """Plot a Polyline
-
-    :e: nctools.ent.Polyline
-    :ctx: Cairo context
-    """    
-    ctx.move_to(e.x[0], e.y[1])
-    for sp, (xe, ye), angs in e.segments():
-        if angs == 0.0:
-            ctx.line_to(xe, ye)
-        else:
-            (xc, yc), R, a0, a1 = ent.arcdata(sp, (xe, ye), angs)
-            if angs < 0:
-                ctx.arc_negative(xc, yc, R, a0, a1)
-            else:
-                ctx.arc(xc, yc, R, a0, a1)
 
 
 def plotcolorbar(context, width, nument, colors):

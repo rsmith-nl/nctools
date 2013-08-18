@@ -63,36 +63,6 @@ def _cutarc(e, wr):
     wr.up()
 
 
-def _cutpoly(e, wr, skip = False):
-    """Cut a ent.Polyline
-
-    :ent: nctools.ent.Polyline
-    :wr: nctoos.gerbernc.Writer
-    """
-    d = e.segments()
-    #print 'DEBUG: # poly segments:', len(d)
-    if not skip:
-        (xs, ys), _, _ = d[0]
-        wr.moveto(xs, ys)
-        wr.down()
-    for sp, (xe, ye), ang in d:
-        if ang == 0.0:
-            wr.moveto(xe, ye)
-        else:
-            (xc, yc), R, a0, a1 = ent.arcdata(sp, (xe, ye), ang)
-            if ang > 0:
-                ccw = True
-            else:
-                ccw = False
-            a = ent.Arc(xc, yc, R, a0, a1, ccw=ccw)
-            pnts = a.segments()
-            pnts.pop(0)
-            for x, y in pnts:
-                wr.moveto(x, y)
-    if not skip:
-        wr.up()
-
-
 def _cutcontour(e, wr):
     """Cut a ent.Contour
 
@@ -102,9 +72,7 @@ def _cutcontour(e, wr):
     wr.moveto(e.entities[0].x[0], e.entities[0].y[0])
     wr.down()
     for ce in e.entities:
-        if isinstance(ce, ent.Polyline):
-            _cutpoly(ce, wr, True)
-        elif isinstance(ce, ent.Arc):
+        if isinstance(ce, ent.Arc):
             pnts = ce.segments()
             pnts.pop(0)
             for x, y in pnts:
@@ -128,12 +96,12 @@ def write_entities(fn, ents, alim):
         for e in ents:
             if isinstance(e, ent.Contour):
                 _cutcontour(e, w)
-            elif isinstance(e, ent.Polyline):
-                _cutpoly(e, w)
             elif isinstance(e, ent.Arc):
                 _cutarc(e, w)
             elif isinstance(e, ent.Line):
                 _cutline(e, w)
+            else:
+                raise ValueError('unknown entity')
 
 
 def mkbites(ents, bb, blen):
