@@ -83,7 +83,9 @@ class Line(object):
             y = self.y[0] + frac*(self.y[1] - self.y[0])
             a = Line(self.x[0], self.y[0], x, y, self.index, self.layer)
             b = Line(x, y, self.x[1], self.y[1], self.index, self.layer)
-            return [a, b]
+            if self.x[0] < self.x[1]:
+                return [a], [b]
+            return [b], [a]
 
     @property
     def points(self):
@@ -183,7 +185,13 @@ class Arc(Line):
         for sa, ea in zip(ip, ip[1:]):
             rv.append(Arc(self.cx, self.cy, self.R, sa, ea, self.index,
                           self.layer))
-        return rv
+        left, right = [], []
+        for e in rv:
+            if e.bbox.minx < x:
+                left.append(e)
+            else:
+                right.append(e)
+        return left, right
 
 
     def segments(self, devlim=1):

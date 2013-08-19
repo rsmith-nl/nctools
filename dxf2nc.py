@@ -104,24 +104,25 @@ def write_entities(fn, ents, alim):
                 raise ValueError('unknown entity')
 
 
-def splitents(ents, nb, blen):
-    """Divide entities in sub-lists for each bite.
+def mkbites(ents, nb, blen):
+    """Yield the bite number and the elements in that bite.
 
-    :ents: list of entities, bound at x=0 and y=0
-    :nb: number of bites
-    :blen: length of a bite
-    :returns: modified list of entities
+    :ents: a list of all entities (this list will be modified).
+    :nb: number of bites.
+    :blen: length of a bite in mm.
     """
-    ec = ents[:]
-    borders = [i*blen for i in range(1, nb+1)]
-    for b in borders:
-        tosplit = [e for e in ec if e.bbox.maxx > b and e.bbox.minx <= b]
-        for e in tosplit:
-            ec.remove(e)
-            r = e.hsplit(b)
-            for j in r:
-                ec.insert(0, j)
-    return ec
+    for b in range(1, nb):
+        border = b*blen
+        inbite = [e for e in ents if e.bbox.maxx < border]
+        crossing = [e for e in ents if e.bbox.minx < border < e.bbox.maxx]
+        for e in inbite + crossing:
+            ents.remove(e)
+        for e in crossing:
+            left, right = e.hsplit(border)
+            inbite += left
+            ents += right
+        yield b, inbite
+    yield nb, ents
 
 
 def main(argv):
@@ -136,12 +137,12 @@ def main(argv):
     argtxt2 = u"""minimum rotation angle in degrees where the knife needs 
     to be lifted to prevent breaking (defaults to 60°)"""
     argtxt3 = """length of the cutting table that can be cut before the 
-    conveyor has to move (defaults to 1000 mm)"""
+    conveyor has to move (defaults to 1300 mm)"""
     parser.add_argument('-l', '--limit', help=argtxt, dest='limit',
                        metavar='F', type=float, default=0.5)
     parser.add_argument('-a', '--angle', help=argtxt2, dest='ang',
                        metavar='F', type=float, default=60)
-    parser.add_argument('-b', '--bite', help=argtxt3, dest='bite',
+    parser.add_argument('-b', '--bitelength', help=argtxt3, dest='bitelen',
                        metavar='N', type=int, default=1300)
     parser.add_argument('-v', '--version', action='version', 
                         version=_proginfo)
@@ -178,27 +179,21 @@ def main(argv):
                 for e in entities:
                     e.move(-bb.minx, -bb.miny)
             # chop entities in bites
-            nbites = int(bb.width//pv.bite + 1)
+            nbites = int(bb.width//pv.bitelen + 1)
             bitelen = bb.width/float(nbites)
+            ncon = ' '.join(['Bite {}:', 'found {} contours,',
+                                '{} remaining entities.'])
+            newentlist = []
             if nbites > 1:
                 m = 'Cut length divided into {} bites of {} mm'
                 msg.say(m.format(nbites, bitelen))
-                msg.say('Splitting entities in bites')
-                se = splitents(entities, nbites, bitelen)
-                msg.say('{} entities after splitting'.format(len(se)))
-                entities = []
-                ncon = ' '.join(['Bite {}:', 'found {} contours,'
-                                '{} remaining entities.'])
-                for b in range(1, (nbites+1)):
-                    be = [e for e in se if 
-                          (b-1)*bitelen < e.bbox.minx <= b*bitelen]
-                    msg.say('Bite {}, {} entities'.format(b, len(be)))
-                    contours, rement = ent.findcontours(be, lim)
+                for bn, inbite in mkbites(entities, nbites, bitelen):
+                    contours, rement = ent.findcontours(inbite, lim)
                     be = contours + rement
-                    msg.say(ncon.format(b, len(contours), len(rement)))
-                    #msg.say('Bite {}: sorting entities'.format(b))
+                    msg.say(ncon.format(bn, len(contours), len(rement)))
                     be.sort(key=lambda e: (e.bbox.minx, e.bbox.miny))
-                    entities += be
+                    newentlist += be
+                entities = newentlist
             else:
                 msg.say('Gathering connected entities into contours')
                 contours, rement = ent.findcontours(entities, lim)
