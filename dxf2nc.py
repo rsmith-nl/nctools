@@ -115,7 +115,7 @@ def splitents(ents, nb, blen):
     ec = ents[:]
     borders = [i*blen for i in range(1, nb+1)]
     for b in borders:
-        tosplit = [e for e in ec if e.bbox.maxx > b and e.bbox.minx < b]
+        tosplit = [e for e in ec if e.bbox.maxx > b and e.bbox.minx <= b]
         for e in tosplit:
             ec.remove(e)
             r = e.hsplit(b)
@@ -191,14 +191,14 @@ def main(argv):
                                 '{} remaining entities.'])
                 for b in range(1, (nbites+1)):
                     be = [e for e in se if 
-                          (b-1)*bitelen < e.bbox.minx < b*bitelen]
+                          (b-1)*bitelen < e.bbox.minx <= b*bitelen]
                     msg.say('Bite {}, {} entities'.format(b, len(be)))
                     contours, rement = ent.findcontours(be, lim)
                     be = contours + rement
                     msg.say(ncon.format(b, len(contours), len(rement)))
                     #msg.say('Bite {}: sorting entities'.format(b))
                     be.sort(key=lambda e: (e.bbox.minx, e.bbox.miny))
-                    entities += se
+                    entities += be
             else:
                 msg.say('Gathering connected entities into contours')
                 contours, rement = ent.findcontours(entities, lim)
