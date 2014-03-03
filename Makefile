@@ -1,62 +1,66 @@
-.PHONY: all install dist clean backup deinstall check
-.SUFFIXES: .py
+.PHONY: all install uninstall dist clean refresh
 
-BASE=/usr/local
-MANDIR=$(BASE)/man
-BINDIR=$(BASE)/bin
-PYSITE!=python -c 'import site; print site.getsitepackages()[0]'
+# Installation locations
+PREFIX=/usr/local
+MANDIR=$(PREFIX)/man
+BINDIR=$(PREFIX)/bin
 
-help::
-	@echo "You can use one of the following commands:"
-	@echo "  install -- install the package system-wide"
-	@echo "  deinstall -- remove the system-wide installation"
-#beginskip
-	@echo "  dist -- create a distribution file"
-	@echo "  clean -- remove all generated files"
-	@echo "  backup -- make a complete backup"
-#endskip
+# Leave these as they are.
+VER!=grep Revision src/nctools/dxf.py | cut -d ' ' -f 4
+DISTFILES=Makefile README.txt
 
+# Default target
+all: dxf2nc dxf2pdf dxfgerber nc2pdf readdxf readnc
 
-install: ${ALL}
-	@if [ `id -u` != 0 ]; then \
-		echo "You must be root to install the program!"; \
-		exit 1; \
-	fi
-# Let Python do most of the install work.
-	python setup.py install
-# Lose the extension; this is UNIX. :-)
-	mv $(BINDIR)/dxf2nc.py $(BINDIR)/dxf2nc
-	mv $(BINDIR)/dxf2pdf.py $(BINDIR)/dxf2pdf
-	mv $(BINDIR)/dxfgerber.py $(BINDIR)/dxfgerber
-	mv $(BINDIR)/nc2pdf.py $(BINDIR)/nc2pdf
-	mv $(BINDIR)/readnc.py $(BINDIR)/readnc
-	rm -rf build
+dxf2nc: src/dxf2nc.py src/nctools/*.py
+	cd src && ln dxf2nc.py __main__.py && zip -q ../foo.zip __main__.py nctools/*.py
+	rm -f src/__main__.py
+	echo '#!/usr/bin/env python' >dxf2nc
+	cat foo.zip >>dxf2nc
+	rm -f foo.zip
+	chmod a+x dxf2nc
 
-deinstall::
-	@if [ `id -u` != 0 ]; then \
-		echo "You must be root to deinstall the program!"; \
-		exit 1; \
-	fi
-	rm -rf ${PYSITE}/nctools
-	rm -f ${PYSITE}/nctools-*.egg-info
-	rm -f $(BINDIR)/dxf2nc* $(BINDIR)/dxf2pdf* $(BINDIR)/dxfgerber* \
-	    $(BINDIR)/nc2pdf* $(BINDIR)/readnc*
+dxf2pdf: src/dxf2pdf.py src/nctools/*.py
+	cd src && ln dxf2pdf.py __main__.py && zip -q ../foo.zip __main__.py nctools/*.py
+	rm -f src/__main__.py
+	echo '#!/usr/bin/env python' >dxf2pdf
+	cat foo.zip >>dxf2pdf
+	rm -f foo.zip
+	chmod a+x dxf2pdf
 
-#beginskip
-dist: ${ALL}
-	mv Makefile Makefile.org
-	awk -f tools/makemakefile.awk Makefile.org >Makefile
-	python setup.py sdist --format=zip
-	mv Makefile.org Makefile
-	rm -f MANIFEST
-	#cd dist ; sha256 nctools-* >../port/stltools/distinfo 
-	#cd dist ; ls -l nctools-* | awk '{printf "SIZE (%s) = %d\n", $$9, $$5};' >>../port/stltools/distinfo 
+dxfgerber: src/dxfgerber.py src/nctools/*.py
+	cd src && ln dxfgerber.py __main__.py && zip -q ../foo.zip __main__.py nctools/*.py
+	rm -f src/__main__.py
+	echo '#!/usr/bin/env python' >dxfgerber
+	cat foo.zip >>dxfgerber
+	rm -f foo.zip
+	chmod a+x dxfgerber
+
+nc2pdf: src/nc2pdf.py src/nctools/*.py
+	cd src && ln nc2pdf.py __main__.py && zip -q ../foo.zip __main__.py nctools/*.py
+	rm -f src/__main__.py
+	echo '#!/usr/bin/env python' >nc2pdf
+	cat foo.zip >>nc2pdf
+	rm -f foo.zip
+	chmod a+x nc2pdf
+
+readdxf: src/readdxf.py src/nctools/*.py
+	cd src && ln readdxf.py __main__.py && zip -q ../foo.zip __main__.py nctools/*.py
+	rm -f src/__main__.py
+	echo '#!/usr/bin/env python' >readdxf
+	cat foo.zip >>readdxf
+	rm -f foo.zip
+	chmod a+x readdxf
+
+readnc: src/readnc.py src/nctools/*.py
+	cd src && ln readnc.py __main__.py && zip -q ../foo.zip __main__.py nctools/*.py
+	rm -f src/__main__.py
+	echo '#!/usr/bin/env python' >readnc
+	cat foo.zip >>readnc
+	rm -f foo.zip
+	chmod a+x readnc
 
 clean::
-	rm -rf dist build backup-*.tar.gz *.pyc MANIFEST
-	#rm -f port/nctools/distinfo
+	rm -f dxf2nc dxf2pdf dxfgerber nc2pdf readdxf readnc foo.zip src/__main__.py
 
-backup::
-	sh tools/genbackup
 
-#endskip
