@@ -34,7 +34,6 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.""".format(__version__)
 
-
 import argparse
 import sys
 from nctools import bbox, dxf, ent, utils
