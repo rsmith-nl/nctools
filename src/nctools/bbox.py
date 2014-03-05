@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
-# Copyright © 2013 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+# vim:fileencoding=utf-8
+# Copyright © 2013,2014 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # $Date$
 #
 # Redistribution and use in source and binary forms, with or without
@@ -40,14 +40,12 @@ class BBox(object):
             self.minx, self.maxx = min(x), max(x)
             self.miny, self.maxy = min(y), max(y)
             self.minz, self.maxz = None, None
-            #print 'DEBUG: setting 2D bbox.'
         elif len(pnts[0]) == 3:
             self.dim = 3
             x, y, z = zip(*pnts)
             self.minx, self.maxx = min(x), max(x)
             self.miny, self.maxy = min(y), max(y)
             self.minz, self.maxz = min(z), max(z)
-            #print 'DEBUG: setting 3D bbox.'
         else:
             raise ValueError('pnts must contain 2-tuples or 3-tuples')
 
@@ -56,7 +54,7 @@ class BBox(object):
         s3 = '<BBox {} ≤ x ≤ {}, {} ≤ y ≤ {}, {} ≤ z ≤ {} >'
         if self.dim == 2:
             return s2.format(self.minx, self.maxx, self.miny, self.maxy)
-        s3.format(self.minx, self.maxx, self.miny, self.maxy, 
+        s3.format(self.minx, self.maxx, self.miny, self.maxy,
                   self.minz, self.maxz)
 
     def update(self, pnts):
@@ -67,9 +65,9 @@ class BBox(object):
             raise ValueError('dimension of pnts[0] not conform bbox.')
         if self.dim == 2:
             tp += [(self.minx, self.miny),
-                  (self.maxx, self.maxy)]
+                   (self.maxx, self.maxy)]
             self.__init__(tp)
-        else: # dim == 3
+        else:  # dim == 3
             tp += [(self.minx, self.miny, self.minz),
                    (self.maxx, self.maxy, self.maxz)]
             self.__init__(tp)
@@ -110,7 +108,7 @@ class BBox(object):
     def points(self):
         if self.dim == 2:
             return (self.minx, self.miny), (self.maxx, self.maxy)
-        return ((self.minx, self.miny, self.minz), 
+        return ((self.minx, self.miny, self.minz),
                 (self.maxx, self.maxy, self.maxz))
 
 

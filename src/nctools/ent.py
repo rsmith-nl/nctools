@@ -1,7 +1,5 @@
-#! /usr/bin/env python
-# -*- coding: utf-8 -*-
-#
-# Copyright © 2013 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+# vim:fileencoding=utf-8
+# Copyright © 2013,2014 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # $Date$
 #
 # Redistribution and use in source and binary forms, with or without
@@ -13,7 +11,7 @@
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
 #
-# THIS SOFTWARE IS PROVIDED BY AUTHOR AND CONTRIBUTORS AS IS'' AND
+# THIS SOFTWARE IS PROVIDED BY AUTHOR AND CONTRIBUTORS ``AS IS'' AND
 # ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 # ARE DISCLAIMED.  IN NO EVENT SHALL AUTHOR OR CONTRIBUTORS BE LIABLE
@@ -30,7 +28,6 @@
 import math
 import bbox
 
-__version__ = '$Revision$'[11:-2]
 
 class Line(object):
     """A class for a line entity, from point (x1, y1) to (x2, y2).
@@ -76,8 +73,8 @@ class Line(object):
 
     def hsplit(self, x):
         b = self.bbox
-        if x < b.minx or x >  b.maxx:
-            return [self] # no split
+        if x < b.minx or x > b.maxx:
+            return [self]  # no split
         else:
             frac = (x - self.x[0])/(self.x[1] - self.x[0])
             y = self.y[0] + frac*(self.y[1] - self.y[0])
@@ -137,7 +134,7 @@ class Arc(Line):
                 self.da = a2 - a1
             else:
                 self.da = 2 * math.pi - a1 + a2
-        else: # CW
+        else:  # CW
             if a1 < a2:
                 self.da = a2 - a1
             else:
@@ -163,7 +160,6 @@ class Arc(Line):
         self.sa = self.sa + self.da
         self.da = -self.da
 
-
     def hsplit(self, x):
         xfrac = (x - self.cx)/self.R
         if xfrac > 1 or xfrac < -1:
@@ -173,7 +169,6 @@ class Arc(Line):
         p0 = math.acos(xfrac)
         p1 = _clamp(math.pi*2-p0 - start)
         p0 = _clamp(p0 - start)
-        print "p0: {}, p1: {}".format(p0, p1)
         if self.da > 0:
             ip = [j for j in (p0,  p1) if 0 <= j <= self.da]
         else:
@@ -192,7 +187,6 @@ class Arc(Line):
             else:
                 right.append(e)
         return left, right
-
 
     def segments(self, devlim=1):
         """Create a list of points that approximates the arc.
@@ -259,7 +253,7 @@ class Contour(Line):
         # Now initiate the base class.
         x0, y0 = entities[0].points[0]
         x1, y1 = entities[-1].points[1]
-        if index == None:
+        if index is None:
             index = entities[0].index
         Line.__init__(self, x0, y0, x1, y1, index, layer)
         self.name = 'contour'
@@ -408,5 +402,5 @@ def findcontours(ent, lim=0.25):
     :lim: maximum square of the distance between two points considered equal
     """
     contours = [_contour(e, ent, lim) for e in ent]
-    contours = [c for c in contours if c != None]
+    contours = [c for c in contours if c is not None]
     return contours, ent

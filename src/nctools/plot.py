@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright © 2013 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+# vim:fileencoding=utf-8
+# Copyright © 2013,2014 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # $Date$
 #
 # Redistribution and use in source and binary forms, with or without
@@ -32,7 +31,8 @@ import cairo
 gamma = 0.8
 maxc = 255
 
-def wavelen2rgb(nm): # pylint: disable=R0912
+
+def wavelen2rgb(nm):  # pylint: disable=R0912
     """Convert a wavelength to an RGB tuple
 
     :nm: wavelength in nanometers
@@ -72,7 +72,6 @@ def wavelen2rgb(nm): # pylint: disable=R0912
     else:
         red = 1.0
     # Let the intensity fall off near the vision limits.
-    #print('DEBUG: r = {}, g = {}, b = {}'.format(red, green, blue))
     if nm < 420:
         factor = 0.3 + 0.7*(nm - 380.0) / (420.0 - 380.0)
     elif nm < 701:
@@ -135,7 +134,6 @@ def plotentities(context, offset, entities, colors, lw=0.5):
     if isinstance(colors, tuple) and len(colors) == 3:
         colors = [colors]*len(entities)
     elif len(colors) != len(entities):
-        print len(colors), len(entities)
         raise ValueError('the amount of colors should be equal to entities')
     context.save()
     context.set_line_width(lw)
@@ -144,7 +142,6 @@ def plotentities(context, offset, entities, colors, lw=0.5):
         context.new_path()
         context.set_source_rgb(r/255.0, g/255.0, b/255.0)
         if isinstance(e, ent.Arc):
-            #print 'DEBUG: plotting an arc'
             context.new_sub_path()
             a0 = e.a[0]
             a1 = e.a[1]
@@ -154,7 +151,6 @@ def plotentities(context, offset, entities, colors, lw=0.5):
                 context.arc_negative(e.xc, e.cy, e.R, a0, a1)
         # Line needs to go _last_ because all entities as subclasses of line!
         elif isinstance(e, ent.Line):
-            #print 'DEBUG: plotting a line'
             s, x = e.points
             context.move_to(*s)
             context.line_to(*x)

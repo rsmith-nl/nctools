@@ -1,6 +1,5 @@
-#! /usr/bin/env python
-# -*- coding: utf-8 -*-
-# Copyright © 2013 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+# vim:fileencoding=utf-8
+# Copyright © 2013,2014 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # $Date$
 #
 # Redistribution and use in source and binary forms, with or without
@@ -27,12 +26,11 @@
 """Classes for reading and writing Gerber NC files for a cloth cutter.
 The language and file format for PCB machines is different!
 """
-
+from __future__ import division, print_function
 import math
 import os.path as op
 import bbox
 
-__version__ = '$Revision$'[11:-2]
 
 class Reader(object):
     """Reads a subset of Gerber NC files. It defaults to coordinates in
@@ -93,8 +91,8 @@ class Reader(object):
         ident = c[2].split('/')
         del c[0:3]
         self.name = ident[0]
-        self.length = float(ident[1][2:]) * 25.4 # mm
-        self.width = float(ident[2][2:]) * 25.4 # mm
+        self.length = float(ident[1][2:]) * 25.4  # mm
+        self.width = float(ident[2][2:]) * 25.4  # mm
         self.commands = c
         self.pos = None
 
@@ -146,7 +144,6 @@ class Writer(object):
         # commands[2] is an empty placeholder. The name, length and width of
         # the program need to be put there before writing.
         self.commands = ['H1', 'M20', '', 'N1', 'M15']
-        #print 'DEBUG: Writer.__init__()'
 
     def __str__(self):
         return '*'.join(self.commands)
@@ -158,7 +155,6 @@ class Writer(object):
     def up(self):
         """Stop cutting.
         """
-        #print 'DEBUG: Writer.up()'
         self.cut = False
         self.ang = None
         self.commands += ['M15']
@@ -169,11 +165,10 @@ class Writer(object):
     def down(self):
         """Start cutting.
         """
-        #print 'DEBUG: Writer.down()'
         if not self.pos:
             raise ValueError('start cutting at unknown position')
         self.cut = True
-        if self.bbox == None:
+        if self.bbox is None:
             self.bbox = bbox.BBox(self.pos)
         else:
             self.bbox.update(self.pos)
@@ -186,52 +181,22 @@ class Writer(object):
         :x: x coordinate in mm
         :y: y coordinate in mm
         """
-        #print 'DEBUG: Writer.moveto({}, {})'.format(x, y)
-        #print 'DEBUG: self.ang', self.ang
         x, y = mm2cin([x, y])
-        if self.cut: # We're cutting
-            #print 'DEBUG: Writer.moveto() cutting'
+        if self.cut:  # We're cutting
             self.bbox.update((x, y))
             dx, dy = x - self.pos[0], y - self.pos[1]
             newang = math.degrees(math.atan2(dy, dx))
             if newang < 0.0:
                 newang += 360.0
-            if self.ang != None:
+            if self.ang is not None:
                 angdif = math.fabs(newang-self.ang)
                 if angdif > 180:
                     angdif = 360 - angdif
-                #print 'DEBUG: angle diff:', angdif
                 if angdif > self.anglim:
-                    #print 'DEBUG: Writer.moveto() add up/down'
                     self.commands += ['M15', 'M14']
             self.ang = newang
         self.commands += ['X{:.0f}Y{:.0f}'.format(x, y)]
         self.pos = (x, y)
-
-# These are not supported by the controller of our machine. R.S.
-#    def arc_cw(self, x, y, i, j):
-#        """Create a clockwise arc, starting from the current position.
-#
-#        :x, y: end coordinates in mm
-#        :i, j: center coordinates in mm
-#        """
-#        x, y, i, j = mm2cin([x, y, i, j])
-#        if self.cut:
-#            self.bbox.update((x, y))
-#        self.commands += ['G02X{:.0f}Y{:.0f}I{:.0f}J{:.0f}'.format(x, y, i, j)]
-#        self.pos = (x, y)
-#
-#    def arc_ccw(self, x, y, i, j):
-#        """Create a counter clockwise arc, starting from the current position.
-#
-#        :x, y: end coordinates in mm
-#        :i, j: center coordinates in mm
-#        """
-#        x, y, i, j = mm2cin([x, y, i, j])
-#        if self.cut:
-#            self.bbox.update((x, y))
-#        self.commands += ['G03X{:.0f}Y{:.0f}I{:.0f}J{:.0f}'.format(x, y, i, j)]
-#        self.pos = (x, y)
 
     def write(self):
         """Write the NC file.
@@ -241,18 +206,16 @@ class Writer(object):
 
     def __enter__(self):
         """Start context manager."""
-        #print 'DEBUG: Writer.__enter__() start'
         self.f = open(self.path, 'wb')
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         """Stop context manager."""
-        #print 'DEBUG: Writer.__exit__() start'
         li = self.bbox.width/100.0
         wi = self.bbox.height/100.0
         self.commands[2] = '{}/L={:.3f}/W={:.3f}'.format(self.name, li, wi)
         if self.commands[-1].startswith('N'):
-            del self.commands[-1] # Remove unnecessary newpiece()
+            del self.commands[-1]  # Remove unnecessary newpiece()
         if not self.commands[-1] == 'M15':
             self.commands.append('M15')
         self.commands.append('M0')
@@ -295,9 +258,9 @@ if __name__ == '__main__':
         w.moveto(100, 100)
         w.moveto(0, 100)
         w.moveto(0, 0)
-        print 'NC code:', w
+        print('NC code:', w)
     # Read it back
     rd = Reader(nm)
     for cmd, _ in rd:
-        print cmd
+        print(cmd)
     remove(nm)

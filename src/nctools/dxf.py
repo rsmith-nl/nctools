@@ -1,6 +1,5 @@
-#! /usr/bin/env python
-# -*- coding: utf-8 -*-
-# Copyright © 2013 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+# vim:fileencoding=utf-8
+# Copyright © 2013,2014 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # $Date$
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,8 +29,6 @@ supported; LINE, ARC and POLYLINE."""
 import datetime
 import math
 import ent
-
-__version__ = '$Revision$'[11:-2]
 
 
 def reader(name):
@@ -96,7 +93,6 @@ def _get_lines(lines):
         num = lines.index("21", num) + 1
         y2 = float(lines[num])
         rv.append(ent.Line(x1, y1, x2, y2, i, layer))
-    #print 'DEBUG: dxf.Reader found {} lines'.format(len(rv))
     return rv
 
 
@@ -119,7 +115,6 @@ def _get_arcs(lines):
         if a2 < a1:
             a2 += 2*math.pi
         rv.append(ent.Arc(cx, cy, R, a1, a2, i, layer))
-    #print 'DEBUG: dxf.Reader found {} arcs'.format(len(rv))
     return rv
 
 
@@ -136,7 +131,6 @@ def _get_circles(lines):
         num = lines.index("40", num) + 1
         R = float(lines[num])
         rv.append(ent.Arc(cx, cy, R, 0, 2*math.pi, i, layer))
-    #print 'DEBUG: dxf.Reader found {} circles'.format(len(rv))
     return rv
 
 

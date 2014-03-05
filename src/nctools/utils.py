@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright © 2013 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+# vim:fileencoding=utf-8
+# Copyright © 2013,2014 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # $Date$
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,8 +29,6 @@ from __future__ import print_function
 import os.path
 import glob
 from datetime import datetime
-
-__version__ = '$Revision$'[11:-2]
 
 
 class Msg(object):
@@ -91,6 +88,3 @@ def xpand(args):
         else:
             xa += [a]
     return xa
-
-
-
