@@ -1,5 +1,6 @@
 # dxf2pdf - main program
 # vim:fileencoding=utf-8
+# $Date$
 
 """Reads DXF files and renders them as PDF files."""
 
