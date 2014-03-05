@@ -31,8 +31,8 @@ import argparse
 import sys
 from nctools import bbox, dxf, ent, gerbernc, utils
 
-_proginfo = ('dxf2nc [ver. ' + 
-             '$Revision$'[11:-2] + '] (' + 
+_proginfo = ('dxf2nc [ver. ' +
+             '$Revision$'[11:-2] + '] (' +
              '$Date$'[7:-2]+')')
 
 
@@ -132,19 +132,19 @@ def main(argv):
     """
     msg = utils.Msg()
     parser = argparse.ArgumentParser(description=__doc__)
-    argtxt = """maximum distance between two points considered equal when 
+    argtxt = """maximum distance between two points considered equal when
     searching for contours (defaults to 0.5 mm)"""
-    argtxt2 = u"""minimum rotation angle in degrees where the knife needs 
+    argtxt2 = u"""minimum rotation angle in degrees where the knife needs
     to be lifted to prevent breaking (defaults to 60°)"""
-    argtxt3 = """length of the cutting table that can be cut before the 
+    argtxt3 = """length of the cutting table that can be cut before the
     conveyor has to move (defaults to 1300 mm)"""
     parser.add_argument('-l', '--limit', help=argtxt, dest='limit',
-                       metavar='F', type=float, default=0.5)
+                        metavar='F', type=float, default=0.5)
     parser.add_argument('-a', '--angle', help=argtxt2, dest='ang',
-                       metavar='F', type=float, default=60)
+                        metavar='F', type=float, default=60)
     parser.add_argument('-b', '--bitelength', help=argtxt3, dest='bitelen',
-                       metavar='N', type=int, default=1300)
-    parser.add_argument('-v', '--version', action='version', 
+                        metavar='N', type=int, default=1300)
+    parser.add_argument('-v', '--version', action='version',
                         version=_proginfo)
     parser.add_argument('files', nargs='*', help='one or more file names',
                         metavar='file')
@@ -157,8 +157,8 @@ def main(argv):
         msg.say('Starting file "{}"'.format(f))
         try:
             ofn = utils.outname(f, extension='')
-            entities = dxf.Reader(f)
-        except Exception as e: #pylint: disable=W0703
+            entities = dxf.reader(f)
+        except Exception as e:  # pylint: disable=W0703
             utils.skip(e, f)
             continue
         num = len(entities)
@@ -182,7 +182,7 @@ def main(argv):
             nbites = int(bb.width//pv.bitelen + 1)
             bitelen = bb.width/float(nbites)
             ncon = ' '.join(['Bite {}:', 'found {} contours,',
-                                '{} remaining entities.'])
+                             '{} remaining entities.'])
             newentlist = []
             if nbites > 1:
                 m = 'Cut length divided into {} bites of {} mm'

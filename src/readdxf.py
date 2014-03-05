@@ -67,7 +67,7 @@ def main(argv):
         sys.exit(0)
     for f in utils.xpand(pv.files):
         try:
-            entities = dxf.Reader(f)
+            entities = dxf.reader(f)
         except Exception as e:
             utils.skip(e, f)
             continue

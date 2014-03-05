@@ -3,7 +3,7 @@
 #
 # Copyright © 2011-2013 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # $Date$
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
 # are met:
@@ -12,7 +12,7 @@
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY AUTHOR AND CONTRIBUTORS ``AS IS'' AND
 # ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -38,6 +38,7 @@ from nctools import bbox, dxf, plot, utils
 _proginfo = ('dxf2pdf [ver. ' + '$Revision$'[11:-2] +
              '] ('+'$Date$'[7:-2]+')')
 
+
 def main(argv):
     """Main program for the readdxf utility.
 
@@ -45,7 +46,7 @@ def main(argv):
     """
     msg = utils.Msg()
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('-v', '--version', action='version', 
+    parser.add_argument('-v', '--version', action='version',
                         version=_proginfo)
     parser.add_argument('files', nargs='*', help='one or more file names',
                         metavar='file')
@@ -58,7 +59,7 @@ def main(argv):
         msg.say('Starting file "{}"'.format(f))
         try:
             ofn = utils.outname(f, extension='.pdf', addenum='_dxf')
-            entities = dxf.Reader(f)
+            entities = dxf.reader(f)
         except ValueError as e:
             msg.say(str(e))
             fns = "Cannot construct output filename. Skipping file '{}'."
@@ -92,8 +93,8 @@ def main(argv):
         plot.plotgrid(ctx, w, h)
         colors = plot.crange(380, 650, len(entities))
         msg.say('Plotting the entities')
-        plot.plotentities(ctx, (offset/2-bb.minx, offset/2-bb.miny), 
-                        entities, colors)
+        plot.plotentities(ctx, (offset/2-bb.minx, offset/2-bb.miny),
+                          entities, colors)
         # plot the color bar
         plot.plotcolorbar(ctx, w, len(entities), colors)
         # Plot the filename
@@ -122,4 +123,3 @@ def main(argv):
 
 if __name__ == '__main__':
     main(sys.argv[1:])
-

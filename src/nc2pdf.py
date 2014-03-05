@@ -3,7 +3,7 @@
 #
 # Copyright © 2013 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # $Date$
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
 # are met:
@@ -12,7 +12,7 @@
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY AUTHOR AND CONTRIBUTORS ``AS IS'' AND
 # ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -35,7 +35,7 @@ import sys
 import cairo
 from nctools import gerbernc, plot, utils
 
-_proginfo = ('nc2pdf [ver. ' + '$Revision$'[11:-2] + 
+_proginfo = ('nc2pdf [ver. ' + '$Revision$'[11:-2] +
              '] ('+'$Date$'[7:-2]+')')
 
 
@@ -80,7 +80,7 @@ def main(argv):
     """
     msg = utils.Msg()
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('-v', '--version', action='version', 
+    parser.add_argument('-v', '--version', action='version',
                         version=_proginfo)
     parser.add_argument('files', nargs='*', help='one or more file names',
                         metavar='file')
@@ -114,7 +114,7 @@ def main(argv):
         w = maxx - minx + offset
         h = maxy - miny + offset
         msg.say('Plotting the cuts')
-        # Produce PDF output. Scale factor is 1 mm real = 
+        # Produce PDF output. Scale factor is 1 mm real =
         # 1 PostScript point in the PDF file
         xf = cairo.Matrix(xx=1.0, yy=-1.0, y0=h)
         out = cairo.PDFSurface(ofn, w, h)

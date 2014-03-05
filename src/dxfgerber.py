@@ -3,7 +3,7 @@
 #
 # Copyright © 2011-2013 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # $Date$
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
 # are met:
@@ -12,7 +12,7 @@
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY AUTHOR AND CONTRIBUTORS ``AS IS'' AND
 # ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -32,8 +32,8 @@ import argparse
 import sys
 from nctools import bbox, dxf, ent, utils
 
-_proginfo = ('dxfgerber [ver. ' + 
-             '$Revision$'[11:-2] + '] (' + 
+_proginfo = ('dxfgerber [ver. ' +
+             '$Revision$'[11:-2] + '] (' +
              '$Date$'[7:-2]+')')
 
 
@@ -44,11 +44,11 @@ def main(argv):
     """
     msg = utils.Msg()
     parser = argparse.ArgumentParser(description=__doc__)
-    argtxt = """maximum distance between two points considered equal when 
+    argtxt = """maximum distance between two points considered equal when
     searching for contours (defaults to 0.5 mm)"""
     parser.add_argument('-l', '--limit', nargs=1, help=argtxt, dest='limit',
-                       metavar='F', type=float, default=0.5)
-    parser.add_argument('-v', '--version', action='version', 
+                        metavar='F', type=float, default=0.5)
+    parser.add_argument('-v', '--version', action='version',
                         version=_proginfo)
     parser.add_argument('files', nargs='*', help='one or more file names',
                         metavar='file')
@@ -61,8 +61,8 @@ def main(argv):
         msg.say('Starting file "{}"'.format(f))
         try:
             ofn = utils.outname(f, extension='.dxf', addenum='_mod')
-            entities = dxf.Reader(f)
-        except Exception as e: #pylint: disable=W0703
+            entities = dxf.reader(f)
+        except Exception as e:  # pylint: disable=W0703
             utils.skip(e, f)
             continue
         num = len(entities)
@@ -95,7 +95,7 @@ def main(argv):
         length = sum(e.length for e in entities)
         msg.say('Total length of entities: {:.0f} mm'.format(length))
         msg.say('Writing output to "{}"'.format(ofn))
-        dxf.Writer(ofn, 'dxfgerber', entities)
+        dxf.writer(ofn, 'dxfgerber', entities)
         msg.say('File "{}" done.'.format(f))
 
 
