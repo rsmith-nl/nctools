@@ -1,8 +1,17 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-#
-# Copyright © 2012,2013 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+# dxf2nc - main program
+# vim:fileencoding=utf-8
 # $Date$
+
+"""Converts a DXF file to a cutting program for a Gerber cloth cutter."""
+
+from __future__ import print_function, division
+
+__version__ = '$Revision$'[11:-2]
+
+_lic = """dxf2nc {}
+#!/usr/bin/env python
+
+# Copyright © 2012-2014 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -23,17 +32,18 @@
 # HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-# SUCH DAMAGE.
+# SUCH DAMAGE.""".format(__version__)
 
-"""Converts a DXF file to a cutting program for a Gerber cloth cutter."""
 
 import argparse
 import sys
 from nctools import bbox, dxf, ent, gerbernc, utils
 
-_proginfo = ('dxf2nc [ver. ' +
-             '$Revision$'[11:-2] + '] (' +
-             '$Date$'[7:-2]+')')
+
+class LicenseAction(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        print(_lic)
+        sys.exit()
 
 
 def _cutline(e, wr):
@@ -144,8 +154,11 @@ def main(argv):
                         metavar='F', type=float, default=60)
     parser.add_argument('-b', '--bitelength', help=argtxt3, dest='bitelen',
                         metavar='N', type=int, default=1300)
-    parser.add_argument('-v', '--version', action='version',
-                        version=_proginfo)
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('-L', '--license', action=LicenseAction, nargs=0,
+                       help="print the license")
+    group.add_argument('-v', '--version', action='version',
+                       version=__version__)
     parser.add_argument('files', nargs='*', help='one or more file names',
                         metavar='file')
     pv = parser.parse_args(argv)
