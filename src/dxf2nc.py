@@ -137,7 +137,6 @@ def main(argv):
 
     :argv: command line arguments
     """
-    msg = utils.Msg()
     parser = argparse.ArgumentParser(description=__doc__)
     argtxt = """maximum distance between two points considered equal when
     searching for contours (defaults to 0.5 mm)"""
@@ -145,20 +144,25 @@ def main(argv):
     to be lifted to prevent breaking (defaults to 60°)"""
     argtxt3 = """length of the cutting table that can be cut before the
     conveyor has to move (defaults to 1300 mm)"""
+    argtxt4 = "assemble connected lines into contours (off by default)"
     parser.add_argument('-l', '--limit', help=argtxt, dest='limit',
                         metavar='F', type=float, default=0.5)
     parser.add_argument('-a', '--angle', help=argtxt2, dest='ang',
                         metavar='F', type=float, default=60)
     parser.add_argument('-b', '--bitelength', help=argtxt3, dest='bitelen',
                         metavar='N', type=int, default=1300)
+    parser.add_argument('-c', '--contours', help=argtxt4, dest='contours',
+                        action="store_true")
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-L', '--license', action=LicenseAction, nargs=0,
                        help="print the license")
     group.add_argument('-v', '--version', action='version',
                        version=__version__)
+    group.add_argument('-V', '--verbose', dest='verbose', action="store_true")
     parser.add_argument('files', nargs='*', help='one or more file names',
                         metavar='file')
     pv = parser.parse_args(argv)
+    msg = utils.Msg(pv.verbose)
     lim = pv.limit**2
     if not pv.files:
         parser.print_help()
@@ -198,18 +202,23 @@ def main(argv):
                 m = 'Cut length divided into {} bites of {} mm'
                 msg.say(m.format(nbites, bitelen))
                 for bn, inbite in mkbites(entities, nbites, bitelen):
-                    contours, rement = ent.findcontours(inbite, lim)
-                    be = contours + rement
-                    msg.say(ncon.format(bn, len(contours), len(rement)))
+                    if pv.contours:
+                        contours, rement = ent.findcontours(inbite, lim)
+                        be = contours + rement
+                        msg.say(ncon.format(bn, len(contours), len(rement)))
+                    else:
+                        be = inbite
+                    msg.say('Sorting entities in bite', bn)
                     be.sort(key=lambda e: (e.bbox.minx, e.bbox.miny))
                     newentlist += be
                 entities = newentlist
             else:
-                msg.say('Gathering connected entities into contours')
-                contours, rement = ent.findcontours(entities, lim)
-                ncon = 'Found {} contours, {} remaining single entities'
-                msg.say(ncon.format(len(contours), len(rement)))
-                entities = contours + rement
+                if pv.contours:
+                    msg.say('Gathering connected entities into contours')
+                    contours, rement = ent.findcontours(entities, lim)
+                    ncon = 'Found {} contours, {} remaining single entities'
+                    msg.say(ncon.format(len(contours), len(rement)))
+                    entities = contours + rement
                 msg.say('Sorting entities')
                 entities.sort(key=lambda e: (e.bbox.minx, e.bbox.miny))
         else:
