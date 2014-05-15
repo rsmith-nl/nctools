@@ -34,15 +34,18 @@ from datetime import datetime
 class Msg(object):
     """Message printer"""
 
-    def __init__(self):
+    def __init__(self, output=True):
         """Start the timer"""
         self.start = datetime.now()
+        self.output = output
 
     def say(self, *args):
         """Print a message prepended by the elapsed time.
 
         :*args: stuff to print
         """
+        if not self.output:
+            return
         delta = datetime.now() - self.start
         print('['+str(delta)[:-4]+']:', *args)
 
