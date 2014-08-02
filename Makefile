@@ -2,15 +2,15 @@
 
 # Installation locations
 PREFIX=/usr/local
-MANDIR=$(PREFIX)/man
-BINDIR=$(PREFIX)/bin
+MANDIR=${PREFIX}/man
+BINDIR=${PREFIX}/bin
 
 # Leave these as they are.
-VER!=grep Revision src/nctools/dxf.py | cut -d ' ' -f 4
+ALLSCRIPTS=dxf2nc dxf2pdf dxfgerber nc2pdf readdxf readnc
 DISTFILES=Makefile README.txt
 
 # Default target
-all: dxf2nc dxf2pdf dxfgerber nc2pdf readdxf readnc
+all: ${ALLSCRIPTS}
 
 dxf2nc: src/dxf2nc.py src/nctools/*.py
 	cd src && ln dxf2nc.py __main__.py && zip -q ../foo.zip __main__.py nctools/*.py
@@ -63,4 +63,6 @@ readnc: src/readnc.py src/nctools/*.py
 clean::
 	rm -f dxf2nc dxf2pdf dxfgerber nc2pdf readdxf readnc foo.zip src/__main__.py
 
+install: ${ALLSCRIPTS}
+	install ${ALLSCRIPTS} ${BINDIR}
 

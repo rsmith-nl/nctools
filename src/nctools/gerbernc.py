@@ -158,9 +158,6 @@ class Writer(object):
         self.cut = False
         self.ang = None
         self.commands += ['M15']
-        # Check if we need a break
-        #if len(self.commands)//200 > self.piece:
-        #    self.newpiece()
 
     def down(self):
         """Start cutting.
@@ -246,7 +243,6 @@ def cin2mm(arg):
     return [float(j) * 0.254 for j in arg]
 
 
-# Built-in test.
 if __name__ == '__main__':
     from os import remove
     nm = '/tmp/foo.nc'
