@@ -53,7 +53,7 @@ def main(argv):
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-L', '--license', action=LicenseAction, nargs=0,
                        help="print the license")
-    group.add_argument('-v', '--version', action='version',
+    group.add_argument('-V', '--version', action='version',
                        version=__version__)
     parser.add_argument('files', nargs='*', help='one or more file names',
                         metavar='file')

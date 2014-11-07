@@ -56,11 +56,12 @@ def main(argv):
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-L', '--license', action=LicenseAction, nargs=0,
                        help="print the license")
-    group.add_argument('-v', '--version', action='version',
+    group.add_argument('-V', '--version', action='version',
                        version=__version__)
     parser.add_argument('files', metavar='file', nargs='*',
                         help='one or more file names')
     pv = parser.parse_args(argv)
+    msg = utils.Msg()
     lim = pv.limit**2
     if not pv.files:
         parser.print_help()
@@ -72,31 +73,31 @@ def main(argv):
             utils.skip(e, f)
             continue
         num = len(entities)
-        print('Filename:', f)
+        msg.say('Filename: {}'.format(f))
         if num == 0:
-            print('No entities found!')
+            msg.say('No entities found!')
             sys.exit(1)
         if num > 1:
-            print('Contains: {} entities'.format(num))
+            msg.say('Contains: {} entities'.format(num))
             bbe = [e.bbox for e in entities]
             bb = bbox.merge(bbe)
             contours, rement = ent.findcontours(entities, lim)
             ncon = 'Found {} contours, {} remaining single entities'
-            print(ncon.format(len(contours), len(rement)))
+            msg.say(ncon.format(len(contours), len(rement)))
             entities = contours + rement
             entities.sort(key=lambda x: x.bbox.minx)
         else:
             print('Contains: 1 entity')
             bb = entities[0].bbox
         es = 'Extents: {:.1f} ≤ x ≤ {:.1f}, {:.1f} ≤ y ≤ {:.1f}'
-        print(es.format(bb.minx, bb.maxx, bb.miny, bb.maxy))
+        msg.say(es.format(bb.minx, bb.maxx, bb.miny, bb.maxy))
         length = sum(e.length for e in entities)
-        print('Total length of entities: {:.0f} mm'.format(length))
+        msg.say('Total length of entities: {:.0f} mm'.format(length))
         for e in entities:
-            print(e)
+            msg.say(e)
             if isinstance(e, ent.Contour):
                 for c in e.entities:
-                    print('..', c)
+                    msg.say('..', c)
 
 
 if __name__ == '__main__':

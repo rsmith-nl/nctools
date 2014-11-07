@@ -52,16 +52,17 @@ def main(argv):
 
     :argv: command line arguments
     """
-    msg = utils.Msg()
     parser = argparse.ArgumentParser(description=__doc__)
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-L', '--license', action=LicenseAction, nargs=0,
                        help="print the license")
-    group.add_argument('-v', '--version', action='version',
+    group.add_argument('-V', '--version', action='version',
                        version=__version__)
+    parser.add_argument('-v', '--verbose', dest='verbose', action="store_true")
     parser.add_argument('files', nargs='*', help='one or more file names',
                         metavar='file')
     pv = parser.parse_args(argv)
+    msg = utils.Msg(pv.verbose)
     if not pv.files:
         parser.print_help()
         sys.exit(0)
