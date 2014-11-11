@@ -90,16 +90,17 @@ def _cutcontour(e, wr):
     wr.newpiece()
 
 
-def write_entities(fn, ents, alim):
+def write_entities(fn, ents, blen, alim):
     """@todo: Docstring for write_entities
 
     :fn: output file name
     :ents: list of entities
+    :blen: length of bites
     :alim: minimum turning angle where the knife needs to be lifted
     :returns: @todo
 
     """
-    with gerbernc.Writer(fn, anglim=alim) as w:
+    with gerbernc.Writer(fn, bitelen=blen, anglim=alim) as w:
         for e in ents:
             if isinstance(e, ent.Contour):
                 _cutcontour(e, w)
@@ -227,7 +228,7 @@ def main(argv):
         length = sum(e.length for e in entities)
         msg.say('Total length of entities: {:.0f} mm'.format(length))
         msg.say('Writing output to "{}"'.format(ofn))
-        write_entities(ofn, entities, pv.ang)
+        write_entities(ofn, entities, pv.bitelen, pv.ang)
         msg.say('File "{}" done.'.format(f))
 
 if __name__ == '__main__':
