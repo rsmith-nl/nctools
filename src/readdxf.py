@@ -69,8 +69,8 @@ def main(argv):
     for f in utils.xpand(pv.files):
         try:
             entities = dxf.reader(f)
-        except Exception as e:
-            utils.skip(e, f)
+        except Exception as ex:
+            utils.skip(ex, f)
             continue
         num = len(entities)
         msg.say('Filename: {}'.format(f))

@@ -74,8 +74,8 @@ def main(argv):
         try:
             ofn = utils.outname(f, extension='.dxf', addenum='_mod')
             entities = dxf.reader(f)
-        except Exception as e:  # pylint: disable=W0703
-            utils.skip(e, f)
+        except Exception as ex:  # pylint: disable=W0703
+            utils.skip(ex, f)
             continue
         num = len(entities)
         if num == 0:

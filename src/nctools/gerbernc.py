@@ -87,7 +87,7 @@ class Reader(object):
         with open(path, 'rb') as f:
             c = f.read().split('*')
             if c[0] != 'H1' and 'M20' not in c[0:3]:
-            raise ValueError('{} is not a valid NC file.'.format(path))
+                raise ValueError('{} is not a valid NC file.'.format(path))
         if c[1].startswith('ZX'):
             self.bite = cin2mm(c[1][2:])
             ident = c[3].split('/')
@@ -134,8 +134,8 @@ class Writer(object):
 
         :param path: the output file
         :param bitelen: length of the bites.
-        :param name: name of the program. If not given, the basename without any
-        extension will be used.
+        :param name: name of the program. If not given, the basename without
+        any extension will be used.
         :param anglim: limit of angle between continuou cuts.
         """
         self.path = path

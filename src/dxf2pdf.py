@@ -72,13 +72,13 @@ def main(argv):
         try:
             ofn = utils.outname(f, extension='.pdf', addenum='_dxf')
             entities = dxf.reader(f)
-        except ValueError as e:
-            msg.say(str(e))
+        except ValueError as ex:
+            msg.say(str(ex))
             fns = "Cannot construct output filename. Skipping file '{}'."
             msg.say(fns.format(f))
             continue
-        except IOError as e:
-            msg.say(str(e))
+        except IOError as ex:
+            msg.say(str(ex))
             msg.say("Cannot open the file '{}'. Skipping it.".format(f))
             continue
         # Output
