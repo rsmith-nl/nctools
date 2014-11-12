@@ -86,10 +86,16 @@ class Reader(object):
         self.path = path
         with open(path, 'rb') as f:
             c = f.read().split('*')
-        if c[0] != 'H1' and c[1] != 'M20':
+            if c[0] != 'H1' and 'M20' not in c[0:3]:
             raise ValueError('{} is not a valid NC file.'.format(path))
-        ident = c[2].split('/')
-        del c[0:3]
+        if c[1].startswith('ZX'):
+            self.bite = cin2mm(c[1][2:])
+            ident = c[3].split('/')
+            del c[0:4]
+        elif c[1] is 'M20':
+            self.bite = None
+            ident = c[2].split('/')
+            del c[0:3]
         self.name = ident[0]
         self.length = float(ident[1][2:]) * 25.4  # mm
         self.width = float(ident[2][2:]) * 25.4  # mm
