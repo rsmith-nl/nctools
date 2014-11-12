@@ -92,7 +92,7 @@ class Reader(object):
             self.bite = cin2mm(c[1][2:])
             ident = c[3].split('/')
             del c[0:4]
-        elif c[1] is 'M20':
+        elif c[1] == 'M20':
             self.bite = None
             ident = c[2].split('/')
             del c[0:3]
@@ -111,6 +111,10 @@ class Reader(object):
         yield '# Name of part: {}'.format(self.name), (self.name)
         fs = '# Length: {:.1f} mm, width {:.1f} mm'
         yield fs.format(self.length, self.width), (self.length, self.width)
+        if self.bite:
+            yield '# Bite length: {:.1f} mm'.format(self.bite), (self.bite)
+        else:
+            yield '# No bite length specified in file', (self.bite)
         for c in self.commands:
             if c in Reader.cmds.keys():
                 yield Reader.cmds[c], ()
