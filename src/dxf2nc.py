@@ -87,50 +87,27 @@ def _cutcontour(e, wr):
         elif isinstance(ce, ent.Line):
             wr.moveto(ce.x[1], ce.y[1])
     wr.up()
-    wr.newpiece()
 
 
-def write_entities(fn, ents, blen, alim):
-    """@todo: Docstring for write_entities
+def write_entities(fn, parts, alim):
+    """Write all parts to a NC file.
 
     :fn: output file name
-    :ents: list of entities
-    :blen: length of bites
+    :parts: list of list of entities
     :alim: minimum turning angle where the knife needs to be lifted
-    :returns: @todo
-
     """
-    with gerbernc.Writer(fn, bitelen=blen, anglim=alim) as w:
-        for e in ents:
-            if isinstance(e, ent.Contour):
-                _cutcontour(e, w)
-            elif isinstance(e, ent.Arc):
-                _cutarc(e, w)
-            elif isinstance(e, ent.Line):
-                _cutline(e, w)
-            else:
-                raise ValueError('unknown entity')
-
-
-def mkbites(ents, nb, blen):
-    """Yield the bite number and the elements in that bite.
-
-    :ents: a list of all entities (this list will be modified).
-    :nb: number of bites.
-    :blen: length of a bite in mm.
-    """
-    for b in range(1, nb):
-        border = b*blen
-        inbite = [e for e in ents if e.bbox.maxx < border]
-        crossing = [e for e in ents if e.bbox.minx < border < e.bbox.maxx]
-        for e in inbite + crossing:
-            ents.remove(e)
-        for e in crossing:
-            left, right = e.hsplit(border)
-            inbite += left
-            ents += right
-        yield b, inbite
-    yield nb, ents
+    with gerbernc.Writer(fn, anglim=alim) as w:
+        for p in parts:
+            w.newpiece()
+            for e in p:
+                if isinstance(e, ent.Contour):
+                    _cutcontour(e, w)
+                elif isinstance(e, ent.Arc):
+                    _cutarc(e, w)
+                elif isinstance(e, ent.Line):
+                    _cutline(e, w)
+                else:
+                    raise ValueError('unknown entity')
 
 
 def main(argv):
@@ -143,15 +120,11 @@ def main(argv):
     searching for contours (defaults to 0.5 mm)"""
     argtxt2 = u"""minimum rotation angle in degrees where the knife needs
     to be lifted to prevent breaking (defaults to 60°)"""
-    argtxt3 = """length of the cutting table that can be cut before the
-    conveyor has to move (defaults to 1300 mm)"""
     argtxt4 = "assemble connected lines into contours (off by default)"
     parser.add_argument('-l', '--limit', help=argtxt, dest='limit',
                         metavar='F', type=float, default=0.5)
     parser.add_argument('-a', '--angle', help=argtxt2, dest='ang',
                         metavar='F', type=float, default=60)
-    parser.add_argument('-b', '--bitelength', help=argtxt3, dest='bitelen',
-                        metavar='N', type=int, default=1300)
     parser.add_argument('-c', '--contours', help=argtxt4, dest='contours',
                         action="store_true")
     group = parser.add_mutually_exclusive_group()
@@ -169,6 +142,7 @@ def main(argv):
         parser.print_help()
         sys.exit(0)
     for f in utils.xpand(pv.files):
+        parts = []
         msg.say('Starting file "{}"'.format(f))
         try:
             ofn = utils.outname(f, extension='')
@@ -193,42 +167,28 @@ def main(argv):
                 msg.say(ms.format(-bb.minx, -bb.miny))
                 for e in entities:
                     e.move(-bb.minx, -bb.miny)
-            # chop entities in bites
-            nbites = int(bb.width//pv.bitelen + 1)
-            bitelen = bb.width/float(nbites)
-            ncon = ' '.join(['Bite {}:', 'found {} contours,',
-                             '{} remaining entities.'])
-            newentlist = []
-            if nbites > 1:
-                m = 'Cut length divided into {} bites of {} mm'
-                msg.say(m.format(nbites, bitelen))
-                for bn, inbite in mkbites(entities, nbites, bitelen):
-                    if pv.contours:
-                        contours, rement = ent.findcontours(inbite, lim)
-                        be = contours + rement
-                        msg.say(ncon.format(bn, len(contours), len(rement)))
-                    else:
-                        be = inbite
-                    msg.say('Sorting entities in bite', bn)
-                    be.sort(key=lambda e: (e.bbox.minx, e.bbox.miny))
-                    newentlist += be
-                entities = newentlist
-            else:
+            # separate entities into parts according to their layers
+            layers = {e.layer for e in entities}
+            for layer in layers:
+                msg.say('Found layer: "{}"'.format(layer))
+                le = [e for e in entities if e.layer == layer]
                 if pv.contours:
                     msg.say('Gathering connected entities into contours')
-                    contours, rement = ent.findcontours(entities, lim)
+                    contours, rement = ent.findcontours(le, lim)
+                    for c in contours:
+                        c.layer = layer
                     ncon = 'Found {} contours, {} remaining single entities'
                     msg.say(ncon.format(len(contours), len(rement)))
-                    entities = contours + rement
+                    le = contours + rement
                 msg.say('Sorting entities')
-                entities.sort(key=lambda e: (e.bbox.minx, e.bbox.miny))
-        else:
-            msg.say('Contains: 1 entity')
-            bb = entities[0].bbox
+                le.sort(key=lambda e: (e.bbox.minx, e.bbox.miny))
+                parts.append(le)
+            msg.say('Sorting pieces')
+            parts.sort(key=lambda p: bbox.merge([e.bbox for e in p]).minx)
         length = sum(e.length for e in entities)
         msg.say('Total length of entities: {:.0f} mm'.format(length))
         msg.say('Writing output to "{}"'.format(ofn))
-        write_entities(ofn, entities, pv.bitelen, pv.ang)
+        write_entities(ofn, parts, pv.ang)
         msg.say('File "{}" done.'.format(f))
 
 if __name__ == '__main__':
