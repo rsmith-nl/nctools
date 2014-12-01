@@ -1,0 +1,182 @@
+Config File   DEFAULT
+Output File : C:\REPORT\RFS.TXT
+
+Parameter Name                   Units   Current   Default   Range              
+----------------------------------------------------------------------------
+Idle Knife Speed                 rev/min 5000      3500      0-11000            
+Dry Haul/Minimum Knife Speed     rev/min 5000      8000      200-11000          
+Cut/Maximum Knife Speed          rev/min 5000      9350      200-11000          
+Sharpen Knife Speed              rev/min 1000                200-11000          
+Cut Speed=Maximum Knife Speed            6                   1-15               
+Drill 1 Speed                    rev/min 3000                0-4000             
+Drill 2 Speed                    rev/min 3000                0-4000             
+Drill 3 Speed                    rev/min 3000                0-4000             
+Drill 4 Speed                    rev/min 3000                0-4000             
+Knife Speed Checking                     ON                  0-1                
+Sharpen Frequency                cm      381                 0-2537             
+Cut Distance Limit               cm      152400              25400-889000       
+Sharpening Time                  seconds 0.02      1.00      0.00-10.00         
+Sharpen Position #1              degrees 130.000             0.000-360.000      
+Sharpen Position #2              degrees 273.000             0.000-360.000      
+Number of Sides to Sharpen       count   2                   1-2                
+Sharpen Every n Pieces           count   0                   0-9                
+Sharpen Only When Knife is Up            OFF                 0-1                
+Knife Wear Limit                 count   2500                50-20000           
+Sharpens until Overcut Update    count   200                 2-10000            
+Sharpen New Knife n Times        count   15                  0-500              
+Advance Before Plunge Distance   cm      0.100     0.356     -0.317-1.270       
+Corner Advance Distance          cm      0.356     0.356     -0.317-1.270       
+Overcut Distance                 cm      0.081     0.081     0.000-2.537        
+Corner Overcut Distance          cm      0.000     0.081     0.000-2.537        
+Lift + Plunge Corner Angle       degrees 45                  1-180              
+M17 (0 Heel Cut) Advance         cm      0.635               -1.270-1.270       
+M19 (Slit Notch) Advance         cm      0.254               -1.270-1.270       
+M25 Slowdown Percentage          percent 75                  25-100             
+C-Axis Yaw Angle                 degrees 0.000               -2.000-2.000       
+Slit Notch Backtracking                  DISABLE             0-1                
+Optimal Backup Distance          cm      1.270               0.000-5.080        
+Feed Rate                        percent 100                 0-100              
+Minimum Feed Rate                percent 0                   0-100              
+Vacuum Zoning                            ENABLE              0-1                
+Vacuum Zone Overlap              cm      10.16               1.52-101.60        
+Vacuum Error Reporting                   ON                  0-1                
+Vacuum Level - Bite              cm Hg   6.00      8.89      0.00-25.40         
+Vacuum Level - Cut               cm Hg   8.89                0.00-25.40         
+Vacuum Level - Idle              cm Hg   8.89                0.00-25.40         
+Vacuum Low Error Level           cm Hg   1.27                0.00-25.40         
+Vacuum Low Caution Level         cm Hg   7.62                0.00-25.40         
+Bite Vacuum Threshold            cm Hg   5.08                0.00-25.40         
+Time until ESM                   seconds 180                 40-1800            
+Energy Savings Mode                      ENABLE              0-1                
+Num of Vac Zones Closed for Bite         1                   0-32               
+Auto Origin (M70) Codes                  IGNORE              0-1                
+Display Msg (M20) Codes                  USE                 0-1                
+Feedrate (F) Codes                       USE                 0-1                
+Label Cycle (M31) Codes                  IGNORE              0-1                
+Lift + Plunge (M46) Codes                USE                 0-1                
+Drill 1 (M43) Codes                      IGNORE    0         0-1                
+Drill 2 (M44) Codes                      IGNORE              0-1                
+Drill 3 (M72) Codes                      IGNORE              0-1                
+Drill 4 (M73) Codes                      IGNORE              0-1                
+Move Conveyor (M69) Codes                USE                 0-1                
+Overcut Off (M18) Codes                  USE                 0-1                
+M19 Codes                                USE                 0-1                
+Pen (D1+D2) Codes                        IGNORE              0-1                
+Sharpen (M42) Codes                      IGNORE    0         0-1                
+Slowdown Codes                           USE                 0-1                
+S Codes                                  IGNORE              0.0-1.0            
+Bristle Cleaner Sweeps per Slat  count   1                   1-5                
+PI: FR Control - XY Force                OFF                 0-1                
+PI: FR Slowdown - Low Vac                ON                  0-1                
+PI: FR Faster - Shp Knife                ON                  0-1                
+PI: Optimum Force                        2.80                2.00-9.99          
+PI: Feedrate: Minimum                    3.00                1.00-15.00         
+PI: Feedrate: Maximum                    15.00               1.00-15.00         
+X Data Scale Factor                      1.000               0.800-1.200        
+Y Data Scale Factor                      1.000               0.800-1.200        
+Data Format                              4.2 ENGLISH          0-3               
+Marker Size: Use Auto Calculate          OFF                 0-1                
+Marker Size: Use M20 Code                OFF                 0-1                
+Right Side Initialize                    OFF                 0-1                
+AAMA Data Conversion                     DISABLE             0-1                
+Run Time Biting                          ON                  0-1                
+Variable Length Biting                   ON                  0-1                
+Minimum Bite Length              cm      127.00              25.40-6705.60      
+Maximum Bite Length              cm      139.70              30.48-6705.60      
+Pause Before Convey                      OFF                 0-1                
+Pause Between Bites                      OFF                 0-1                
+Convey Last Bite Off Table               OFF                 0-1                
+Bite Clip Start Position         cm      1.52                0.00-15.24         
+Bite Clip End Position           cm      0.00                0.00-15.24         
+Bite Park Offset                 cm      0.00                0.00-30.48         
+Insert M23 Edge Clip Code                DISABLE             0-1                
+Bite Veeroff                     cm      0.05                0.00-2.54          
+Marker End Park                          -Y                  0-2                
+Marker End Park Position X       cm      0.00                -25.40-25.40       
+Marker End Park Position Y       cm      0.00                -25.40-25.40       
+Bite Park Location                       -Y Side             0-1                
+Bite Overlap                     cm      0.63                0.00-2.54          
+Continuous Cutting                       OFF                 0-1                
+Allow Piece Reorder                      YES                 0-1                
+Cut Small Pieces First                   NO                  0-1                
+Max Area of Small Piece          cm²     645                 6-6452             
+Recalculate Small Pieces                 NO                  0-1                
+Single Step                              OFF                 0-1                
+Marker Flip                              NONE                0-5                
+Marker Flip Top                          NONE                0-5                
+Marker Stacking Reorder                  YES                 0-1                
+Marker Stacking Reorder Channel  cm      25.4                0.0-101.6          
+Check Origin                             ON                  0-1                
+Block Delete                             ON                  0-1                
+Cut/Plot Mode                            CUT                 0-1                
+Dry Run                                  OFF                 0-1                
+Dry Run Tool Is Light                    YES       0         0-1                
+Metric Display                           ON        0         0-1                
+Delete Cut File After Cutting            DISABLE             0-1                
+Preprocess Drills                        OFF                 0-1                
+Preprocess Labels                        OFF                 0-1                
+Preprocess Annotation                    OFF                 0-1                
+Center Line Origin Center Point          OFF                 0-1                
+Center Line Origin Edge Points           OFF                 0-1                
+Transfer Markers when Selected           OFF                 0-2                
+Cutter Info Database Option              DISABLE             0-1                
+Y-Axis Edge Align                        NONE                0-2                
+Use Edge Finders                         OFF                 0-1                
+Edge Finder Auto-Alignment               OFF                 0-1                
+Log Edge Finder Info                     OFF                 0-1                
+Auto-Scale Y                             OFF                 0-1                
+Max Auto-Scale Y Change          percent 5.00                0.00-30.00         
+Clear Origin On Cutfile Close            NO                  0-1                
+Auto Check Spread Length                 DISABLE             0-1                
+Reseal Spread                    seconds 0.0                 0.0-5.0            
+Label Data To Pen Strokes                OFF                 0-1                
+Label Pen Stroke Font Size       cm      2.54                0.00-2540.00       
+Marker Stacking with Scanner             NO                  0-1                
+Mirroring Option                         DISABLE             0-1                
+Mirror Image                             OFF                 0-1                
+Y-Axis Mirror Image                      OFF                 0-1                
+Y-Axis Mirror Reflection Line    cm      121.92              0.00-182.88        
+Clipping Window Option                   OFF                 0-1                
+Clipping Low Boundary            cm      -2.540    -2.540    -304.800-304.800   
+Clipping High Boundary           cm      198.120             -304.800-304.800   
+Clipping Low Boundary (Top Mrk)  cm      -2.540    -2.540    -304.800-304.800   
+Clipping High Boundary (Top Mrk) cm      198.120             -304.800-304.800   
+OPSTOP                                   DISABLE             0-1                
+Preset OPSTOP                            OFF                 0-1                
+Regional OPSTOP                          DISABLE             0-1                
+OPSTOP Slow Slew                         ENABLE              0-1                
+Use Matching System                      DISABLE             0-1                
+OPSTOP Section Processing                OFF                 0-1                
+Selv/Web                                 OFF                 0-2                
+Selvage Cut Position             cm      66.0                0.0-106.7          
+Selvage Cut Position Type                Bite Offset          0-1               
+Selvage Cut Size - Bottom        cm      5.1                 0.0-15.2           
+Selvage Cut Size - Top           cm      5.1                 0.0-15.2           
+Minimum Web Cut Size             cm      0.97                0.76-2.54          
+Intermarker Gap                  cm      2.54                0.00-76.20         
+Minimum Size of First Bite       cm      76.20               0.00-203.20        
+Contiguous Cut                           OFF                 0-1                
+Maximum Cut Velocity             cm/min  4572                305-6096           
+Max time: Automatic Load Spread  seconds 60                  0-300              
+Length of Reverse Segment        cm      5.080               0.000-7.620        
+Edge Clipping Angle              degrees 90.000              1.000-180.000      
+Knife Width                      cm      0.660     0.889     0.000-2.540        
+Gap to Ignore                    cm      0.127               0.000-2.540        
+Distance to Corner               cm      1.270               0.000-1270.000     
+Path Overlap                     cm      0.051               0.000-0.635        
+Corner Angle                     degrees 145.000             0.000-180.000      
+Transfer Angle                   degrees 90.000              0.000-180.000      
+Max Length to Ignore             cm      0.000               0.000-2.540        
+Max Distance with Knife Down     cm      50.800              0.000-1270.000     
+Message Stop                             NO                  0.0-1.0            
+Max # Points Per Piece           count   1500                0-100000           
+Overlap Distance                 cm      0.00                -254.00-254.00     
+Max Small Piece Area             cm²     645.16              0.00-64516.00      
+Percent of Piece                 percent 90.00               0.00-100.00        
+Auto-Start Jobs in Queue                 OFF                 0-1                
+Del Job From Queue After Cutting         NO                  0-1                
+Del Queue After Cutting                  OFF                 0-3                
+Read Queue Name Bar Codes                NO                  0-1                
+User Parameter Table Selecting           DISABLE             0-1                
+User Parameter Table Editing             DISABLE             0-1                
+Three Drill Assembly Installed           NO                  0-1                
