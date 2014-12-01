@@ -242,7 +242,7 @@ class Arc(Line):
 class Contour(Line):
     """A contour is a list of connected entities."""
 
-    def __init__(self, entities, index=None, layer='0'):
+    def __init__(self, entities, index=None, layer=None):
         """Create a Contour from a list of entities.
 
         :entities: A list of connected entities.
@@ -250,7 +250,7 @@ class Contour(Line):
         if len(entities) == 1:
             raise ValueError('a contour should have more than one entity')
         self.entities = tuple(entities)
-        # Now initiate the base class.
+        # Now initialize the base class.
         x0, y0 = entities[0].points[0]
         x1, y1 = entities[-1].points[1]
         if index is None:
