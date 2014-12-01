@@ -88,12 +88,7 @@ class Reader(object):
             c = f.read().split('*')
             if c[0] != 'H1' and 'M20' not in c[0:3]:
                 raise ValueError('{} is not a valid NC file.'.format(path))
-        if c[1].startswith('ZX'):
-            self.bite = cin2mm(c[1][2:])
-            ident = c[3].split('/')
-            del c[0:4]
-        elif c[1] == 'M20':
-            self.bite = None
+        if c[1] == 'M20':
             ident = c[2].split('/')
             del c[0:3]
         self.name = ident[0]
@@ -111,10 +106,6 @@ class Reader(object):
         yield '# Name of part: {}'.format(self.name), (self.name)
         fs = '# Length: {:.1f} mm, width {:.1f} mm'
         yield fs.format(self.length, self.width), (self.length, self.width)
-        if self.bite:
-            yield '# Bite length: {:.1f} mm'.format(self.bite), (self.bite)
-        else:
-            yield '# No bite length specified in file', (self.bite)
         for c in self.commands:
             if c in Reader.cmds.keys():
                 yield Reader.cmds[c], ()
@@ -133,11 +124,10 @@ class Reader(object):
 class Writer(object):
     """Writes Gerber NC files."""
 
-    def __init__(self, path, bitelen, name=None, anglim=60):
+    def __init__(self, path, name=None, anglim=60):
         """Initialize the writer.
 
         :param path: the output file
-        :param bitelen: length of the bites.
         :param name: name of the program. If not given, the basename without
         any extension will be used.
         :param anglim: limit of angle between continuou cuts.
@@ -152,13 +142,10 @@ class Writer(object):
         self.bbox = None
         self.f = None
         self.anglim = float(anglim)
-        self.bitelen = mm2cin(bitelen)
         self.piece = 1
-        # commands[1] is an empty placeholder. The bite length will be put
-        # here.
-        # commands[3] is an empty placeholder. The name, length and width of
+        # commands[2] is an empty placeholder. The name, length and width of
         # the program need to be put there before writing.
-        self.commands = ['H1', '', 'M20', '', 'N1', 'M15']
+        self.commands = ['H1', 'M20', '', 'N1', 'M15']
 
     def __str__(self):
         return '*'.join(self.commands)
@@ -223,10 +210,9 @@ class Writer(object):
 
     def __exit__(self, exc_type, exc_value, traceback):
         """Stop context manager."""
-        self.commands[1] = 'ZX{:.0f}'.format(self.bitelen)
         li = self.bbox.width/100.0
         wi = self.bbox.height/100.0
-        self.commands[3] = '{}/L={:.3f}/W={:.3f}'.format(self.name, li, wi)
+        self.commands[2] = '{}/L={:.3f}/W={:.3f}'.format(self.name, li, wi)
         if self.commands[-1].startswith('N'):
             del self.commands[-1]  # Remove unnecessary newpiece()
         if not self.commands[-1] == 'M15':
