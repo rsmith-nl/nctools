@@ -88,7 +88,10 @@ class Reader(object):
             c = f.read().split('*')
             if c[0] != 'H1' and 'M20' not in c[0:3]:
                 raise ValueError('{} is not a valid NC file.'.format(path))
-        if c[1] == 'M20':
+        if c[1].startswith('ZX'):
+            ident = c[3].split('/')
+            del c[0:4]
+        elif c[1] == 'M20':
             ident = c[2].split('/')
             del c[0:3]
         self.name = ident[0]
