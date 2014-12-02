@@ -142,10 +142,10 @@ class Writer(object):
         self.bbox = None
         self.f = None
         self.anglim = float(anglim)
-        self.piece = 1
+        self.piece = 0
         # commands[2] is an empty placeholder. The name, length and width of
         # the program need to be put there before writing.
-        self.commands = ['H1', 'M20', '', 'N1', 'M15']
+        self.commands = ['H1', 'M20', '', 'M15']
 
     def __str__(self):
         return '*'.join(self.commands)
