@@ -14,9 +14,130 @@ software, I also see the G02 command in the form G02XnnnnYnnnnInnnnJnnnn.
 According to data found on the internet this should be clockwise circular
 interpolation. G03 should be counter-clockwise circular interpolation.
 
+In the manual for the C-200 software you can basically find the same codes,
+but with more explanation.
 
 It seems that our controller outputs a new piece code Nn every 200 commands
 or so.
+
+According to appendix B of the application manual the following files apply for input data;
+
+- All letters must be uppercase.
+- A ‘*’ separates blocks of data.
+- Data between forward slashes ‘/’ is ignored. The ‘block delete’ parameter
+  should be set to ‘enable’ for this to work.
+- All files should start with a H file identifier; ‘H1’
+- A sequence number N (in a block by itself) should start every piece.
+- X and Y coordinates are in 4.2 inch format by default, so 123456 means
+  1234.56 inches.
+- All coordinates are absolute.
+- A negative sign must be included. All coordinates without sign are assumed
+  to be positive.
+- Per block of input data, the maximum increment of X or Y motion with the
+  knife down is 60 inches. (blocks are separated by ‘*’)
+- The maximum distance with the knife down is also a machine parameter!
+- As is the amount of points per piece.
+- A block may only contain one M, G or D command.
+- M, G or D commands may be in the same block as X,Y coordinates.
+- Up and down commands (M15, M14) are modal. They are executed before any XY
+  data in a block.
+- The feed rate commands in the file, e.g. F1200 (in inches/minute) overrrides
+  the speed set on the cutter!
+- The bite length command Z should be in a block with an X coordinate. It
+  should immediately follow the H-block.
+
+So a file should always start like this;
+
+    H1*
+    N1*
+
+For VFI, I think we should disable knife intelligence at the beginning of a
+program;
+
+    M51*
+
+
+And should end with;
+
+    M15*
+    M0*
+
+Usually the blocks are all concatenated without whitespace.
+
+
+Parameter file
+==============
+
+The use of some codes can be influenced by the machines configu file. An
+excerpt of our config file is below;
+
+    Parameter Name                   Units   Current   Default   Range
+
+    Lift + Plunge Corner Angle       degrees 45                  1-180
+    M17 (0 Heel Cut) Advance         cm      0.635               -1.270-1.270
+    M19 (Slit Notch) Advance         cm      0.254               -1.270-1.270
+    M25 Slowdown Percentage          percent 75                  25-100
+    Auto Origin (M70) Codes                  IGNORE              0-1
+    Display Msg (M20) Codes                  USE                 0-1
+    Feedrate (F) Codes                       USE                 0-1
+    Label Cycle (M31) Codes                  IGNORE              0-1
+    Lift + Plunge (M46) Codes                USE                 0-1
+    Drill 1 (M43) Codes                      IGNORE    0         0-1
+    Drill 2 (M44) Codes                      IGNORE              0-1
+    Drill 3 (M72) Codes                      IGNORE              0-1
+    Drill 4 (M73) Codes                      IGNORE              0-1
+    Move Conveyor (M69) Codes                USE                 0-1
+    Overcut Off (M18) Codes                  USE                 0-1
+    M19 Codes                                USE                 0-1
+    Pen (D1+D2) Codes                        IGNORE              0-1
+    Sharpen (M42) Codes                      IGNORE    0         0-1
+    Slowdown Codes                           USE                 0-1
+    S Codes                                  IGNORE              0.0-1.0
+    Marker Size: Use Auto Calculate          OFF                 0-1
+    Marker Size: Use M20 Code                OFF                 0-1
+    Right Side Initialize                    OFF                 0-1
+    AAMA Data Conversion                     DISABLE             0-1
+    Run Time Biting                          ON                  0-1
+    Variable Length Biting                   ON                  0-1
+    Insert M23 Edge Clip Code                DISABLE             0-1
+    Continuous Cutting                       OFF                 0-1
+    Allow Piece Reorder                      YES                 0-1
+    OPSTOP                                   DISABLE             0-1
+    Preset OPSTOP                            OFF                 0-1
+    Regional OPSTOP                          DISABLE             0-1
+    OPSTOP Slow Slew                         ENABLE              0-1
+    Use Matching System                      DISABLE             0-1
+    OPSTOP Section Processing                OFF                 0-1
+    Insert M23 Edge Clip Code                DISABLE             0-1
+    Maximum Cut Velocity             cm/min  4572                305-6096
+
+The length of the bites are also machine parameters. These presumably are
+dictated by the length of the conveyor.
+
+    Minimum Bite Length              cm      127.00              25.40-6705.60
+    Maximum Bite Length              cm      139.70              30.48-6705.60
+    Minimum Size of First Bite       cm      76.20               0.00-203.20
+
+It looks like we can use delete blocks ‘/ /’;
+
+    Block Delete                             ON                  0-1
+
+Also of interest;
+
+    Maximum Cut Velocity             cm/min  4572                305-6096
+    Knife Width                      cm      0.660     0.889     0.000-2.540
+    Max Distance with Knife Down     cm      50.800              0.000-1270.000
+    Cut Distance Limit               cm      152400              25400-889000
+    Message Stop                             NO                  0.0-1.0
+    Max # Points Per Piece           count   1500                0-100000
+
+
+Cutfiles
+========
+
+Standard, the origin is at the lower-left corner of the spread. The pieces are
+cut sequentially from piece number one.
+
 
 Entities in different kinds of files
 ====================================
