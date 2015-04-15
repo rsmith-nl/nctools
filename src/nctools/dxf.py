@@ -28,7 +28,7 @@ supported; LINE, ARC and POLYLINE."""
 
 import datetime
 import math
-import ent
+from nctools import ent
 
 
 def reader(name):
