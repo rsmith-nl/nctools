@@ -1,6 +1,10 @@
 *.pyc
 *.pyo
 backup-*.tar.gz
-build
+dxf2nc
+dxf2pdf
+dxfgerber
+nc2pdf
+readdxf
+readnc
 dist
-MANIFEST

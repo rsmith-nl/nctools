@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright © 2013 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+# vim:fileencoding=utf-8
+# Copyright © 2013-2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # $Date$
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,16 +25,17 @@
 
 """Utilities for plotting."""
 
-import nctools.ent as ent
+from nctools import ent
 import cairo
 
 gamma = 0.8
 maxc = 255
 
-def wavelen2rgb(nm): # pylint: disable=R0912
+
+def wavelen2rgb(nm):  # pylint: disable=R0912
     """Convert a wavelength to an RGB tuple
 
-    :nm: wavelength in nanometers
+    :param nm: wavelength in nanometers
     :returns: an RBG tuple
     """
     def adjust(color, factor):
@@ -72,7 +72,6 @@ def wavelen2rgb(nm): # pylint: disable=R0912
     else:
         red = 1.0
     # Let the intensity fall off near the vision limits.
-    #print('DEBUG: r = {}, g = {}, b = {}'.format(red, green, blue))
     if nm < 420:
         factor = 0.3 + 0.7*(nm - 380.0) / (420.0 - 380.0)
     elif nm < 701:
@@ -87,32 +86,32 @@ def wavelen2rgb(nm): # pylint: disable=R0912
 def crange(start, stop, count):
     """Create a list of colors
 
-    :start: starting wavelength
-    :stop: final wavelength
-    :count: length of the returned list
+    :param start: starting wavelength
+    :param stop: final wavelength
+    :param count: length of the returned list
     :returns: a list of (R,G,B) tuples
     """
     if count == 1:
         return [wavelen2rgb(start)]
     step = (stop-start)/float(count-1)
 
-    return [wavelen2rgb(start + j*step) for j in xrange(1, count+1)]
+    return [wavelen2rgb(start + j*step) for j in range(1, count+1)]
 
 
 def plotgrid(context, width, height, size=100):
     """Plot a grid in black with a dotted line.
 
-    :context: Cairo context
-    :width: width of the context
-    :height: height of the context
-    :size: grid cell size
+    :param context: Cairo context
+    :param width: width of the context
+    :param height: height of the context
+    :param size: grid cell size
     """
     context.save()
     context.new_path()
-    for x in xrange(100, int(width), size):
+    for x in range(100, int(width), size):
         context.move_to(x, 0)
         context.line_to(x, height)
-    for y in xrange(int(height)-size, 0, -size):
+    for y in range(int(height)-size, 0, -size):
         context.move_to(0, y)
         context.line_to(width, y)
     context.close_path()
@@ -126,16 +125,15 @@ def plotgrid(context, width, height, size=100):
 def plotentities(context, offset, entities, colors, lw=0.5):
     """Draw the entities
 
-    :context: Cairo context
-    :offset: tuple for translating the coordinate system
-    :entities: list of nctools.ent entities
-    :colors: list of (r,g,b) tuples or one (r,g,b) tuple
-    :lw: line width
+    :param context: Cairo context
+    :param offset: tuple for translating the coordinate system
+    :param entities: list of nctools.ent entities
+    :param colors: list of (r,g,b) tuples or one (r,g,b) tuple
+    :param lw: line width
     """
     if isinstance(colors, tuple) and len(colors) == 3:
         colors = [colors]*len(entities)
     elif len(colors) != len(entities):
-        print len(colors), len(entities)
         raise ValueError('the amount of colors should be equal to entities')
     context.save()
     context.set_line_width(lw)
@@ -144,7 +142,6 @@ def plotentities(context, offset, entities, colors, lw=0.5):
         context.new_path()
         context.set_source_rgb(r/255.0, g/255.0, b/255.0)
         if isinstance(e, ent.Arc):
-            #print 'DEBUG: plotting an arc'
             context.new_sub_path()
             a0 = e.a[0]
             a1 = e.a[1]
@@ -154,7 +151,6 @@ def plotentities(context, offset, entities, colors, lw=0.5):
                 context.arc_negative(e.xc, e.cy, e.R, a0, a1)
         # Line needs to go _last_ because all entities as subclasses of line!
         elif isinstance(e, ent.Line):
-            #print 'DEBUG: plotting a line'
             s, x = e.points
             context.move_to(*s)
             context.line_to(*x)
@@ -165,10 +161,10 @@ def plotentities(context, offset, entities, colors, lw=0.5):
 def plotcolorbar(context, width, nument, colors):
     """Plot a color bar
 
-    :context: Cairo context
-    :width: width of the canvas
-    :nument: number of entities
-    :colors: list of colors
+    :param context: Cairo context
+    :param width: width of the canvas
+    :param nument: number of entities
+    :param colors: list of colors
     """
     sw = width/float(2*nument)
     context.set_line_cap(cairo.LINE_CAP_BUTT)

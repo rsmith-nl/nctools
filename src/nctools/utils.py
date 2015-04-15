@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright © 2013 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+# vim:fileencoding=utf-8
+# Copyright © 2013-2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # $Date$
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,26 +25,26 @@
 
 """Utilities for nctools."""
 
-from __future__ import print_function
-import os.path
-import glob
 from datetime import datetime
-
-__version__ = '$Revision$'[11:-2]
+import glob
+import os.path
 
 
 class Msg(object):
     """Message printer"""
 
-    def __init__(self):
+    def __init__(self, output=True):
         """Start the timer"""
         self.start = datetime.now()
+        self.output = output
 
     def say(self, *args):
         """Print a message prepended by the elapsed time.
 
-        :*args: stuff to print
+        :param *args: stuff to print
         """
+        if not self.output:
+            return
         delta = datetime.now() - self.start
         print('['+str(delta)[:-4]+']:', *args)
 
@@ -53,9 +52,9 @@ class Msg(object):
 def outname(inname, extension, addenum=''):
     """Creates the name of the output filename based on the input filename.
 
-    :inname: name + path of the input file
-    :extension: extension of the output file.
-    :addenum: string to append to filename
+    :param inname: name + path of the input file
+    :param extension: extension of the output file.
+    :param addenum: string to append to filename
     :returns: output file name.
     """
     rv = os.path.splitext(os.path.basename(inname))[0]
@@ -69,8 +68,8 @@ def outname(inname, extension, addenum=''):
 def skip(error, filename):
     """Skip a file in case of an error
 
-    :error: exception
-    :filename: name of file to skip
+    :param error: exception
+    :param filename: name of file to skip
     """
     print("Cannot read file: {}".format(error))
     print("Skipping file '{}'".format(filename))
@@ -80,7 +79,7 @@ def xpand(args):
     """Expand command line arguments for operating systems incapable of doing
     so.
 
-    :args: list of argument
+    :param args: list of argument
     :returns: expanded argument list
     """
     xa = []
@@ -91,6 +90,3 @@ def xpand(args):
         else:
             xa += [a]
     return xa
-
-
-
