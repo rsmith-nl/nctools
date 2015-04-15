@@ -9,7 +9,7 @@ from __future__ import print_function, division
 __version__ = '$Revision$'[11:-2]
 
 _lic = """dxf2pdf {}
-Copyright © 2011-2014 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+Copyright © 2011-2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -50,7 +50,7 @@ class LicenseAction(argparse.Action):
 def main(argv):
     """Main program for the readdxf utility.
 
-    :argv: command line arguments
+    :param argv: command line arguments
     """
     parser = argparse.ArgumentParser(description=__doc__)
     group = parser.add_mutually_exclusive_group()

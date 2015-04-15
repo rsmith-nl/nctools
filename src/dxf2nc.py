@@ -9,7 +9,7 @@ from __future__ import print_function, division
 __version__ = '$Revision$'[11:-2]
 
 _lic = """dxf2nc {}
-Copyright © 2012-2014 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+Copyright © 2012-2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -46,8 +46,8 @@ class LicenseAction(argparse.Action):
 def _cutline(e, wr):
     """Cut a ent.Line
 
-    :ent: nctools.ent.Line
-    :wr: nctoos.gerbernc.Writer
+    :param ent: nctools.ent.Line
+    :param wr: nctoos.gerbernc.Writer
     """
     wr.moveto(e.x[0], e.y[0])
     wr.down()
@@ -58,8 +58,8 @@ def _cutline(e, wr):
 def _cutarc(e, wr):
     """Cut an ent.Arc
 
-    :ent: nctools.ent.Arc
-    :wr: nctoos.gerbernc.Writer
+    :param ent: nctools.ent.Arc
+    :param wr: nctoos.gerbernc.Writer
     """
     pnts = e.segments()
     x, y = pnts.pop(0)
@@ -73,8 +73,8 @@ def _cutarc(e, wr):
 def _cutcontour(e, wr):
     """Cut a ent.Contour
 
-    :ent: nctools.ent.Contour
-    :wr: nctoos.gerbernc.Writer
+    :param ent: nctools.ent.Contour
+    :param wr: nctoos.gerbernc.Writer
     """
     wr.moveto(e.entities[0].x[0], e.entities[0].y[0])
     wr.down()
@@ -92,9 +92,9 @@ def _cutcontour(e, wr):
 def write_entities(fn, parts, alim):
     """Write all parts to a NC file.
 
-    :fn: output file name
-    :parts: list of list of entities
-    :alim: minimum turning angle where the knife needs to be lifted
+    :param fn: output file name
+    :param parts: list of list of entities
+    :param alim: minimum turning angle where the knife needs to be lifted
     """
     with gerbernc.Writer(fn, anglim=alim) as w:
         for p in parts:
@@ -113,7 +113,7 @@ def write_entities(fn, parts, alim):
 def main(argv):
     """Main program for the dxf2nc utility.
 
-    :argv: command line arguments
+    :param argv: command line arguments
     """
     parser = argparse.ArgumentParser(description=__doc__)
     argtxt = """maximum distance between two points considered equal when
