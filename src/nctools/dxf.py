@@ -1,5 +1,5 @@
 # vim:fileencoding=utf-8
-# Copyright © 2013,2014 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+# Copyright © 2013-2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # $Date$
 #
 # Redistribution and use in source and binary forms, with or without
@@ -34,7 +34,7 @@ import ent
 def reader(name):
     """Read a DXF file.
 
-    :name: The name of the file to read.
+    :param name: The name of the file to read.
     :returns: A list of entities.
     """
     with open(name, 'r') as f:
@@ -53,7 +53,7 @@ def reader(name):
 def writer(name, progname, entities):
     """Write a DXF file.
 
-    :name: The name of the file to write.
+    :param name: The name of the file to write.
     :entities: entities to write to the file
     """
     a = 'This conversion was started on {}'
@@ -78,7 +78,12 @@ def writer(name, progname, entities):
 
 
 def _get_lines(lines):
-    idx = [x for x in range(len(lines)) if lines[x] == 'LINE']
+    """Generate ent.Line objects from the line in a DXF file.
+
+    :param lines: a list of lines of text
+    :returns: a list of ent.Line objects
+    """
+    idx = [num for num, ln in enumerate(lines) if ln == 'LINE']
     rv = []
     for i in idx:
         num = lines.index("8", i) + 1
@@ -96,7 +101,12 @@ def _get_lines(lines):
 
 
 def _get_arcs(lines):
-    idx = [x for x in range(len(lines)) if lines[x] == 'ARC']
+    """Generate ent.Arc objects from the arcs in a DXF file.
+
+    :param lines: a list of lines of text
+    :returns: a list of ent.Arc objects
+    """
+    idx = [num for num, ln in enumerate(lines) if ln == 'ARC']
     rv = []
     for i in idx:
         num = lines.index("8", i) + 1
@@ -118,7 +128,12 @@ def _get_arcs(lines):
 
 
 def _get_circles(lines):
-    idx = [x for x in range(len(lines)) if lines[x] == 'CIRCLE']
+    """Generate closed ent.Arc objects from the circles in a DXF file.
+
+    :param lines: a list of lines of text
+    :returns: a list of ent.Arc objects
+    """
+    idx = [num for num, ln in enumerate(lines) if ln == 'CIRCLE']
     rv = []
     for i in idx:
         num = lines.index("8", i) + 1
@@ -134,7 +149,12 @@ def _get_circles(lines):
 
 
 def _get_polylines(lines):
-    idx = [x for x in range(len(lines)) if lines[x] == 'POLYLINE']
+    """Generate ent.Line and ent.Arc objects from the polylines in a DXF file.
+
+    :param lines: a list of lines of text
+    :returns: a list of ent.Line and ent.Arc objects
+    """
+    idx = [num for num, ln in enumerate(lines) if ln == 'POLYLINE']
     rv = []
     for i in idx:
         num = lines.index("8", i) + 1
@@ -145,7 +165,7 @@ def _get_polylines(lines):
         except ValueError:
             closed = False
         end = lines.index('SEQEND', i)
-        vi = [w for w in range(i, end) if lines[w] == 'VERTEX']
+        vi = [num for num, ln in enumerate(lines) if ln == 'VERTEX']
         vi = zip(vi, vi[1:]+[end])
         pnts = []
         angles = []
@@ -178,7 +198,8 @@ def _get_polylines(lines):
 def _dxfline(e):
     """Generate DXF for a ent.Line
 
-    :e: nctools.ent.Line
+    :param e: nctools.ent.Line
+    :returns: a list of lines of text.
     """
     lns = ['  0', 'LINE', '  8', 'snijlijnen', ' 10', str(e.x[0]),
            ' 20', str(e.y[0]), ' 30', '0.0', ' 11', str(e.x[1]),
@@ -189,7 +210,8 @@ def _dxfline(e):
 def _dxfarc(e):
     """Generate DXF for an ent.Arc
 
-    :e: nctools.ent.Arc
+    :param e: nctools.ent.Arc
+    :returns: a list of lines of text.
     """
     if not e.ccw:
         e.flip()
@@ -203,7 +225,8 @@ def _dxfarc(e):
 def _dxfcontour(e):
     """Generate DXF for a ent.Contour
 
-    :e: nctools.ent.Contour
+    :param e: nctools.ent.Contour
+    :returns: a list of lines of text.
     """
     lns = []
     for k in e.entities:
