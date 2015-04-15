@@ -15,7 +15,7 @@ all: ${ALLSCRIPTS}
 dxf2nc: src/dxf2nc.py src/nctools/*.py
 	cd src && ln dxf2nc.py __main__.py && zip -q ../foo.zip __main__.py nctools/*.py
 	rm -f src/__main__.py
-	echo '#!/usr/bin/env python' >dxf2nc
+	echo '#!/usr/bin/env python3' >dxf2nc
 	cat foo.zip >>dxf2nc
 	rm -f foo.zip
 	chmod a+x dxf2nc
@@ -23,7 +23,7 @@ dxf2nc: src/dxf2nc.py src/nctools/*.py
 dxf2pdf: src/dxf2pdf.py src/nctools/*.py
 	cd src && ln dxf2pdf.py __main__.py && zip -q ../foo.zip __main__.py nctools/*.py
 	rm -f src/__main__.py
-	echo '#!/usr/bin/env python' >dxf2pdf
+	echo '#!/usr/bin/env python3' >dxf2pdf
 	cat foo.zip >>dxf2pdf
 	rm -f foo.zip
 	chmod a+x dxf2pdf
@@ -31,7 +31,7 @@ dxf2pdf: src/dxf2pdf.py src/nctools/*.py
 dxfgerber: src/dxfgerber.py src/nctools/*.py
 	cd src && ln dxfgerber.py __main__.py && zip -q ../foo.zip __main__.py nctools/*.py
 	rm -f src/__main__.py
-	echo '#!/usr/bin/env python' >dxfgerber
+	echo '#!/usr/bin/env python3' >dxfgerber
 	cat foo.zip >>dxfgerber
 	rm -f foo.zip
 	chmod a+x dxfgerber
@@ -39,7 +39,7 @@ dxfgerber: src/dxfgerber.py src/nctools/*.py
 nc2pdf: src/nc2pdf.py src/nctools/*.py
 	cd src && ln nc2pdf.py __main__.py && zip -q ../foo.zip __main__.py nctools/*.py
 	rm -f src/__main__.py
-	echo '#!/usr/bin/env python' >nc2pdf
+	echo '#!/usr/bin/env python3' >nc2pdf
 	cat foo.zip >>nc2pdf
 	rm -f foo.zip
 	chmod a+x nc2pdf
@@ -47,7 +47,7 @@ nc2pdf: src/nc2pdf.py src/nctools/*.py
 readdxf: src/readdxf.py src/nctools/*.py
 	cd src && ln readdxf.py __main__.py && zip -q ../foo.zip __main__.py nctools/*.py
 	rm -f src/__main__.py
-	echo '#!/usr/bin/env python' >readdxf
+	echo '#!/usr/bin/env python3' >readdxf
 	cat foo.zip >>readdxf
 	rm -f foo.zip
 	chmod a+x readdxf
@@ -55,7 +55,7 @@ readdxf: src/readdxf.py src/nctools/*.py
 readnc: src/readnc.py src/nctools/*.py
 	cd src && ln readnc.py __main__.py && zip -q ../foo.zip __main__.py nctools/*.py
 	rm -f src/__main__.py
-	echo '#!/usr/bin/env python' >readnc
+	echo '#!/usr/bin/env python3' >readnc
 	cat foo.zip >>readnc
 	rm -f foo.zip
 	chmod a+x readnc
