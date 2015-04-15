@@ -26,7 +26,7 @@
 """Drawing entities."""
 
 import math
-import bbox
+from nctools import bbox
 
 
 class Line(object):
@@ -96,7 +96,7 @@ class Line(object):
         :returns: bounding box of the entity in the form of a 4-tuple (xmin,
         xmax, ymin, ymax)
         """
-        return bbox.BBox(zip(self.x, self.y))
+        return bbox.BBox(list(zip(self.x, self.y)))
 
     @property
     def length(self):
