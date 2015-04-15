@@ -1,5 +1,5 @@
 # vim:fileencoding=utf-8
-# Copyright © 2013,2014 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+# Copyright © 2013-2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # $Date$
 #
 # Redistribution and use in source and binary forms, with or without

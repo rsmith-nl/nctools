@@ -1,5 +1,5 @@
 # vim:fileencoding=utf-8
-# Copyright © 2013,2014 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+# Copyright © 2013-2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # $Date$
 #
 # Redistribution and use in source and binary forms, with or without
@@ -50,7 +50,7 @@ class Reader(object):
         return 'newpiece() # {}'.format(c[1:]), (num)
 
     def _moveto(self, c):
-        """Parse a lineair instruction.
+        """Parse a movement instruction.
 
         :c: text to parse
         :pnt: current (x,y) point
@@ -154,19 +154,18 @@ class Writer(object):
         return '*'.join(self.commands)
 
     def newpiece(self):
+        """Start a new piece."""
         self.piece += 1
         self.commands += ['N{}'.format(self.piece)]
 
     def up(self):
-        """Stop cutting.
-        """
+        """Stop cutting (raise the knife)."""
         self.cut = False
         self.ang = None
         self.commands += ['M15']
 
     def down(self):
-        """Start cutting.
-        """
+        """Start cutting (lower the knife)."""
         if not self.pos:
             raise ValueError('start cutting at unknown position')
         self.cut = True
@@ -180,8 +179,8 @@ class Writer(object):
         """Move the cutting head from the current position to the indicated
         position in a straight line.
 
-        :x: x coordinate in mm
-        :y: y coordinate in mm
+        :param x: x coordinate in mm
+        :param y: y coordinate in mm
         """
         x, y = mm2cin([x, y])
         if self.cut:  # We're cutting
@@ -229,7 +228,7 @@ class Writer(object):
 def mm2cin(arg):
     """Convert millimeters to 1/100 in
 
-    :arg: number or sequence of numbers
+    :param arg: number or sequence of numbers
     :returns: converted number or sequence
     """
     if not type(arg) in [list, tuple]:
@@ -240,7 +239,7 @@ def mm2cin(arg):
 def cin2mm(arg):
     """Convert 1/100 in to millimeters
 
-    :arg: number or sequence of numbers
+    :param arg: number or sequence of numbers
     :returns: converted number or sequence
     """
     if not type(arg) in [list, tuple]:

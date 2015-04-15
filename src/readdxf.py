@@ -9,7 +9,7 @@ from __future__ import print_function, division
 __version__ = '$Revision$'[11:-2]
 
 _lic = """readdxf {}
-Copyright © 2011-2014 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+Copyright © 2011-2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions

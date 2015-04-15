@@ -10,7 +10,7 @@ from __future__ import print_function, division
 __version__ = '$Revision$'[11:-2]
 
 _lic = """dxfgerber {}
-Copyright © 2011-2014 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+Copyright © 2011-2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 $Date$
 
 Redistribution and use in source and binary forms, with or without
@@ -48,7 +48,7 @@ class LicenseAction(argparse.Action):
 def main(argv):
     """Main program for the dxfgerber utility.
 
-    :argv: command line arguments
+    :param argv: command line arguments
     """
     parser = argparse.ArgumentParser(description=__doc__)
     argtxt = """maximum distance between two points considered equal when

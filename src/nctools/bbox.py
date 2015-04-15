@@ -1,5 +1,5 @@
 # vim:fileencoding=utf-8
-# Copyright © 2013,2014 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+# Copyright © 2013-2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # $Date$
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,10 @@ class BBox(object):
     __slots__ = ['minx', 'maxx', 'miny', 'maxy', 'minz', 'maxz', 'dim']
 
     def __init__(self, pnts):
+        """Create a BBox from a list of points.
+
+        :param pnts: a list of 2-tuples or 3-tuples of numbers
+        """
         if not pnts:
             raise ValueError('no points to create BBox')
         if len(pnts) in (2, 3) and isinstance(pnts[0], (int, float)):
@@ -58,6 +62,10 @@ class BBox(object):
                   self.minz, self.maxz)
 
     def update(self, pnts):
+        """Grow the BBox to include pnts.
+
+        :param pnts: a list of 2-tuples or 3-tuples of numbers
+        """
         if len(pnts) in (2, 3) and isinstance(pnts[0], (int, float)):
             pnts = [pnts]
         tp = pnts[:]
@@ -73,6 +81,11 @@ class BBox(object):
             self.__init__(tp)
 
     def inside(self, pnts):
+        """Determine if all the points are inside the BBox.
+
+        :param pnts: a list of 2-tuples or 3-tuples of numbers
+        :returns: True if all points are in the BBox.
+        """
         single = False
         if len(pnts) in (2, 3) and isinstance(pnts[0], (int, float)):
             pnts = [pnts]
