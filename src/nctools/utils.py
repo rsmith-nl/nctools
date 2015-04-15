@@ -25,10 +25,9 @@
 
 """Utilities for nctools."""
 
-from __future__ import print_function
-import os.path
-import glob
 from datetime import datetime
+import glob
+import os.path
 
 
 class Msg(object):

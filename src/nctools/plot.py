@@ -25,7 +25,7 @@
 
 """Utilities for plotting."""
 
-import nctools.ent as ent
+from nctools import ent
 import cairo
 
 gamma = 0.8

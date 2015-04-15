@@ -26,10 +26,10 @@
 """Classes for reading and writing Gerber NC files for a cloth cutter.
 The language and file format for PCB machines is different!
 """
-from __future__ import division, print_function
+
 import math
 import os.path as op
-import bbox
+from nctools import bbox
 
 
 class Reader(object):
@@ -84,9 +84,9 @@ class Reader(object):
 
     def __init__(self, path):
         self.path = path
-        with open(path, 'rb') as f:
+        with open(path, 'r') as f:
             c = f.read().split('*')
-            if c[0] != 'H1' and 'M20' not in c[0:3]:
+            if not c[0].startswith('H') and 'M20' not in c[0:3]:
                 raise ValueError('{} is not a valid NC file.'.format(path))
         if c[1].startswith('ZX'):
             ident = c[3].split('/')
