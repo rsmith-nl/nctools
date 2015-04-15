@@ -95,7 +95,7 @@ def crange(start, stop, count):
         return [wavelen2rgb(start)]
     step = (stop-start)/float(count-1)
 
-    return [wavelen2rgb(start + j*step) for j in xrange(1, count+1)]
+    return [wavelen2rgb(start + j*step) for j in range(1, count+1)]
 
 
 def plotgrid(context, width, height, size=100):
@@ -108,10 +108,10 @@ def plotgrid(context, width, height, size=100):
     """
     context.save()
     context.new_path()
-    for x in xrange(100, int(width), size):
+    for x in range(100, int(width), size):
         context.move_to(x, 0)
         context.line_to(x, height)
-    for y in xrange(int(height)-size, 0, -size):
+    for y in range(int(height)-size, 0, -size):
         context.move_to(0, y)
         context.line_to(width, y)
     context.close_path()
