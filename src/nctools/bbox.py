@@ -1,5 +1,5 @@
 # vim:fileencoding=utf-8
-# Copyright © 2013,2014 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+# Copyright © 2013-2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # $Date$
 #
 # Redistribution and use in source and binary forms, with or without
@@ -84,6 +84,7 @@ class BBox(object):
         """Determine if all the points are inside the BBox.
 
         :param pnts: a list of 2-tuples or 3-tuples of numbers
+        :returns: True if all points are in the BBox.
         """
         single = False
         if len(pnts) in (2, 3) and isinstance(pnts[0], (int, float)):

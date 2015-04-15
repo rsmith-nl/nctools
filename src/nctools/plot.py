@@ -1,5 +1,5 @@
 # vim:fileencoding=utf-8
-# Copyright © 2013,2014 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+# Copyright © 2013-2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # $Date$
 #
 # Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,7 @@ maxc = 255
 def wavelen2rgb(nm):  # pylint: disable=R0912
     """Convert a wavelength to an RGB tuple
 
-    :nm: wavelength in nanometers
+    :param nm: wavelength in nanometers
     :returns: an RBG tuple
     """
     def adjust(color, factor):
@@ -86,9 +86,9 @@ def wavelen2rgb(nm):  # pylint: disable=R0912
 def crange(start, stop, count):
     """Create a list of colors
 
-    :start: starting wavelength
-    :stop: final wavelength
-    :count: length of the returned list
+    :param start: starting wavelength
+    :param stop: final wavelength
+    :param count: length of the returned list
     :returns: a list of (R,G,B) tuples
     """
     if count == 1:
@@ -101,10 +101,10 @@ def crange(start, stop, count):
 def plotgrid(context, width, height, size=100):
     """Plot a grid in black with a dotted line.
 
-    :context: Cairo context
-    :width: width of the context
-    :height: height of the context
-    :size: grid cell size
+    :param context: Cairo context
+    :param width: width of the context
+    :param height: height of the context
+    :param size: grid cell size
     """
     context.save()
     context.new_path()
@@ -125,11 +125,11 @@ def plotgrid(context, width, height, size=100):
 def plotentities(context, offset, entities, colors, lw=0.5):
     """Draw the entities
 
-    :context: Cairo context
-    :offset: tuple for translating the coordinate system
-    :entities: list of nctools.ent entities
-    :colors: list of (r,g,b) tuples or one (r,g,b) tuple
-    :lw: line width
+    :param context: Cairo context
+    :param offset: tuple for translating the coordinate system
+    :param entities: list of nctools.ent entities
+    :param colors: list of (r,g,b) tuples or one (r,g,b) tuple
+    :param lw: line width
     """
     if isinstance(colors, tuple) and len(colors) == 3:
         colors = [colors]*len(entities)
@@ -161,10 +161,10 @@ def plotentities(context, offset, entities, colors, lw=0.5):
 def plotcolorbar(context, width, nument, colors):
     """Plot a color bar
 
-    :context: Cairo context
-    :width: width of the canvas
-    :nument: number of entities
-    :colors: list of colors
+    :param context: Cairo context
+    :param width: width of the canvas
+    :param nument: number of entities
+    :param colors: list of colors
     """
     sw = width/float(2*nument)
     context.set_line_cap(cairo.LINE_CAP_BUTT)
