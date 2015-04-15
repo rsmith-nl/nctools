@@ -62,6 +62,8 @@ readnc: src/readnc.py src/nctools/*.py
 
 clean::
 	rm -f dxf2nc dxf2pdf dxfgerber nc2pdf readdxf readnc foo.zip src/__main__.py
+	find . -type f -name '*.pyc' -delete
+	find . -type d -name __pycache__ -delete
 
 install: ${ALLSCRIPTS}
 	install ${ALLSCRIPTS} ${BINDIR}
