@@ -220,8 +220,8 @@ class Writer(object):
         if not self.commands[-1] == 'M15':
             self.commands.append('M15')
         self.commands.append('M0')
-        self.f.write('*'.join(self.commands))
-        self.f.write('*')
+        self.f.write('*'.join(self.commands).encode('utf-8'))
+        self.f.write(b'*')
         self.f.close()
 
 

@@ -33,6 +33,7 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.""".format(__version__)
 
 import argparse
+import re
 import sys
 from nctools import bbox, dxf, ent, gerbernc, utils
 
@@ -150,6 +151,13 @@ def main(argv):
         except Exception as ex:  # pylint: disable=W0703
             utils.skip(ex, f)
             continue
+        # separate entities into parts according to their layers
+        layers = {e.layer for e in entities}
+        # Delete layer names that are not numbers
+        layers = [la for la in layers if re.search('^[0-9]+', la)]
+        layers.sort(key=lambda x: int(x))  # sort by integer value!
+        # remove entities from unused layers.
+        entities = [e for e in entities if e.layer in layers]
         num = len(entities)
         if num == 0:
             msg.say('No entities found!')
@@ -167,8 +175,6 @@ def main(argv):
                 msg.say(ms.format(-bb.minx, -bb.miny))
                 for e in entities:
                     e.move(-bb.minx, -bb.miny)
-            # separate entities into parts according to their layers
-            layers = {e.layer for e in entities}
             for layer in layers:
                 msg.say('Found layer: "{}"'.format(layer))
                 le = [e for e in entities if e.layer == layer]
