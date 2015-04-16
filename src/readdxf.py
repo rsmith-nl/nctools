@@ -34,7 +34,7 @@ SUCH DAMAGE.""".format(__version__)
 
 import argparse
 import sys
-from nctools import bbox, dxf, ent, utils
+from nctools import dxfentities, utils
 
 
 class LicenseAction(argparse.Action):
@@ -43,16 +43,49 @@ class LicenseAction(argparse.Action):
         sys.exit()
 
 
+def printent(e, v):
+    def line():
+        xs, ys = float(e[10]), float(e[20])
+        xe, ye = float(e[11]), float(e[21])
+        outs = '  LINE from ({:.2f}, {:.2f}) to ({:.2f}, {:.2f})'
+        print(outs.format(xs, ys, xe, ye))
+
+    def arc():
+        xc, yc = float(e[10]), float(e[20])
+        outs = '  ARC centered at ({:.2f}, {:.2f})'
+        print(outs.format(xc, yc))
+
+    def polyline():
+        print('  POLYLINE')
+
+    def vertex():
+        x, y = float(e[10]), float(e[20])
+        outs = '    VERTEX at ({:.2f}, {:.2f})'
+        print(outs.format(x, y))
+
+    def endseq():
+        print('  ENDSEQ')
+
+    printdict = {'LINE': line, 'ARC': arc,
+                 'POLYLINE': polyline, 'VERTEX': vertex,
+                 'SEQEND': endseq}
+    try:
+        printdict[e[0]]()
+    except KeyError:
+        if v:
+            print('  {} entity: {}'.format(e[0], e))
+        else:
+            print('  {} entity'.format(e[0]))
+
+
 def main(argv):
     """Main program for the readdxf utility.
 
     :param argv: command line arguments
     """
     parser = argparse.ArgumentParser(description=__doc__)
-    argtxt = """maximum distance between two points considered equal when
-    searching for contours (defaults to 0.5 mm)"""
-    parser.add_argument('-l', '--limit', nargs='?', help=argtxt, dest='limit',
-                        type=float, default=0.5)
+    argtext1 = 'show details of unknown entities'
+    parser.add_argument('-v', '--verbose', help=argtext1, action="store_true")
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-L', '--license', action=LicenseAction, nargs=0,
                        help="print the license")
@@ -61,55 +94,28 @@ def main(argv):
     parser.add_argument('files', metavar='file', nargs='*',
                         help='one or more file names')
     pv = parser.parse_args(argv)
-    msg = utils.Msg()
-    lim = pv.limit**2
-    parts = []
     if not pv.files:
         parser.print_help()
         sys.exit(0)
     for f in utils.xpand(pv.files):
         try:
-            entities = dxf.reader(f)
+            entities = dxfentities.read_entities(f)
         except Exception as ex:
             utils.skip(ex, f)
             continue
         num = len(entities)
-        msg.say('Filename: {}'.format(f))
+        print('Filename: {}'.format(f))
         if num == 0:
-            msg.say('No entities found!')
-            sys.exit(1)
-        if num > 1:
-            msg.say('Contains: {} entities'.format(num))
-            bbe = [e.bbox for e in entities]
-            bb = bbox.merge(bbe)
-            layers = {e.layer for e in entities}
-            for layer in layers:
-                msg.say('Layer: "{}"'.format(layer))
-                le = [e for e in entities if e.layer == layer]
-                contours, rement = ent.findcontours(le, lim)
-                for c in contours:
-                    c.layer = layer
-                ncon = 'Found {} contours, {} remaining single entities'
-                msg.say(ncon.format(len(contours), len(rement)))
-                le = contours + rement
-                le.sort(key=lambda x: x.bbox.minx)
-                parts.append(le)
+            print('No entities found!')
+            continue
         else:
-            msg.say('Contains: 1 entity')
-            msg.say('Layer: "{}"'.format(entities[0].layer))
-            bb = entities[0].bbox
-            parts.append(entities)
-        es = 'Extents: {:.1f} ≤ x ≤ {:.1f}, {:.1f} ≤ y ≤ {:.1f}'
-        msg.say(es.format(bb.minx, bb.maxx, bb.miny, bb.maxy))
-        length = sum(e.length for e in entities)
-        msg.say('Total length of entities: {:.0f} mm'.format(length))
-        for p in parts:
-            msg.say('Layer: "{}"'.format(p[0].layer))
-            for e in p:
-                msg.say(e)
-                if isinstance(e, ent.Contour):
-                    for c in e.entities:
-                        msg.say('..', c)
+            print('Contains: {} entities'.format(num))
+            layers = {e[8] for e in entities}
+            for layer in layers:
+                print('Layer: "{}"'.format(layer))
+                le = [e for e in entities if e[8] == layer]
+                for e in le:
+                    printent(e, pv.verbose)
 
 
 if __name__ == '__main__':
