@@ -8,10 +8,15 @@ Parsing DXF files with Python
 Introduction
 ============
 
-The purpose of this document is to show how to parse DXF files with Python so
-we can extract drawing entities like lines and arcs. This is *not* a complete
-reference to the file format nor to all entities since a lot of data in the
-file is irrelevant to our purpose and will be discarded.
+The purpose of this article is to show how to parse DXF files with Python so
+we can extract drawing entities like lines and arcs and polylines.
+
+The context of this article is that I'm writing a program that can generate
+instructions for a Gerber S-3200 (and similar) cloth cutters.
+
+This is *not* a complete reference to the file format nor to all entities
+since a lot of data in the file is irrelevant to the intended purpose and will
+be discarded.
 
 File format
 ===========
@@ -68,22 +73,16 @@ end by:
 
 .. code-block:: python
 
-    In [21]: [(n, d) for n, d in enumerate(data) if d[1] == 'ENDSEC']
-    Out[21]:
-    [(558, ('0', 'ENDSEC')),
-    (641, ('0', 'ENDSEC')),
-    (1167, ('0', 'ENDSEC')),
-    (8856, ('0', 'ENDSEC')),
-    (19379, ('0', 'ENDSEC')),
-    (25481, ('0', 'ENDSEC'))]
+    In [6]: [(n, d) for n, d in enumerate(data) if d[1] == 'ENTITIES']
+    Out[6]: [(8858, ('2', 'ENTITIES'))]
 
-    In [22]: [(n, d) for n, d in enumerate(data) if d[1] == 'ENTITIES']
-    Out[22]: [(8859, ('2', 'ENTITIES'))]
+    In [7]: [(n, d) for n, d in enumerate(data) if d[1] == 'ENDSEC' and n > 8858]
+    Out[7]: [(19379, ('0', 'ENDSEC')), (25481, ('0', 'ENDSEC'))]
 
-    In [25]: entdata = data[8859:19379]
+    In [8]: entdata = data[8859:19379]
 
-    In [26]: entdata[:25]
-    Out[26]:
+    In [9]: entdata[:12]
+    Out[9]:
     [('0', 'LINE'),
     ('5', '7E5'),
     ('330', '1F'),
@@ -95,29 +94,17 @@ end by:
     ('30', '0.0'),
     ('11', '-958.2789291041098'),
     ('21', '1442.556821161015'),
-    ('31', '0.0'),
-    ('0', 'LINE'),
-    ('5', '7E6'),
-    ('330', '1F'),
-    ('100', 'AcDbEntity'),
-    ('8', 'snij'),
-    ('100', 'AcDbLine'),
-    ('10', '-928.2789291041099'),
-    ('20', '1387.556821161014'),
-    ('30', '0.0'),
-    ('11', '-958.2789291041098'),
-    ('21', '1387.556821161014'),
-    ('31', '0.0'),
-    ('0', 'LINE')]
+    ('31', '0.0')]
+
 
 Now would be a good time to change the group code into integers;
 
 .. code-block:: python
 
-    In [38]: entdata = [(int(g), d) for g, d in entdata]
+    In [10]: entdata = [(int(g), d) for g, d in entdata]
 
-    In [39]: entdata[:10]
-    Out[39]:
+    In [11]: entdata[:10]
+    Out[11]:
     [(0, 'LINE'),
     (5, '7E5'),
     (330, '1F'),
@@ -129,15 +116,14 @@ Now would be a good time to change the group code into integers;
     (30, '0.0'),
     (11, '-958.2789291041098')]
 
-
-So we need have taken data items 8859 up to 19379 as the data where our
+So we have taken data items 8859 up to 19379 as the data where our
 entities are. As one can see, lines et cetera have group code 0. Let's find
 all of those;
 
 .. code-block:: python
 
-    In [29]: [(n, d) for n, d in enumerate(entdata) if d[0] == '0'][:10]
-    Out[29]:
+    In [13]: [(n, d) for n, d in enumerate(entdata) if d[0] == 0][:10]
+    Out[13]:
     [(0, ('0', 'LINE')),
     (12, ('0', 'LINE')),
     (24, ('0', 'LINE')),
@@ -153,18 +139,18 @@ Actually, we need the indices of the group code 0 to separate each entity;
 
 .. code-block:: python
 
-    In [40]: idx = [n for n, d in enumerate(entdata) if d[0] == 0]
+    In [16]: idx = [n for n, d in enumerate(entdata) if d[0] == 0] + [len(entdata)]
 
-    In [41]: len(idx)
-    Out[41]: 870
+    In [17]: len(idx)
+    Out[17]: 871
 
-    In [42]: idx[:10]
-    Out[42]: [0, 12, 24, 36, 48, 60, 72, 84, 97, 109]
+    In [18]: idx[:10]
+    Out[18]: [0, 12, 24, 36, 48, 60, 72, 84, 97, 109]
 
-    In [43]: pairs = list(zip(idx, idx[1:]))
+    In [19]: pairs = list(zip(idx, idx[1:]))
 
-    In [44]: pairs[:10]
-    Out[44]:
+    In [20]: pairs[:10]
+    Out[20]:
     [(0, 12),
     (12, 24),
     (24, 36),
@@ -176,22 +162,13 @@ Actually, we need the indices of the group code 0 to separate each entity;
     (97, 109),
     (109, 122)]
 
-There is actually an error here; we need to append the length of the entdata
-list to the idx list, otherwise we skip one entity! So;
 
-.. code-block:: python
-
-    idx = [n for n, d in enumerate(entdata) if d[0] == 0] + [len(entdata)]
-
-Generating the pairs and the rest of the code goes as shown above.
 Now we can group the entities together;
 
 .. code-block:: python
 
-    In [45]: entities = [dict(entdata[b:e]) for b, e in pairs]
-
-    In [46]: entities[0]
-    Out[46]:
+    In [22]: entities[0]
+    Out[22]:
     {0: 'LINE',
     100: 'AcDbLine',
     5: '7E5',
@@ -204,19 +181,20 @@ Now we can group the entities together;
     30: '0.0',
     21: '1442.556821161015'}
 
-    In [47]: len(entities)
-    Out[47]: 869
+    In [23]: len(entities)
+    Out[23]: 870
+
 
 Note that the conversion to a dictionary *requires* that each group only
-occurs once in an entity. This works fine.
+occurs once in an entity. This seems to work fine, though.
 
 Compare the first entity with the equivalent ``entdata``, in the sequence it
 was given in the file;
 
 .. code-block:: python
 
-    In [49]: entdata[0:12]
-    Out[49]:
+    In [24]: entdata[0:12]
+    Out[24]:
     [(0, 'LINE'),
     (5, '7E5'),
     (330, '1F'),
@@ -250,8 +228,8 @@ Let's look at an arc;
 
 .. code-block:: python
 
-    In [58]: entities[7]
-    Out[58]:
+    In [25]: entities[7]
+    Out[25]:
     {0: 'ARC',
     40: '215.1165613922064',
     50: '184.7895889379881',
@@ -264,11 +242,11 @@ Let's look at an arc;
     10: '-375.6410358181863',
     30: '0.0'}
 
-    In [59]: pairs[7]
-    Out[59]: (84, 97)
+    In [26]: pairs[7]
+    Out[26]: (84, 97)
 
-    In [60]: entdata[84:97]
-    Out[60]:
+    In [27]: entdata[84:97]
+    Out[27]:
     [(0, 'ARC'),
     (5, '7F2'),
     (330, '1F'),
@@ -294,12 +272,12 @@ From the group code reference;
     50, 50
         Start and end angle in degrees.
 
-The example file only has arcs and lines;
+You can use a set to see all the entity types;
 
 .. code-block:: python
 
-    In [63]: {e[0] for e in entities}
-    Out[63]: {'ARC', 'LINE'}
+    In [28]: {e[0] for e in entities}
+    Out[28]: {'ARC', 'LINE'}
 
 For polylines there is an additional grouping that must be done;
 After a POLYLINE entity there will follow a number of VERTEX entities until
