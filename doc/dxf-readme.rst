@@ -36,10 +36,17 @@ Reading
 
 So reading the elements and combining them with there group codes can be done
 as follows.
+The file is opened with the ``cp1252`` (or ``windows-1252``) encoding because
+up to and including AutoCAD 2000, that was the `default encoding for dxf`_.
+This works on all the test files I have.
+Another option would be to try and open as ``utf-8`` first and use ``cp1252``
+as a fallback in case of an ``UnicodeDecodeError`` exception.
+
+.. _default encoding for dxf: http://www.gdal.org/drv_dxf.html
 
 .. code-block:: python
 
-    In [1]: with open('lapjes.dxf') as dxffile:
+    In [1]: with open('lapjes.dxf', encoding='cp1252') as dxffile:
         lines = dxffile.readlines()
     ...:
 
