@@ -6,7 +6,7 @@ MANDIR=${PREFIX}/man
 BINDIR=${PREFIX}/bin
 
 # Leave these as they are.
-ALLSCRIPTS=dxf2nc dxf2pdf dxfgerber nc2pdf readdxf readnc
+ALLSCRIPTS=dxf2nc dxf2pdf dxfgerber nc2pdf readdxf
 DISTFILES=Makefile README.txt
 
 # Default target
@@ -51,14 +51,6 @@ readdxf: src/readdxf.py src/nctools/*.py
 	cat foo.zip >>readdxf
 	rm -f foo.zip
 	chmod a+x readdxf
-
-readnc: src/readnc.py src/nctools/*.py
-	cd src && ln readnc.py __main__.py && zip -q ../foo.zip __main__.py nctools/*.py
-	rm -f src/__main__.py
-	echo '#!/usr/bin/env python3' >readnc
-	cat foo.zip >>readnc
-	rm -f foo.zip
-	chmod a+x readnc
 
 clean::
 	rm -f dxf2nc dxf2pdf dxfgerber nc2pdf readdxf readnc foo.zip src/__main__.py
