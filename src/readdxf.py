@@ -88,7 +88,7 @@ def main(argv):
     searching for contours (defaults to 0.5 mm)"""
     parser.add_argument('-l', '--limit', nargs='?', help=argtxt, dest='limit',
                         type=float, default=0.5)
-    argtext1 = 'show details ot unknown entities'
+    argtext1 = 'show details of unknown entities'
     parser.add_argument('-v', '--verbose', help=argtext1, action="store_true")
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-L', '--license', action=LicenseAction, nargs=0,
