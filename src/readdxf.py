@@ -84,10 +84,6 @@ def main(argv):
     :param argv: command line arguments
     """
     parser = argparse.ArgumentParser(description=__doc__)
-    argtxt = """maximum distance between two points considered equal when
-    searching for contours (defaults to 0.5 mm)"""
-    parser.add_argument('-l', '--limit', nargs='?', help=argtxt, dest='limit',
-                        type=float, default=0.5)
     argtext1 = 'show details of unknown entities'
     parser.add_argument('-v', '--verbose', help=argtext1, action="store_true")
     group = parser.add_mutually_exclusive_group()
@@ -98,7 +94,6 @@ def main(argv):
     parser.add_argument('files', metavar='file', nargs='*',
                         help='one or more file names')
     pv = parser.parse_args(argv)
-    lim = pv.limit**2
     if not pv.files:
         parser.print_help()
         sys.exit(0)
