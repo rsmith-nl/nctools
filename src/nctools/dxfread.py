@@ -1,5 +1,5 @@
 # vim:fileencoding=utf-8:ft=python
-# file: dxfentities.py
+# file: dxfread.py
 #
 # Copyright © 2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-04-16 11:57:29 +0200
@@ -29,6 +29,35 @@
 """Module for retrieving the drawing entities from DXF files."""
 
 
+def parse_dxf(filename):
+    """Read a DXF file and break it into (group, data) tuples.
+
+    :param filename: Name of a DXF file to read.
+    :returns: A list of (group, data) tuples
+    """
+    with open(filename, encoding='cp1252') as dxffile:
+        lines = dxffile.readlines()
+    lines = [ln.strip() for ln in lines]
+    data = list(zip(lines[::2], lines[1::2]))
+    return [(int(g), d) for g, d in data]
+
+
+def get_entities(data):
+    """Isolate the entity data from a list of (group, data) tuples.
+
+    :param data: Input list of DXF (group, data) tuples.
+    :returns: A list of drawing entities, each as a dictionary
+    keyed by group code.
+    """
+    soe = [n for n, d in enumerate(data) if d[1] == 'ENTITIES'][0]
+    eoe = [n for n, d in enumerate(data) if d[1] == 'ENDSEC' and n > soe][0]
+    entdata = data[soe+1:eoe]
+    idx = [n for n, d in enumerate(entdata) if d[0] == 0] + [len(entdata)]
+    pairs = list(zip(idx, idx[1:]))
+    entities = [dict(entdata[b:e]) for b, e in pairs]
+    return entities
+
+
 def read_entities(dxfname):
     """Retrieve the drawing entities from a DXF file.
 
@@ -36,15 +65,5 @@ def read_entities(dxfname):
     :returns: A list of drawing entities, each as a dictionary
     keyed by group code.
     """
-    with open(dxfname, encoding='cp1252') as dxffile:
-        lines = dxffile.readlines()
-    lines = [ln.strip() for ln in lines]
-    data = list(zip(lines[::2], lines[1::2]))
-    soe = [n for n, d in enumerate(data) if d[1] == 'ENTITIES'][0]
-    eoe = [n for n, d in enumerate(data) if d[1] == 'ENDSEC' and n > soe][0]
-    entdata = data[soe+1:eoe]
-    entdata = [(int(g), d) for g, d in entdata]  # group codes to integers
-    idx = [n for n, d in enumerate(entdata) if d[0] == 0] + [len(entdata)]
-    pairs = list(zip(idx, idx[1:]))
-    entities = [dict(entdata[b:e]) for b, e in pairs]
-    return entities
+    data = parsedxf(dxfname)
+    return get_entities(data)

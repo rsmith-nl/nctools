@@ -34,7 +34,7 @@ SUCH DAMAGE.""".format(__version__)
 
 import argparse
 import sys
-from nctools import dxfentities, utils
+from nctools import dxfread, utils
 
 
 class LicenseAction(argparse.Action):
@@ -51,9 +51,11 @@ def printent(e, v):
         print(outs.format(xs, ys, xe, ye))
 
     def arc():
-        xc, yc = float(e[10]), float(e[20])
-        outs = '  ARC centered at ({:.2f}, {:.2f})'
-        print(outs.format(xc, yc))
+        xc, yc, R = float(e[10]), float(e[20]), float(e[40])
+        sa, ea = float(e[50]), float(e[51])
+        outs = '  ARC centered at ({:.2f}, {:.2f}), ' \
+               'radius {:.2f}, from {:.1f}° to {:.1f}°'
+        print(outs.format(xc, yc, R, sa, ea))
 
     def polyline():
         print('  POLYLINE')
@@ -99,7 +101,8 @@ def main(argv):
         sys.exit(0)
     for f in utils.xpand(pv.files):
         try:
-            entities = dxfentities.read_entities(f)
+            data = dxfread.parse_dxf(f)
+            entities = dxfread.get_entities(data)
         except Exception as ex:
             utils.skip(ex, f)
             continue
@@ -110,6 +113,10 @@ def main(argv):
             continue
         else:
             print('Contains: {} entities'.format(num))
+#            units = [(v, data[n+1][1]) for n, (f, v) in
+#                     enumerate(data) if 'UNITS' in v]
+#            for name, value in units:
+#                print(name, value)
             layers = {e[8] for e in entities}
             for layer in layers:
                 print('Layer: "{}"'.format(layer))
