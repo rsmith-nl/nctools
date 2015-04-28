@@ -1,10 +1,4 @@
 *.pyc
 *.pyo
 backup-*.tar.gz
-dxf2nc
-dxf2pdf
-dxfgerber
-nc2pdf
-readdxf
-readnc
 dist

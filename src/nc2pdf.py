@@ -1,12 +1,9 @@
 # nc2pdf - main program
 # vim:fileencoding=utf-8
-# $Date$
 
 """Plot cuts from a Gerber cloth cutter NC file to a PDF."""
 
-from __future__ import print_function, division
-
-__version__ = '$Revision$'[11:-2]
+__version__ = '1.11-beta'
 
 _lic = """nc2pdf {}
 Copyright © 2013, 2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
