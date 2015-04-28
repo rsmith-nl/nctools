@@ -1,12 +1,9 @@
 # readdxf - main program
 # vim:fileencoding=utf-8
-# $Date$
 
 """Reads DXF files and prints the entities in human-readable form."""
 
-from __future__ import print_function, division
-
-__version__ = '$Revision$'[11:-2]
+__version__ = '1.11-beta'
 
 _lic = """readdxf {}
 Copyright © 2011-2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.

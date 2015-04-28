@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright © 2013 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# $Date$
+# $Date: 2015-04-27 18:04:10 +0200 $
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -31,8 +31,8 @@ import cairo
 import nctools.plot as plot
 import nctools.ent as ent
 
-__proginfo__ = ('test/segments.py [ver. ' + '$Revision$'[11:-2] +
-                '] ('+'$Date$'[7:-2]+')')
+__proginfo__ = ('test/segments.py [ver. ' + '$Revision: 1.10-2-g6a2983f $'[11:-2] +
+                '] ('+'$Date: 2015-04-27 18:04:10 +0200 $'[7:-2]+')')
 
 
 def main():

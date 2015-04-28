@@ -1,12 +1,11 @@
 # dxf2nc - main program
 # vim:fileencoding=utf-8
-# $Date$
 
 """Converts a DXF file to a cutting program for a Gerber cloth cutter."""
 
 from __future__ import print_function, division
 
-__version__ = '$Revision$'[11:-2]
+__version__ = '1.11-beta'
 
 _lic = """dxf2nc {}
 Copyright © 2012-2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.

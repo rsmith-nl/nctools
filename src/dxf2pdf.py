@@ -1,12 +1,9 @@
 # dxf2pdf - main program
 # vim:fileencoding=utf-8
-# $Date$
 
 """Reads DXF files and renders them as PDF files."""
 
-from __future__ import print_function, division
-
-__version__ = '$Revision$'[11:-2]
+__version__ = '1.11-beta'
 
 _lic = """dxf2pdf {}
 Copyright © 2011-2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.

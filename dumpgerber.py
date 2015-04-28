@@ -4,15 +4,13 @@
 #
 # Author: R.F. Smith <rsmith@xs4all.nl>
 # Created: 2015-04-15 16:45:18 +0200
-# $Date$
-# $Revision$
 
 """Dump the contents of a NC file for a Gerber cutter in a readable form."""
 
 import sys
 import os.path
 
-__version__ = '$Revision$'[11:-2]
+__version__ = '1.11-beta'
 
 eof = 'end of file'
 kd, ku = 'knife down', 'knife up'
