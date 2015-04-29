@@ -3,7 +3,7 @@
 #
 # Copyright © 2013 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # $Date: 2015-04-27 18:04:10 +0200 $
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
 # are met:
@@ -12,7 +12,7 @@
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY AUTHOR AND CONTRIBUTORS AS IS'' AND
 # ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -31,8 +31,11 @@ import cairo
 import nctools.plot as plot
 import nctools.ent as ent
 
-__proginfo__ = ('test/segments.py [ver. ' + '$Revision: 1.10-2-g6a2983f $'[11:-2] +
-                '] ('+'$Date: 2015-04-27 18:04:10 +0200 $'[7:-2]+')')
+
+__proginfo__ = ('test/segments.py [ver. ' +
+                '$Revision: 1.10-2-g6a2983f $'[11:-2] +
+                '] (' +
+                '$Date: 2015-04-27 18:04:10 +0200 $'[7:-2]+')')
 
 
 def main():
@@ -61,11 +64,8 @@ def main():
         ctx.line_to(x, y)
     ctx.stroke()
 
-
     out.show_page()
 
 
 if __name__ == '__main__':
     main()
-
-
