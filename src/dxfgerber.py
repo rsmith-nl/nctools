@@ -4,7 +4,7 @@
 """Reads DXF files and re-orders the entities so that entities that fit
 together are stored as a chain in the output DXF file."""
 
-__version__ = '1.11-beta'
+__version__ = '1.11.0-beta'
 
 _lic = """dxfgerber {}
 Copyright © 2011-2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.

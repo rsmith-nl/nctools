@@ -3,8 +3,6 @@
 #
 # Author: R.F. Smith <rsmith@xs4all.nl>
 # Created: 2015-04-16 12:31:50 +0200
-# $Date$
-# $Revision$
 
 """Tests for dxfentities.py.
 

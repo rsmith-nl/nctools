@@ -1,4 +1,4 @@
-.PHONY: all install uninstall dist clean refresh
+.PHONY: all install uninstall dist clean refresh check setver
 
 # Installation locations
 PREFIX=/usr/local
@@ -6,8 +6,10 @@ MANDIR=${PREFIX}/man
 BINDIR=${PREFIX}/bin
 
 # Leave these as they are.
+PYFILES!=find . -type f -name "*.py"
 ALLSCRIPTS=dxf2nc dxf2pdf dxfgerber nc2pdf readdxf
 DISTFILES=Makefile README.txt
+VER=1.11.0-beta
 
 # Default target
 all: ${ALLSCRIPTS}
@@ -60,3 +62,8 @@ clean::
 install: ${ALLSCRIPTS}
 	install ${ALLSCRIPTS} ${BINDIR}
 
+check::
+	pep8-3.4 ${PYFILES}
+
+setver::
+	sed -i '' -e "s/^__version__.*/__version__ = '${VER}'/" ${PYFILES}
