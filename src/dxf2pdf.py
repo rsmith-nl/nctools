@@ -3,7 +3,7 @@
 
 """Reads DXF files and renders them as PDF files."""
 
-__version__ = '1.11.0-beta'
+__version__ = '2.0.0-beta'
 
 _lic = """dxf2pdf {}
 Copyright © 2011-2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.

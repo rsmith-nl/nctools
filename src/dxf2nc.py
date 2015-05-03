@@ -5,7 +5,7 @@
 
 from __future__ import print_function, division
 
-__version__ = '1.11.0-beta'
+__version__ = '2.0.0-beta'
 
 _lic = """dxf2nc {}
 Copyright © 2012-2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.

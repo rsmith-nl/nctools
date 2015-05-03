@@ -9,7 +9,7 @@ BINDIR=${PREFIX}/bin
 PYFILES!=find . -type f -name "*.py"
 ALLSCRIPTS=dxf2nc dxf2pdf dxfgerber nc2pdf readdxf
 DISTFILES=Makefile README.txt
-VER=1.11.0-beta
+VER=2.0.0-beta
 
 # Default target
 all: ${ALLSCRIPTS}
