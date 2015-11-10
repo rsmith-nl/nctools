@@ -31,7 +31,8 @@ SUCH DAMAGE.""".format(__version__)
 
 import argparse
 import sys
-from nctools import dxfread, utils
+import pprint
+from nctools import dxfreader, utils
 
 
 class LicenseAction(argparse.Action):
@@ -98,8 +99,8 @@ def main(argv):
         sys.exit(0)
     for f in utils.xpand(pv.files):
         try:
-            data = dxfread.parse_dxf(f)
-            entities = dxfread.get_entities(data)
+            data = dxfreader.parse(f)
+            entities = dxfreader.entities(data)
         except Exception as ex:
             utils.skip(ex, f)
             continue
@@ -110,12 +111,15 @@ def main(argv):
             continue
         else:
             print('Contains: {} entities'.format(num))
+            if pv.verbose:
+                for e in entities:
+                    pprint.pprint(e)
 #            units = [(v, data[n+1][1]) for n, (f, v) in
 #                     enumerate(data) if 'UNITS' in v]
 #            for name, value in units:
 #                print(name, value)
             layers = {e[8] for e in entities}
-            for layer in layers:
+            for layer in sorted(layers):
                 print('Layer: "{}"'.format(layer))
                 le = [e for e in entities if e[8] == layer]
                 for e in le:

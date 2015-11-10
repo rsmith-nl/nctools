@@ -1,8 +1,9 @@
 # vim:fileencoding=utf-8:ft=python
-# file: dxfread.py
+# file: dxfreader.py
 #
 # Copyright © 2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-04-16 11:57:29 +0200
+# Last modified: 2015-06-05 00:32:38 +0200
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -27,7 +28,7 @@
 """Module for retrieving the drawing entities from DXF files."""
 
 
-def parse_dxf(filename):
+def parse(filename):
     """Read a DXF file and break it into (group, data) tuples.
 
     :param filename: Name of a DXF file to read.
@@ -40,7 +41,7 @@ def parse_dxf(filename):
     return [(int(g), d) for g, d in data]
 
 
-def get_entities(data):
+def entities(data):
     """Isolate the entity data from a list of (group, data) tuples.
 
     :param data: Input list of DXF (group, data) tuples.
@@ -54,14 +55,3 @@ def get_entities(data):
     pairs = list(zip(idx, idx[1:]))
     entities = [dict(entdata[b:e]) for b, e in pairs]
     return entities
-
-
-def read_entities(dxfname):
-    """Retrieve the drawing entities from a DXF file.
-
-    :param dxfname: Name of a DXF file.
-    :returns: A list of drawing entities, each as a dictionary
-    keyed by group code.
-    """
-    data = parsedxf(dxfname)
-    return get_entities(data)
