@@ -3,7 +3,7 @@
 #
 # Copyright © 2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-11-14 18:56:39 +0100
-# Last modified: 2015-11-15 00:50:05 +0100
+# Last modified: 2015-11-15 10:12:12 +0100
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -35,7 +35,8 @@ len() can be used.
 
 
 def length(line):
-    """Determine the total line length of a list of line segments.
+    """
+    Determine the total line length of a list of line segments.
 
     Arguments:
         line: list of 2-tuples (x, y)
@@ -49,7 +50,8 @@ def length(line):
 
 
 def closed(line):
-    """Determine if a list of line segments is closed.
+    """
+    Determine if a list of line segments is closed.
 
     Arguments:
         line: list of 2-tuples (x, y)
@@ -63,7 +65,8 @@ def closed(line):
 
 
 def bbox(line):
-    """Calculate the bounding box around a line.
+    """
+    Calculate the bounding box around a line.
 
     Arguments:
         line: list of 2-tuples (x, y)
@@ -74,3 +77,23 @@ def bbox(line):
     x = [p[0] for p in line]
     y = [p[1] for p in line]
     return (min(x), min(y), max(x), max(y))
+
+
+def merge_bbox(bboxes):
+    """
+    Merge bounding boxes.
+
+    Arguments:
+        bboxes: iterator of bbox tuples.
+
+    Returns:
+        An encompassing bbox.
+    """
+    minx, miny = [], []
+    maxx, maxy = [], []
+    for a, b, c, d in bboxes:
+        minx.append(a)
+        miny.append(b)
+        maxx.append(c)
+        maxy.append(d)
+    return (min(minx), min(miny), max(maxx), max(maxy))

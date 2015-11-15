@@ -3,7 +3,7 @@
 #
 # Copyright © 2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-04-16 11:57:29 +0200
-# Last modified: 2015-11-15 00:42:36 +0100
+# Last modified: 2015-11-15 12:00:58 +0100
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -85,8 +85,7 @@ def mksegments(entities):
             cnt = int(math.fabs(da/step)) + 1
         step = da/float(cnt)
         angs = [sa+i*step for i in range(int(cnt)+1)]
-        pnts = [(self.cx+self.R*math.cos(a),
-                 self.cy+self.R*math.sin(a)) for a in angs]
+        pnts = [(cx+R*math.cos(a), cy+R*math.sin(a)) for a in angs]
         return pnts
 
     # Convert lines
@@ -97,7 +96,7 @@ def mksegments(entities):
     pi = [n for n, e in enumerate(entities) if e[0] == 'POLYLINE']
     se = [n for n, e in enumerate(entities) if e[0] == 'SEQEND']
     for start in pi:
-        end = [n for n in se if n > p][0]
+        end = [n for n in se if n > start][0]
         poly = entities[start:end]
         points = [(float(e[10]), float(e[20])) for e in poly]
         angles = [math.atan(float(e[42]))*4 if 42 in e else None for e in poly]
@@ -110,7 +109,7 @@ def mksegments(entities):
                 addition += arc(_arcdata(sp, ep, a))[1:]
             else:
                 addition.append(ep)
-        lines += addition
+        lines += [addition]
     return lines
 
 
