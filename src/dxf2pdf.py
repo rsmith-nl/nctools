@@ -91,10 +91,10 @@ def main(argv):
             logging.warning('No entities found!')
             continue
         if num > 1:
-            logging.info('Contains {} entities'.format(num))
+            logging.info('Found {} entities'.format(num))
 
         else:
-            logging.info('Contains: 1 entity')
+            logging.info('Found 1 entity')
         segments = dxfreader.mksegments(entities)
         bboxes = [lines.bbox(s) for s in segments]
         minx, miny, maxx, maxy = lines.merge_bbox(bboxes)

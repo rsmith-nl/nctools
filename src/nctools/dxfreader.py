@@ -3,7 +3,7 @@
 #
 # Copyright © 2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-04-16 11:57:29 +0200
-# Last modified: 2015-11-15 12:00:58 +0100
+# Last modified: 2015-11-15 12:32:11 +0100
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -98,15 +98,24 @@ def mksegments(entities):
     for start in pi:
         end = [n for n in se if n > start][0]
         poly = entities[start:end]
-        points = [(float(e[10]), float(e[20])) for e in poly]
-        angles = [math.atan(float(e[42]))*4 if 42 in e else None for e in poly]
-        if 70 in poly[0] and int(poly[0][70]) & 1:  # closed polyline
+        points = [(float(e[10]), float(e[20])) for e in poly[1:]]
+        angles = [math.atan(float(e[42]))*4 if 42 in e else None for e in
+                  poly[1:]]
+        if 70 in poly[0] and (int(poly[0][70]) & 1):  # closed polyline
+            cl = 'closed'
             points.append(points[0])
+        else:
+            cl = 'open'
+        logging.debug('found {} polyline of {} points'.format(cl, len(points)))
+        logging.debug('points: {}'.format(points))
+        logging.debug('angles: {}'.format(angles))
         ends = zip(points, points[1:], angles)
         addition = [points[0]]
         for sp, ep, a in ends:
             if a:
-                addition += arc(_arcdata(sp, ep, a))[1:]
+                arcent = _arcdata(sp, ep, a)
+                logging.debug('polyline arc "{}"'.format(arcent))
+                addition += arc(arcent)[1:]
             else:
                 addition.append(ep)
         lines += [addition]
@@ -151,4 +160,4 @@ def _arcdata(sp, ep, angs):
             a0 += twopi
         if a1 < 0:
             a1 += twopi
-    return {10: xc, 20: yc, 40: R, 50: a0, 51: a1}
+    return {10: xc, 20: yc, 40: R, 50: math.degrees(a0), 51: math.degrees(a1)}
