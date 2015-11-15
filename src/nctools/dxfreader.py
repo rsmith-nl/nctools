@@ -3,7 +3,7 @@
 #
 # Copyright © 2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-04-16 11:57:29 +0200
-# Last modified: 2015-11-15 12:32:11 +0100
+# Last modified: 2015-11-15 15:20:54 +0100
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -66,7 +66,7 @@ def mksegments(entities):
     """Convert a list of entities to a list of line segments.
     Line segments are lists of ≥2 (x,y) tuples."""
     def line(e):
-        return [(float(e[10]), float(e[11])), (float(e[20]), float(e[21]))]
+        return [(float(e[10]), float(e[20])), (float(e[11]), float(e[21]))]
 
     def arc(e):
         cx, cy = float(e[10]), float(e[20])
@@ -106,15 +106,11 @@ def mksegments(entities):
             points.append(points[0])
         else:
             cl = 'open'
-        logging.debug('found {} polyline of {} points'.format(cl, len(points)))
-        logging.debug('points: {}'.format(points))
-        logging.debug('angles: {}'.format(angles))
         ends = zip(points, points[1:], angles)
         addition = [points[0]]
         for sp, ep, a in ends:
             if a:
                 arcent = _arcdata(sp, ep, a)
-                logging.debug('polyline arc "{}"'.format(arcent))
                 addition += arc(arcent)[1:]
             else:
                 addition.append(ep)

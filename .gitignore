@@ -2,3 +2,4 @@
 *.pyo
 backup-*.tar.gz
 dist
+*.pdf
