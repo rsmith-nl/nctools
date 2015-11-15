@@ -60,6 +60,8 @@ def main(argv):
     parser.add_argument('--log', default='warning',
                         choices=['debug', 'info', 'warning', 'error'],
                         help="logging level (defaults to 'warning')")
+    parser.add_argument('-n', '--numbered', action="store_true",
+                        help='process only numbered layers')
     parser.add_argument('files', nargs='*', help='one or more file names',
                         metavar='file')
     args = parser.parse_args(argv)
@@ -85,6 +87,9 @@ def main(argv):
             logging.info(str(ex))
             logging.error("Cannot open the file '{}'. Skipping it.".format(f))
             continue
+        if args.numbered:
+            numbered = dxfreader.numberedlayers(entities)
+            entities = [e for e in entities if e[8] in numbered]
         # Output
         num = len(entities)
         if num == 0:

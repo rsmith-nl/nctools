@@ -3,7 +3,7 @@
 #
 # Copyright © 2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-04-16 11:57:29 +0200
-# Last modified: 2015-11-15 15:20:54 +0100
+# Last modified: 2015-11-15 21:55:06 +0100
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -29,6 +29,7 @@
 
 import logging
 import math
+import re
 
 devlim = 1  # maximum deviation from arc, spline
 
@@ -49,9 +50,12 @@ def parse(filename):
 def entities(data):
     """Isolate the entity data from a list of (group, data) tuples.
 
-    :param data: Input list of DXF (group, data) tuples.
-    :returns: A list of drawing entities, each as a dictionary
-    keyed by group code.
+    Arguments:
+        data: Input list of DXF (group, data) tuples.
+
+    Returns:
+        A list of drawing entities, each as a dictionary
+        keyed by group code.
     """
     soe = [n for n, d in enumerate(data) if d[1] == 'ENTITIES'][0]
     eoe = [n for n, d in enumerate(data) if d[1] == 'ENDSEC' and n > soe][0]
@@ -62,9 +66,49 @@ def entities(data):
     return entities
 
 
+def layernames(entities):
+    """
+    Get all layer names from the entities
+
+    Arguments:
+        Entities: An iterable if dictionaries, each containing a DXF entity.
+
+    Returns:
+        A sorted list of layer names.
+    """
+    lnames = list(set(e[8] for e in entities))
+    lnames.sort()
+    return lnames
+
+
+def numberedlayers(entities):
+    """
+    Get all layer names from the entities that contain a number, except for
+    layer 0.
+
+    Arguments:
+        Entities: An iterable of dictionaries, each containing a DXF entity.
+
+    Returns:
+        A list of layer names with a number in them, sorted by ascending
+        number.
+    """
+    layers = layernames(entities)
+    numbered = [ln for ln in layers if len(re.findall('[1-9]\d*', ln)) == 1]
+    numbered.sort(key=lambda ln: int(re.search('[1-9]\d*', ln).group()))
+    return numbered
+
+
 def mksegments(entities):
-    """Convert a list of entities to a list of line segments.
-    Line segments are lists of ≥2 (x,y) tuples."""
+    """
+    Convert an iterable of entities to a list of line segments.
+
+    Arguments:
+        Entities: An iterable if dictionaries, each containing a DXF entity.
+
+    Returns:
+        A list of line segments. Line segments are lists of ≥2 (x,y) tuples.
+    """
     def line(e):
         return [(float(e[10]), float(e[20])), (float(e[11]), float(e[21]))]
 

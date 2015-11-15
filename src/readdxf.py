@@ -3,8 +3,14 @@
 
 """Reads DXF files and prints the entities in human-readable form."""
 
-__version__ = '2.0.0-beta'
+import argparse
+import logging
+import math
+import pprint
+import sys
+from nctools import dxfreader, utils
 
+__version__ = '2.0.0-beta'
 _lic = """readdxf {}
 Copyright © 2011-2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 
@@ -29,11 +35,6 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.""".format(__version__)
 
-import argparse
-import sys
-import pprint
-from nctools import dxfreader, utils
-
 
 class LicenseAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
@@ -41,7 +42,65 @@ class LicenseAction(argparse.Action):
         sys.exit()
 
 
+def main(argv):
+    """Main program for the readdxf utility.
+
+    Arguments:
+        argv: command line arguments
+    """
+    parser = argparse.ArgumentParser(description=__doc__)
+    argtext1 = 'show details of unknown entities'
+    parser.add_argument('-v', '--verbose', help=argtext1, action="store_true")
+    parser.add_argument('-n', '--numbered', action="store_true",
+                        help='process only numbered layers')
+    parser.add_argument('--log', default='warning',
+                        choices=['debug', 'info', 'warning', 'error'],
+                        help="logging level (defaults to 'warning')")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('-L', '--license', action=LicenseAction, nargs=0,
+                       help="print the license")
+    group.add_argument('-V', '--version', action='version',
+                       version=__version__)
+    parser.add_argument('files', metavar='file', nargs='*',
+                        help='one or more file names')
+    args = parser.parse_args(argv)
+    logging.basicConfig(level=getattr(logging, args.log.upper(), None),
+                        format='%(levelname)s: %(message)s')
+    logging.debug('Command line arguments = {}'.format(argv))
+    logging.debug('Parsed arguments = {}'.format(args))
+    if not args.files:
+        parser.print_help()
+        sys.exit(0)
+    for f in utils.xpand(args.files):
+        try:
+            data = dxfreader.parse(f)
+            entities = dxfreader.entities(data)
+        except Exception as ex:
+            utils.skip(ex, f)
+            continue
+        if args.numbered:
+            numbered = dxfreader.numberedlayers(entities)
+            entities = [e for e in entities if e[8] in numbered]
+        num = len(entities)
+        print('Filename: {}'.format(f))
+        if num == 0:
+            logging.warning('no entities found!')
+            continue
+        else:
+            print('Contains: {} entities'.format(num))
+            if args.verbose:
+                for e in entities:
+                    pprint.pprint(e)
+            layers = {e[8] for e in entities}
+            for layer in sorted(layers):
+                print('Layer: "{}"'.format(layer))
+                le = [e for e in entities if e[8] == layer]
+                for e in le:
+                    printent(e, args.verbose)
+
+
 def printent(e, v):
+    """Print a DXF entity"""
     def line():
         xs, ys = float(e[10]), float(e[20])
         xe, ye = float(e[11]), float(e[21])
@@ -60,8 +119,11 @@ def printent(e, v):
 
     def vertex():
         x, y = float(e[10]), float(e[20])
-        outs = '    VERTEX at ({:.2f}, {:.2f})'
-        print(outs.format(x, y))
+        outs = '    VERTEX at ({:.2f}, {:.2f})'.format(x, y)
+        if 42 in e:
+            v = math.degrees(math.atan(float(e[42]))*4)
+            outs += ', curve angle {:.1f}°'.format(v)
+        print(outs)
 
     def endseq():
         print('  ENDSEQ')
@@ -76,54 +138,6 @@ def printent(e, v):
             print('  {} entity: {}'.format(e[0], e))
         else:
             print('  {} entity'.format(e[0]))
-
-
-def main(argv):
-    """Main program for the readdxf utility.
-
-    :param argv: command line arguments
-    """
-    parser = argparse.ArgumentParser(description=__doc__)
-    argtext1 = 'show details of unknown entities'
-    parser.add_argument('-v', '--verbose', help=argtext1, action="store_true")
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument('-L', '--license', action=LicenseAction, nargs=0,
-                       help="print the license")
-    group.add_argument('-V', '--version', action='version',
-                       version=__version__)
-    parser.add_argument('files', metavar='file', nargs='*',
-                        help='one or more file names')
-    pv = parser.parse_args(argv)
-    if not pv.files:
-        parser.print_help()
-        sys.exit(0)
-    for f in utils.xpand(pv.files):
-        try:
-            data = dxfreader.parse(f)
-            entities = dxfreader.entities(data)
-        except Exception as ex:
-            utils.skip(ex, f)
-            continue
-        num = len(entities)
-        print('Filename: {}'.format(f))
-        if num == 0:
-            print('No entities found!')
-            continue
-        else:
-            print('Contains: {} entities'.format(num))
-            if pv.verbose:
-                for e in entities:
-                    pprint.pprint(e)
-#            units = [(v, data[n+1][1]) for n, (f, v) in
-#                     enumerate(data) if 'UNITS' in v]
-#            for name, value in units:
-#                print(name, value)
-            layers = {e[8] for e in entities}
-            for layer in sorted(layers):
-                print('Layer: "{}"'.format(layer))
-                le = [e for e in entities if e[8] == layer]
-                for e in le:
-                    printent(e, pv.verbose)
 
 
 if __name__ == '__main__':
