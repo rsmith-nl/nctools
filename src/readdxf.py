@@ -51,8 +51,8 @@ def main(argv):
     parser = argparse.ArgumentParser(description=__doc__)
     argtext1 = 'show details of unknown entities'
     parser.add_argument('-v', '--verbose', help=argtext1, action="store_true")
-    parser.add_argument('-n', '--numbered', action="store_true",
-                        help='process only numbered layers')
+    parser.add_argument('-a', '--all', action="store_true",
+                        help='process all layers (default: numbered layers)')
     parser.add_argument('--log', default='warning',
                         choices=['debug', 'info', 'warning', 'error'],
                         help="logging level (defaults to 'warning')")
@@ -78,7 +78,7 @@ def main(argv):
         except Exception as ex:
             utils.skip(ex, f)
             continue
-        if args.numbered:
+        if not args.all:
             numbered = dxfreader.numberedlayers(entities)
             entities = [e for e in entities if e[8] in numbered]
         num = len(entities)
