@@ -3,7 +3,11 @@
 
 """Converts a DXF file to a cutting program for a Gerber cloth cutter."""
 
-from __future__ import print_function, division
+import argparse
+import logging
+import re
+import sys
+from nctools import dxfreader, lines, gerbernc, utils
 
 __version__ = '2.0.0-beta'
 
@@ -31,11 +35,6 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.""".format(__version__)
 
-import argparse
-import re
-import sys
-from nctools import bbox, dxf, ent, gerbernc, utils
-
 
 class LicenseAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
@@ -43,158 +42,153 @@ class LicenseAction(argparse.Action):
         sys.exit()
 
 
-def _cutline(e, wr):
-    """Cut a ent.Line
-
-    :param ent: nctools.ent.Line
-    :param wr: nctoos.gerbernc.Writer
-    """
-    wr.moveto(e.x[0], e.y[0])
-    wr.down()
-    wr.moveto(e.x[1], e.y[1])
-    wr.up()
-
-
-def _cutarc(e, wr):
-    """Cut an ent.Arc
-
-    :param ent: nctools.ent.Arc
-    :param wr: nctoos.gerbernc.Writer
-    """
-    pnts = e.segments()
-    x, y = pnts.pop(0)
-    wr.moveto(x, y)
-    wr.down()
-    for x, y in pnts:
-        wr.moveto(x, y)
-    wr.up()
-
-
-def _cutcontour(e, wr):
-    """Cut a ent.Contour
-
-    :param ent: nctools.ent.Contour
-    :param wr: nctoos.gerbernc.Writer
-    """
-    wr.moveto(e.entities[0].x[0], e.entities[0].y[0])
-    wr.down()
-    for ce in e.entities:
-        if isinstance(ce, ent.Arc):
-            pnts = ce.segments()
-            pnts.pop(0)
-            for x, y in pnts:
-                wr.moveto(x, y)
-        elif isinstance(ce, ent.Line):
-            wr.moveto(ce.x[1], ce.y[1])
-    wr.up()
-
-
-def write_entities(fn, parts, alim):
-    """Write all parts to a NC file.
-
-    :param fn: output file name
-    :param parts: list of list of entities
-    :param alim: minimum turning angle where the knife needs to be lifted
-    """
-    with gerbernc.Writer(fn, anglim=alim) as w:
-        for p in parts:
-            w.newpiece()
-            for e in p:
-                if isinstance(e, ent.Contour):
-                    _cutcontour(e, w)
-                elif isinstance(e, ent.Arc):
-                    _cutarc(e, w)
-                elif isinstance(e, ent.Line):
-                    _cutline(e, w)
-                else:
-                    raise ValueError('unknown entity')
-
-
 def main(argv):
     """Main program for the dxf2nc utility.
 
-    :param argv: command line arguments
+    Arguments:
+        argv: command line arguments
     """
     parser = argparse.ArgumentParser(description=__doc__)
     argtxt = """maximum distance between two points considered equal when
     searching for contours (defaults to 0.5 mm)"""
-    argtxt2 = u"""minimum rotation angle in degrees where the knife needs
+    argtxt2 = """minimum rotation angle in degrees where the knife needs
     to be lifted to prevent breaking (defaults to 60°)"""
     argtxt4 = "assemble connected lines into contours (off by default)"
-    parser.add_argument('-l', '--limit', help=argtxt, dest='limit',
-                        metavar='F', type=float, default=0.5)
     parser.add_argument('-a', '--angle', help=argtxt2, dest='ang',
                         metavar='F', type=float, default=60)
     parser.add_argument('-c', '--contours', help=argtxt4, dest='contours',
                         action="store_true")
+    parser.add_argument('--log', default='warning',
+                        choices=['debug', 'info', 'warning', 'error'],
+                        help="logging level (defaults to 'warning')")
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-L', '--license', action=LicenseAction, nargs=0,
                        help="print the license")
     group.add_argument('-V', '--version', action='version',
                        version=__version__)
-    parser.add_argument('-v', '--verbose', dest='verbose', action="store_true")
     parser.add_argument('files', nargs='*', help='one or more file names',
                         metavar='file')
-    pv = parser.parse_args(argv)
-    msg = utils.Msg(pv.verbose)
-    lim = pv.limit**2
-    if not pv.files:
+    args = parser.parse_args(argv)
+    logging.basicConfig(level=getattr(logging, args.log.upper(), None),
+                        format='%(levelname)s: %(message)s')
+    logging.debug('Command line arguments = {}'.format(argv))
+    logging.debug('Parsed arguments = {}'.format(args))
+    if not args.files:
         parser.print_help()
         sys.exit(0)
-    for f in utils.xpand(pv.files):
+    for f in utils.xpand(args.files):
         parts = []
-        msg.say('Starting file "{}"'.format(f))
+        logging.info('Starting file "{}"'.format(f))
         try:
             ofn = utils.outname(f, extension='')
-            entities = dxf.reader(f)
-        except Exception as ex:  # pylint: disable=W0703
-            utils.skip(ex, f)
+            data = dxfreader.parse(f)
+            entities = dxfreader.entities(data)
+        except ValueError as ex:
+            logging.info(str(ex))
+            fns = "Cannot construct output filename. Skipping file '{}'."
+            logging.error(fns.format(f))
             continue
-        # separate entities into parts according to their layers
-        layers = {e.layer for e in entities}
-        # Delete layer names that are not numbers
-        layers = [la for la in layers if re.search('^[0-9]+', la)]
-        layers.sort(key=lambda x: int(x))  # sort by integer value!
-        # remove entities from unused layers.
-        entities = [e for e in entities if e.layer in layers]
+        except IOError as ex:
+            logging.info(str(ex))
+            logging.error("Cannot open the file '{}'. Skipping it.".format(f))
+            continue
+        layers = dxfreader.numberedlayers(entities)
+        entities = [e for e in entities if e[8] in layers]
         num = len(entities)
         if num == 0:
-            msg.say('No entities found!')
+            logging.info('no entities found! Skipping file.')
             continue
-        if num > 1:
-            msg.say('Contains {} entities'.format(num))
-            bbe = [e.bbox for e in entities]
-            bb = bbox.merge(bbe)
-            es = 'Original extents: {:.1f} ≤ x ≤ {:.1f} mm,' \
-                ' {:.1f} ≤ y ≤ {:.1f} mm'
-            msg.say(es.format(bb.minx, bb.maxx, bb.miny, bb.maxy))
-            # move entities so that the bounding box begins at 0,0
-            if bb.minx != 0 or bb.miny != 0:
-                ms = 'Moving all entities by ({:.1f}, {:.1f}) mm'
-                msg.say(ms.format(-bb.minx, -bb.miny))
-                for e in entities:
-                    e.move(-bb.minx, -bb.miny)
-            for layer in layers:
-                msg.say('Found layer: "{}"'.format(layer))
-                le = [e for e in entities if e.layer == layer]
-                if pv.contours:
-                    msg.say('Gathering connected entities into contours')
-                    contours, rement = ent.findcontours(le, lim)
-                    for c in contours:
-                        c.layer = layer
-                    ncon = 'Found {} contours, {} remaining single entities'
-                    msg.say(ncon.format(len(contours), len(rement)))
-                    le = contours + rement
-                msg.say('Sorting entities')
-                le.sort(key=lambda e: (e.bbox.minx, e.bbox.miny))
-                parts.append(le)
-            msg.say('Sorting pieces')
-            parts.sort(key=lambda p: bbox.merge([e.bbox for e in p]).minx)
-        length = sum(e.length for e in entities)
-        msg.say('Total length of entities: {:.0f} mm'.format(length))
-        msg.say('Writing output to "{}"'.format(ofn))
-        write_entities(ofn, parts, pv.ang)
-        msg.say('File "{}" done.'.format(f))
+        logging.info('{} entities found.'.format(num))
+        out = gerbernc.Writer(ofn)
+        for layername in layers:
+            out.newpiece()
+            thislayer = [e for e in entities if e[8] == layername]
+            segments = dxfreader.mksegments(thislayer)
+            fs = '{} segments in layer "{}"'
+            logging.info(fs.format(len(segments), thislayer))
+            closedseg, openseg, singleseg = organize_segments(segments)
+            cut_segments(singleseg, out)
+            cut_segments(openseg, out)
+            cut_segments(closedseg, out)
+        out.write()
+
+
+def organize_segments(seg):
+    """
+    Assemble segments and sort them into closed, open and singles.
+
+    Arguments:
+        seg: List of segments. Will be consumed by this function.
+
+    Returns:
+        A 3-tuple of lists of closed segments, open segments and single
+        segments.
+    """
+    closedseg = []
+    openseg = []
+    singleseg = []
+    while len(seg):
+        ts = seg.pop(0)
+        if lines.closed(ts):
+            closedseg.append(ts)
+            continue
+        for s in seg:
+            remove = True
+            if ts[-1] == s[0]:
+                ts += s[1:]
+            elif ts[-1] == s[-1]:
+                ts += s[1::-1]
+            elif ts[0] == s[-1]:
+                ts = s[:-1] + ts
+            elif ts[0] == s[0]:
+                ts = s[1:][::-1] + ts
+            else:
+                remove = False
+            if remove:
+                seg.remove(s)
+            if lines.closed(ts):
+                closedseg.append(ts)
+                break
+        if len(ts) > 2:
+            openseg.append(ts)
+        elif len(ts) == 2:
+            singleseg.append(ts)
+    # Sort closed segments by enclosed size, from small to large
+    closedseg.sort(key=lambda s: lines.bbox_area(s), reverse=True)
+    # Sort open segments by length
+    openseg.sort(key=lambda s: lines.length(s))
+    # Sort single lines first by minx, then by miny
+    singleseg.sort(key=_skey)
+    return (closedseg, openseg, singleseg)
+
+
+def _skey(s):
+    """Key function for sorting single segments.
+
+    Arguments:
+        s: A line segment
+
+    Returns:
+        A 2-tuple that is the lower-left corner of the bounding-box.
+    """
+    a, b, _, _ = lines.bbox(s)
+    return (a, b)
+
+
+def cut_segments(seg, w):
+    """Generate cutting commands for a list of segments.
+
+    Arguments:
+        seg: List of line segments.
+        w: gerbernc.Writer instance
+    """
+    for s in seg:
+        w.moveto(*s[0])
+        w.down()
+        for p in s[1:]:
+            w.moveto(*p)
+        w.up()
+
 
 if __name__ == '__main__':
     main(sys.argv[1:])

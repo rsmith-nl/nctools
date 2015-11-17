@@ -3,7 +3,7 @@
 #
 # Copyright © 2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-11-14 18:56:39 +0100
-# Last modified: 2015-11-15 10:12:12 +0100
+# Last modified: 2015-11-17 01:51:38 +0100
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -33,6 +33,8 @@ Since line segments are lists, standard member functions like reverse() and
 len() can be used.
 """
 
+import math
+
 
 def length(line):
     """
@@ -44,8 +46,8 @@ def length(line):
     Returns:
         The sum of the lengths of the line segments between the listed points.
     """
-    pairs = zip(line, line[1:])
-    dist = [math.sqrt((c-a)**2+(d-b)**2) for (a, b), (c, d) in pairs]
+    dist = [math.sqrt((c-a)**2+(d-b)**2) for ((a, b), (c, d))
+            in zip(line, line[1:])]
     return sum(dist)
 
 
@@ -77,6 +79,20 @@ def bbox(line):
     x = [p[0] for p in line]
     y = [p[1] for p in line]
     return (min(x), min(y), max(x), max(y))
+
+
+def bbox_area(line):
+    """
+    Calculate the area of the bounding box around a line.
+
+    Arguments:
+        line: list of 2-tuples (x, y)
+
+    Returns:
+        The product of width*height.
+    """
+    a, b, c, d = bbox(line)
+    return (c-a)*(d-b)
 
 
 def merge_bbox(bboxes):
