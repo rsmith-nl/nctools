@@ -3,7 +3,7 @@
 #
 # Copyright © 2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-11-14 18:56:39 +0100
-# Last modified: 2015-11-17 01:51:38 +0100
+# Last modified: 2015-11-17 22:57:47 +0100
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -63,7 +63,21 @@ def closed(line):
         otherwise.
     """
     first, last = line[0], line[-1]
-    return first[0] == last[0] and first[0] == last[0]
+    return first[0] == last[0] and first[1] == last[1]
+
+
+def setstart(line, newstart):
+    """Change the start point of a closed line segment.
+
+    Arguments:
+        line: list of 2-tuples (x, y)
+    """
+    if not closed(line):
+        raise ValueError('line is not closed')
+    line.pop()  # Remove last point
+    i = line.index(newstart)  # raises ValueError when newstart not in list.
+    line[:] = line[i:] + line[:i]
+    line.append(line[0])
 
 
 def bbox(line):

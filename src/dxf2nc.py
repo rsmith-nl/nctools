@@ -85,18 +85,18 @@ def main(argv):
             entities = dxfreader.entities(data)
         except ValueError as ex:
             logging.info(str(ex))
-            fns = "Cannot construct output filename. Skipping file '{}'."
+            fns = "error during processing. Skipping file '{}'."
             logging.error(fns.format(f))
             continue
         except IOError as ex:
             logging.info(str(ex))
-            logging.error("Cannot open the file '{}'. Skipping it.".format(f))
+            logging.error("i/o error in file '{}'. Skipping it.".format(f))
             continue
         layers = dxfreader.numberedlayers(entities)
         entities = [e for e in entities if e[8] in layers]
         num = len(entities)
         if num == 0:
-            logging.info('no entities found! Skipping file.')
+            logging.info("no entities found! Skipping file '{}'.".format(f))
             continue
         logging.info('{} entities found.'.format(num))
         out = gerbernc.Writer(ofn)
@@ -104,9 +104,12 @@ def main(argv):
             out.newpiece()
             thislayer = [e for e in entities if e[8] == layername]
             segments = dxfreader.mksegments(thislayer)
-            fs = '{} segments in layer "{}"'
-            logging.info(fs.format(len(segments), thislayer))
+            fs = '{} {}segments in layer "{}"'
+            logging.info(fs.format(len(segments), '', layername))
             closedseg, openseg, singleseg = organize_segments(segments)
+            for a, b in (('closed ', closedseg), ('open ', openseg),
+                         ('single ', singleseg)):
+                logging.info(fs.format(len(b), a, layername))
             cut_segments(singleseg, out)
             cut_segments(openseg, out)
             cut_segments(closedseg, out)
@@ -132,31 +135,43 @@ def organize_segments(seg):
         if lines.closed(ts):
             closedseg.append(ts)
             continue
-        for s in seg:
-            remove = True
-            if ts[-1] == s[0]:
-                ts += s[1:]
-            elif ts[-1] == s[-1]:
-                ts += s[1::-1]
-            elif ts[0] == s[-1]:
-                ts = s[:-1] + ts
-            elif ts[0] == s[0]:
-                ts = s[1:][::-1] + ts
-            else:
-                remove = False
-            if remove:
-                seg.remove(s)
-            if lines.closed(ts):
-                closedseg.append(ts)
-                break
-        if len(ts) > 2:
+        found = True
+        while found:
+            for s in seg:
+                found = True
+                if ts[-1] == s[0]:
+                    ts += s[1:]
+                elif ts[-1] == s[-1]:
+                    ts += s[:-1][::-1]
+                elif ts[0] == s[-1]:
+                    ts = s[:-1] + ts
+                elif ts[0] == s[0]:
+                    ts = s[1:][::-1] + ts
+                else:
+                    found = False
+                if found:
+                    seg.remove(s)
+                    break
+            found = False
+        if lines.closed(ts):
+            closedseg.append(ts)
+        elif len(ts) > 2:
             openseg.append(ts)
         elif len(ts) == 2:
             singleseg.append(ts)
     # Sort closed segments by enclosed size, from small to large
     closedseg.sort(key=lambda s: lines.bbox_area(s), reverse=True)
+    # Set start point of closed segments to lower-left
+    for s in closedseg:
+        pnt = sorted(s, key=lambda x: sum(x))[0]
+        lines.setstart(s, pnt)
     # Sort open segments by length
     openseg.sort(key=lambda s: lines.length(s))
+    # Start open line segments in lower-left
+    for s in openseg:
+        st, end = s[0], s[-1]
+        if sum(end) < sum(st):
+            s.reverse()
     # Sort single lines first by minx, then by miny
     singleseg.sort(key=_skey)
     return (closedseg, openseg, singleseg)

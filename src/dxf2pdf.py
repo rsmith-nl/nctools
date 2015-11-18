@@ -4,13 +4,10 @@
 """Reads DXF files and renders them as PDF files."""
 
 import argparse
-import datetime
 import logging
-import os
 import sys
-import time
 import cairo
-from nctools import dxfreader, lines, utils
+from nctools import dxfreader, lines, utils, plot
 
 __version__ = '2.0.0-beta'
 
@@ -103,117 +100,15 @@ def main(argv):
         segments = dxfreader.mksegments(entities)
         bboxes = [lines.bbox(s) for s in segments]
         minx, miny, maxx, maxy = lines.merge_bbox(bboxes)
-        out, ctx = cairosetup(ofn, minx, miny, maxx, maxy)
-        plotgrid(ctx, minx, miny, maxx, maxy)
+        out, ctx = plot.setup(ofn, minx, miny, maxx, maxy)
+        plot.grid(ctx, minx, miny, maxx, maxy)
         logging.info('Plotting the entities')
-        plotlines(ctx, segments)
-        plottitle(ctx, ofn, maxy)
-        # Finish the page.
+        plot.lines(ctx, segments)
+        plot.title(ctx, 'dxf2pdf', ofn, maxy-miny)
         out.show_page()
+        logging.info('Writing output file "{}"'.format(ofn))
         out.finish()
         logging.info('File "{}" done.'.format(f))
-
-
-def cairosetup(ofn, minx, miny, maxx, maxy, offset=40):
-    """
-    Set up the Cairo surface and drawing context.
-
-    Arguments:
-        ofn: Name of the file to store the drawing in.
-        minx: Left side of the drawing.
-        miny: Bottom of the drawing.
-        maxx: Right side of the drawing.
-        maxy: Top of the drawing.
-        offset: Border around the drawing.
-
-    Returns:
-        (output surface, drawing context)
-    """
-    w = (maxx - minx) + 2*offset
-    h = (maxy - miny) + 2*offset
-    xf = cairo.Matrix(xx=1.0, yy=-1.0, x0=offset-minx, y0=maxy+offset)
-    out = cairo.PDFSurface(ofn, w, h)
-    ctx = cairo.Context(out)
-    ctx.set_matrix(xf)
-    ctx.set_line_cap(cairo.LINE_CAP_ROUND)
-    ctx.set_line_join(cairo.LINE_JOIN_ROUND)
-    ctx.set_line_width(0.5)
-    return out, ctx
-
-
-def plotgrid(context, minx, miny, maxx, maxy, spacing=100):
-    """
-    Plot a 100x100 grid
-
-    Arguments:
-        context: Drawing context.
-        minx: Left side of the drawing.
-        miny: Bottom of the drawing.
-        maxx: Right side of the drawing.
-        maxy: Top of the drawing.
-        spacing: Spacing between grid lines, defaults to 100.
-    """
-    context.save()
-    context.new_path()
-    for x in range(int(minx), int(maxx), spacing):
-        context.move_to(x, miny)
-        context.line_to(x, maxy)
-    for y in range(int(miny), int(maxy), spacing):
-        context.move_to(minx, y)
-        context.line_to(maxx, y)
-    context.close_path()
-    context.set_line_width(0.1)
-    context.set_source_rgb(0.5, 0.5, 0.5)
-    context.set_dash([20.0, 20.0])
-    context.stroke()
-    context.restore()
-
-
-def plotlines(context, lines, lw=0.5):
-    """
-    Plot a list of lines. Each line is a list of 2-tuples (x, y).
-
-    Arguments:
-        context: Drawing context.
-        lines: Iterator of lines.
-        lw: Line width to draw. Defaults to 0.5.
-    """
-    context.save()
-    context.set_line_width(lw)
-    context.new_path()
-    for ln in lines:
-        context.move_to(*ln[0])
-        for pt in ln[1:]:
-            context.line_to(*pt)
-    context.stroke()
-    context.restore()
-
-
-def plottitle(context, ofn, maxy, offset=40):
-    """
-    Write the title on the plot.
-
-    Arguments:
-        context: Drawing context.
-        ofn: Name of the output file.
-        maxy: top of the drawing area
-    """
-    context.save()
-    context.set_matrix(cairo.Matrix(xx=1.0, yy=1.0))
-    context.select_font_face('Sans')
-    fh = 10
-    context.set_source_rgb(0.0, 0.0, 0.0)
-    context.set_font_size(fh)
-    context.move_to(5, fh+5)
-    txt = ' '.join(['Produced by: dxf2pdf', __version__, 'on',
-                    str(datetime.datetime.now())[:-10]])
-    context.show_text(txt)
-    context.stroke()
-    context.move_to(5, maxy+2*offset-(fh))
-    txt = 'File: "{}", last modified: {}'
-    context.show_text(txt.format(ofn, time.ctime(os.path.getmtime(ofn))))
-    context.stroke()
-    context.restore()
 
 
 if __name__ == '__main__':
