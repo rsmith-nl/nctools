@@ -110,7 +110,12 @@ def printent(e, v):
     def arc():
         xc, yc, R = float(e[10]), float(e[20]), float(e[40])
         sa, ea = float(e[50]), float(e[51])
-        outs = '  ARC centered at ({:.2f}, {:.2f}), ' \
+        sar, ear = math.radians(sa), math.radians(ea)
+        xs, ys = xc + R*math.cos(sar), yc + R*math.sin(sar)
+        xe, ye = xc + R*math.cos(ear), yc + R*math.sin(ear)
+        outs = '  ARC from ({:.2f}, {:.2f}) to ({:.2f}, {:.2f})'
+        print(outs.format(xs, ys, xe, ye))
+        outs = '      centered at ({:.2f}, {:.2f}), ' \
                'radius {:.2f}, from {:.1f}° to {:.1f}°'
         print(outs.format(xc, yc, R, sa, ea))
 
