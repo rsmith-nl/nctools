@@ -135,24 +135,26 @@ def organize_segments(seg):
         if lines.closed(ts):
             closedseg.append(ts)
             continue
-        found = True
-        while found:
+        while True:
+            found = False
             for s in seg:
-                found = True
                 if ts[-1] == s[0]:
                     ts += s[1:]
+                    found = True
                 elif ts[-1] == s[-1]:
                     ts += s[:-1][::-1]
+                    found = True
                 elif ts[0] == s[-1]:
                     ts = s[:-1] + ts
+                    found = True
                 elif ts[0] == s[0]:
                     ts = s[1:][::-1] + ts
-                else:
-                    found = False
+                    found = True
                 if found:
                     seg.remove(s)
                     break
-            found = False
+            if not found:
+                break
         if lines.closed(ts):
             closedseg.append(ts)
         elif len(ts) > 2:
