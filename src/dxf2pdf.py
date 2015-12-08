@@ -103,7 +103,7 @@ def main(argv):
         out, ctx = plot.setup(ofn, minx, miny, maxx, maxy)
         plot.grid(ctx, minx, miny, maxx, maxy)
         logging.info('Plotting the entities')
-        plot.lines(ctx, segments)
+        plot.lines(ctx, segments, marks=False)
         plot.title(ctx, 'dxf2pdf', ofn, maxy-miny)
         out.show_page()
         logging.info('Writing output file "{}"'.format(ofn))

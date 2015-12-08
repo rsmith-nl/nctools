@@ -116,17 +116,26 @@ def main(argv):
         out.write()
 
 
-def organize_segments(seg):
+def organize_segments(seg, delta=1e-3):
     """
     Assemble segments and sort them into closed, open and singles.
 
     Arguments:
         seg: List of segments. Will be consumed by this function.
+        delta: Maximum distance between identical points
 
     Returns:
         A 3-tuple of lists of closed segments, open segments and single
         segments.
     """
+    def match(a, b):
+        xa, ya = a
+        xb, yb = b
+        d2 = delta*delta
+        if (xb-xa)**2 + (yb-ya)**2 < d2:
+            return True
+        return False
+
     closedseg = []
     openseg = []
     singleseg = []
@@ -138,16 +147,16 @@ def organize_segments(seg):
         while True:
             found = False
             for s in seg:
-                if ts[-1] == s[0]:
+                if match(ts[-1], s[0]):
                     ts += s[1:]
                     found = True
-                elif ts[-1] == s[-1]:
+                elif match(ts[-1], s[-1]):
                     ts += s[:-1][::-1]
                     found = True
-                elif ts[0] == s[-1]:
+                elif match(ts[0], s[-1]):
                     ts = s[:-1] + ts
                     found = True
-                elif ts[0] == s[0]:
+                elif match(ts[0], s[0]):
                     ts = s[1:][::-1] + ts
                     found = True
                 if found:

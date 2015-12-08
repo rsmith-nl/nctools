@@ -85,7 +85,7 @@ def main(argv):
             continue
         cuts, xvals, yvals = getcuts(rd)
         cnt = len(cuts)
-        logging.info('cot {} cuts'.format(cnt))
+        logging.info('got {} cuts'.format(cnt))
         minx, maxx = min(xvals), max(xvals)
         miny, maxy = min(yvals), max(yvals)
         bs = '{} range from {:.1f} mm to {:.1f} mm'
@@ -116,18 +116,20 @@ def getcuts(rd):
     y = []
     section = None
     cutting = False
+    new = False
     pos = None
     for c, args in rd:
         if c.startswith('down'):
             cutting = True
             if not pos:
                 raise ValueError('Start of cutting without pos')
-            section = [pos]
+            if new:
+                new = False
+                if section:
+                    cuts.append(section)
+                section = [pos]
         elif c.startswith('up'):
             cutting = False
-            if section:
-                cuts.append(section)
-            section = None
         elif c.startswith('moveto'):
             _, newpos = args
             if cutting:
@@ -136,6 +138,11 @@ def getcuts(rd):
             x.append(xv)
             y.append(yv)
             pos = newpos
+        elif c.startswith('newpiece'):
+            # Place a marker and start a new section at the next knife down.
+            new = True
+    if section:
+        cuts.append(section)
     return cuts, x, y
 
 

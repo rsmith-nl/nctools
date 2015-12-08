@@ -3,7 +3,7 @@
 #
 # Copyright © 2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-04-16 11:57:29 +0200
-# Last modified: 2015-11-15 21:55:06 +0100
+# Last modified: 2015-11-19 22:01:01 +0100
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -123,12 +123,12 @@ def mksegments(entities):
         if devlim > R:
             cnt = 1
         else:
-            step = 2*math.acos(1-devlim/R)
+            maxstep = 2*math.acos(1-devlim/R)
             if da < 0:
-                step = -step
-            cnt = int(math.fabs(da/step)) + 1
-        step = da/float(cnt)
-        angs = [sa+i*step for i in range(int(cnt)+1)]
+                maxstep = -maxstep
+            cnt = math.ceil(da/maxstep)
+        step = da/cnt
+        angs = [sa+i*step for i in range(cnt+1)]
         pnts = [(cx+R*math.cos(a), cy+R*math.sin(a)) for a in angs]
         return pnts
 

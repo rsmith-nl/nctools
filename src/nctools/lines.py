@@ -3,7 +3,7 @@
 #
 # Copyright © 2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-11-14 18:56:39 +0100
-# Last modified: 2015-11-17 22:57:47 +0100
+# Last modified: 2015-11-19 22:40:13 +0100
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -51,19 +51,20 @@ def length(line):
     return sum(dist)
 
 
-def closed(line):
+def closed(line, delta=1e-3):
     """
     Determine if a list of line segments is closed.
 
     Arguments:
         line: list of 2-tuples (x, y)
+        delta: significant distance between points
 
     Returns:
         True if the last point in the line equals the first point. False
         otherwise.
     """
     first, last = line[0], line[-1]
-    return first[0] == last[0] and first[1] == last[1]
+    return abs(first[0]-last[0]) < delta and abs(first[1]-last[1]) < delta
 
 
 def setstart(line, newstart):

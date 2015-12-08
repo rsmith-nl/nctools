@@ -3,7 +3,7 @@
 #
 # Copyright © 2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-05-03 20:18:19 +0200
-# Last modified: 2015-11-17 22:49:59 +0100
+# Last modified: 2015-11-24 14:24:32 +0100
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -90,7 +90,7 @@ def grid(context, minx, miny, maxx, maxy, spacing=100):
     context.restore()
 
 
-def lines(context, lines, lw=2):
+def lines(context, lines, lw=2, marks=True):
     """
     Plot a list of lines. Each line is a list of 2-tuples (x, y).
 
@@ -98,6 +98,7 @@ def lines(context, lines, lw=2):
         context: Drawing context.
         lines: Iterator of lines.
         lw: Line width to draw. Defaults to 2.
+        marks: Draw start markings. Defaults to True.
     """
     context.save()
     context.set_line_width(lw)
@@ -108,18 +109,19 @@ def lines(context, lines, lw=2):
             context.line_to(*pt)
     context.stroke()
     context.restore()
-    # Print start marks
-    context.save()
-    context.set_line_width(lw)
-    context.new_path()
-    context.set_source_rgb(1.0, 0.0, 0.0)
-    for ln in lines:
-        context.move_to(*ln[0])
-        context.rel_move_to(-5, -5)
-        context.rel_line_to(5, 5)
-        context.rel_line_to(5, -5)
-    context.stroke()
-    context.restore()
+    if marks:
+        # Print start marks
+        context.save()
+        context.set_line_width(lw)
+        context.new_path()
+        context.set_source_rgb(1.0, 0.0, 0.0)
+        for ln in lines:
+            context.move_to(*ln[0])
+            context.rel_move_to(-5, -5)
+            context.rel_line_to(5, 5)
+            context.rel_line_to(5, -5)
+        context.stroke()
+        context.restore()
 
 
 def title(context, prog, ofn, h, offset=40):
