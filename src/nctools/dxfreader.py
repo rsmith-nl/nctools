@@ -3,7 +3,7 @@
 #
 # Copyright © 2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-04-16 11:57:29 +0200
-# Last modified: 2015-11-19 22:01:01 +0100
+# Last modified: 2016-01-07 00:37:29 +0100
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -27,7 +27,6 @@
 
 """Module for retrieving the drawing entities from DXF files."""
 
-import logging
 import math
 import re
 
@@ -87,7 +86,7 @@ def numberedlayers(entities):
     layer 0.
 
     Arguments:
-        Entities: An iterable of dictionaries, each containing a DXF entity.
+        entities: An iterable of dictionaries, each containing a DXF entity.
 
     Returns:
         A list of layer names with a number in them, sorted by ascending
@@ -99,22 +98,40 @@ def numberedlayers(entities):
     return numbered
 
 
-def mksegments(entities):
+def fromlayer(entities, name):
+    """
+    Return only the entities from the named layer.
+
+    Arguments:
+        entities: An iterable of dictionaries, each containing a DXF entity.
+        name: The name of the layer to filter on.
+
+    Returns:
+        A list of entities.
+    """
+    return [e for e in entities if e[8] == name]
+
+
+def mksegments(entities, ndigits=2):
     """
     Convert an iterable of entities to a list of line segments.
 
     Arguments:
-        Entities: An iterable if dictionaries, each containing a DXF entity.
+        entities: An iterable if dictionaries, each containing a DXF entity.
+        ndigits: Rounds to ndigits after the decimal point.
 
     Returns:
         A list of line segments. Line segments are lists of ≥2 (x,y) tuples.
     """
+    def fr(n):
+        return round(float(n), ndigits)
+
     def line(e):
-        return [(float(e[10]), float(e[20])), (float(e[11]), float(e[21]))]
+        return [(fr(e[10]), fr(e[20])), (fr(e[11]), fr(e[21]))]
 
     def arc(e):
-        cx, cy = float(e[10]), float(e[20])
-        R = float(e[40])
+        cx, cy = fr(e[10]), fr(e[20])
+        R = fr(e[40])
         sa, ea = math.radians(float(e[50])), math.radians(float(e[51]))
         if ea > sa:
             da = ea - sa
@@ -129,7 +146,7 @@ def mksegments(entities):
             cnt = math.ceil(da/maxstep)
         step = da/cnt
         angs = [sa+i*step for i in range(cnt+1)]
-        pnts = [(cx+R*math.cos(a), cy+R*math.sin(a)) for a in angs]
+        pnts = [(fr(cx+R*math.cos(a)), fr(cy+R*math.sin(a))) for a in angs]
         return pnts
 
     # Convert lines
@@ -142,14 +159,11 @@ def mksegments(entities):
     for start in pi:
         end = [n for n in se if n > start][0]
         poly = entities[start:end]
-        points = [(float(e[10]), float(e[20])) for e in poly[1:]]
+        points = [(fr(e[10]), fr(e[20])) for e in poly[1:]]
         angles = [math.atan(float(e[42]))*4 if 42 in e else None for e in
                   poly[1:]]
         if 70 in poly[0] and (int(poly[0][70]) & 1):  # closed polyline
-            cl = 'closed'
             points.append(points[0])
-        else:
-            cl = 'open'
         ends = zip(points, points[1:], angles)
         addition = [points[0]]
         for sp, ep, a in ends:

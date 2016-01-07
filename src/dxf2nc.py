@@ -5,7 +5,6 @@
 
 import argparse
 import logging
-import re
 import sys
 from nctools import dxfreader, lines, gerbernc, utils
 
@@ -49,8 +48,6 @@ def main(argv):
         argv: command line arguments
     """
     parser = argparse.ArgumentParser(description=__doc__)
-    argtxt = """maximum distance between two points considered equal when
-    searching for contours (defaults to 0.5 mm)"""
     argtxt2 = """minimum rotation angle in degrees where the knife needs
     to be lifted to prevent breaking (defaults to 60°)"""
     argtxt4 = "assemble connected lines into contours (off by default)"
@@ -77,7 +74,7 @@ def main(argv):
         parser.print_help()
         sys.exit(0)
     for f in utils.xpand(args.files):
-        parts = []
+        # parts = []
         logging.info('Starting file "{}"'.format(f))
         try:
             ofn = utils.outname(f, extension='')
@@ -102,103 +99,65 @@ def main(argv):
         out = gerbernc.Writer(ofn)
         for layername in layers:
             out.newpiece()
-            thislayer = [e for e in entities if e[8] == layername]
+            thislayer = dxfreader.fromlayer(entities, layername)
             segments = dxfreader.mksegments(thislayer)
             fs = '{} {}segments in layer "{}"'
             logging.info(fs.format(len(segments), '', layername))
-            closedseg, openseg, singleseg = organize_segments(segments)
-            for a, b in (('closed ', closedseg), ('open ', openseg),
-                         ('single ', singleseg)):
+            closedseg, openseg = combine_segments(segments)
+            for a, b in (('closed ', closedseg), ('open ', openseg)):
                 logging.info(fs.format(len(b), a, layername))
-            cut_segments(singleseg, out)
             cut_segments(openseg, out)
             cut_segments(closedseg, out)
         out.write()
 
 
-def organize_segments(seg, delta=1e-3):
+def combine_segments(segments):
     """
-    Assemble segments and sort them into closed, open and singles.
+    Combine the segments where possible.
 
     Arguments:
-        seg: List of segments. Will be consumed by this function.
-        delta: Maximum distance between identical points
+        segments: List of segments. A segment is a list of two or more
+            (x,y) tuples. This list will be consumed by this function.
 
     Returns:
-        A 3-tuple of lists of closed segments, open segments and single
-        segments.
+        A list of closed segments and a list of open segments.
     """
-    def match(a, b):
-        xa, ya = a
-        xb, yb = b
-        d2 = delta*delta
-        if (xb-xa)**2 + (yb-ya)**2 < d2:
-            return True
-        return False
-
-    closedseg = []
     openseg = []
-    singleseg = []
-    while len(seg):
-        ts = seg.pop(0)
-        if lines.closed(ts):
-            closedseg.append(ts)
+    loops = []
+    while len(segments) > 1:
+        sp, ep = segments[0][0], segments[0][-1]
+        rem = segments[1:]
+        sprem, eprem = [s[0] for s in rem], [s[-1] for s in rem]
+        if sp in sprem:
+            idx = sprem.index(sp) + 1
+            frag = segments.pop(idx)[1:]
+            frag.reverse()
+            newseg = frag + segments[0]
+        elif sp in eprem:
+            idx = eprem.index(sp) + 1
+            newseg = segments.pop(idx)[:-1] + segments[0]
+        elif ep in sprem:
+            idx = sprem.index(sp) + 1
+            newseg = segments[0] + segments.pop(idx)[1:]
+        elif ep in eprem:
+            idx = eprem.index(ep) + 1
+            frag = segments.pop(idx)[:-1]
+            frag.reverse()
+            newseg = segments[0] + frag
+        else:
+            # no connections found
+            head = segments.pop()
+            if lines.closed(head):
+                loops.append(head)
+            else:
+                openseg.append(head)
             continue
-        while True:
-            found = False
-            for s in seg:
-                if match(ts[-1], s[0]):
-                    ts += s[1:]
-                    found = True
-                elif match(ts[-1], s[-1]):
-                    ts += s[:-1][::-1]
-                    found = True
-                elif match(ts[0], s[-1]):
-                    ts = s[:-1] + ts
-                    found = True
-                elif match(ts[0], s[0]):
-                    ts = s[1:][::-1] + ts
-                    found = True
-                if found:
-                    seg.remove(s)
-                    break
-            if not found:
-                break
-        if lines.closed(ts):
-            closedseg.append(ts)
-        elif len(ts) > 2:
-            openseg.append(ts)
-        elif len(ts) == 2:
-            singleseg.append(ts)
-    # Sort closed segments by enclosed size, from small to large
-    closedseg.sort(key=lambda s: lines.bbox_area(s), reverse=True)
-    # Set start point of closed segments to lower-left
-    for s in closedseg:
-        pnt = sorted(s, key=lambda x: sum(x))[0]
-        lines.setstart(s, pnt)
-    # Sort open segments by length
-    openseg.sort(key=lambda s: lines.length(s))
-    # Start open line segments in lower-left
-    for s in openseg:
-        st, end = s[0], s[-1]
-        if sum(end) < sum(st):
-            s.reverse()
-    # Sort single lines first by minx, then by miny
-    singleseg.sort(key=_skey)
-    return (closedseg, openseg, singleseg)
-
-
-def _skey(s):
-    """Key function for sorting single segments.
-
-    Arguments:
-        s: A line segment
-
-    Returns:
-        A 2-tuple that is the lower-left corner of the bounding-box.
-    """
-    a, b, _, _ = lines.bbox(s)
-    return (a, b)
+        segments[0] = newseg
+    if lines.closed(segments[0]):
+        loops.append(segments[0])
+    else:
+        openseg.append(segments[0])
+    return loops, openseg
 
 
 def cut_segments(seg, w):

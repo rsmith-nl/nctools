@@ -3,3 +3,4 @@
 backup-*.tar.gz
 dist
 *.pdf
+.ropeproject/
