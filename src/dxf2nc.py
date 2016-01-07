@@ -11,7 +11,7 @@ from nctools import dxfreader, lines, gerbernc, utils
 __version__ = '2.0.0-beta'
 
 _lic = """dxf2nc {}
-Copyright © 2012-2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+Copyright © 2012-2016 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -103,61 +103,12 @@ def main(argv):
             segments = dxfreader.mksegments(thislayer)
             fs = '{} {}segments in layer "{}"'
             logging.info(fs.format(len(segments), '', layername))
-            closedseg, openseg = combine_segments(segments)
+            closedseg, openseg = lines.combine_segments(segments)
             for a, b in (('closed ', closedseg), ('open ', openseg)):
                 logging.info(fs.format(len(b), a, layername))
             cut_segments(openseg, out)
             cut_segments(closedseg, out)
         out.write()
-
-
-def combine_segments(segments):
-    """
-    Combine the segments where possible.
-
-    Arguments:
-        segments: List of segments. A segment is a list of two or more
-            (x,y) tuples. This list will be consumed by this function.
-
-    Returns:
-        A list of closed segments and a list of open segments.
-    """
-    openseg = []
-    loops = []
-    while len(segments) > 1:
-        sp, ep = segments[0][0], segments[0][-1]
-        rem = segments[1:]
-        sprem, eprem = [s[0] for s in rem], [s[-1] for s in rem]
-        if sp in sprem:
-            idx = sprem.index(sp) + 1
-            frag = segments.pop(idx)[1:]
-            frag.reverse()
-            newseg = frag + segments[0]
-        elif sp in eprem:
-            idx = eprem.index(sp) + 1
-            newseg = segments.pop(idx)[:-1] + segments[0]
-        elif ep in sprem:
-            idx = sprem.index(sp) + 1
-            newseg = segments[0] + segments.pop(idx)[1:]
-        elif ep in eprem:
-            idx = eprem.index(ep) + 1
-            frag = segments.pop(idx)[:-1]
-            frag.reverse()
-            newseg = segments[0] + frag
-        else:
-            # no connections found
-            head = segments.pop()
-            if lines.closed(head):
-                loops.append(head)
-            else:
-                openseg.append(head)
-            continue
-        segments[0] = newseg
-    if lines.closed(segments[0]):
-        loops.append(segments[0])
-    else:
-        openseg.append(segments[0])
-    return loops, openseg
 
 
 def cut_segments(seg, w):
