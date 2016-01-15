@@ -101,14 +101,26 @@ def main(argv):
             out.newpiece()
             thislayer = dxfreader.fromlayer(entities, layername)
             segments = dxfreader.mksegments(thislayer)
-            fs = '{} {}segments in layer "{}"'
-            logging.info(fs.format(len(segments), '', layername))
-            closedseg, openseg = lines.combine_segments(segments)
-            for a, b in (('closed ', closedseg), ('open ', openseg)):
-                logging.info(fs.format(len(b), a, layername))
-            cut_segments(openseg, out)
-            cut_segments(closedseg, out)
+            fs = '{} segments in layer "{}"'
+            logging.info(fs.format(len(segments), layername))
+            if args.contours:
+                cut_contours(segments, out, layername)
+            else:
+                # TODO: sort segments
+                cut_segments(segments, out)
         out.write()
+
+
+def cut_contours(seg, w, layer):
+    """Assemble contours into segments"""
+    closedseg, openseg = lines.combine_segments(seg)
+    fs = '{} {} segments in layer "{}"'
+    for a, b in (('closed ', closedseg), ('open ', openseg)):
+        logging.info(fs.format(len(b), a, layer))
+    # TODO: Sort open segments
+    cut_segments(openseg, w)
+    # TODO: Sort closed segments
+    cut_segments(closedseg, w)
 
 
 def cut_segments(seg, w):
