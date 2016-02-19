@@ -3,7 +3,7 @@
 #
 # Copyright © 2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-04-16 11:57:29 +0200
-# Last modified: 2016-01-08 00:01:53 +0100
+# Last modified: 2016-02-19 11:20:54 +0100
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -28,6 +28,19 @@
 """Module for retrieving the drawing entities from DXF files."""
 
 import re
+
+
+def parse(filename):
+    """Read a DXF file and break it into (group, data) tuples.
+
+    :param filename: Name of a DXF file to read.
+    :returns: A list of (group, data) tuples
+    """
+    with open(filename, encoding='cp1252') as dxffile:
+        lines = dxffile.readlines()
+    lines = [ln.strip() for ln in lines]
+    data = list(zip(lines[::2], lines[1::2]))
+    return [(int(g), d) for g, d in data]
 
 
 def entities(data):
