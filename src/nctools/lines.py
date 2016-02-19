@@ -3,7 +3,7 @@
 #
 # Copyright © 2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-11-14 18:56:39 +0100
-# Last modified: 2016-01-08 00:06:41 +0100
+# Last modified: 2016-02-19 23:12:09 +0100
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -145,10 +145,6 @@ def combine_segments(segments):
                 openseg.append(head)
             continue
         segments[0] = newseg
-    if closed(segments[0]):
-        loops.append(segments[0])
-    else:
-        openseg.append(segments[0])
     return loops, openseg
 
 
