@@ -3,7 +3,7 @@
 
 """Plot cuts from a Gerber cloth cutter NC file to a PDF."""
 
-__version__ = '1.11-beta'
+__version__ = '1.12-beta'
 
 _lic = """nc2pdf {}
 Copyright © 2013, 2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.

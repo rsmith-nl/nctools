@@ -10,7 +10,7 @@
 import sys
 import os.path
 
-__version__ = '1.11-beta'
+__version__ = '1.12-beta'
 
 eof = 'end of file'
 kd, ku = 'knife down', 'knife up'

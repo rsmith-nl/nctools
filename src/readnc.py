@@ -4,7 +4,7 @@
 """Reads a Gerber cloth cutter NC file and print the contents in
 human-readable form."""
 
-__version__ = '1.11-beta'
+__version__ = '1.12-beta'
 
 _lic = """readnc {}
 Copyright © 2012-2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.

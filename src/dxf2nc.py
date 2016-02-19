@@ -4,8 +4,12 @@
 """Converts a DXF file to a cutting program for a Gerber cloth cutter."""
 
 from __future__ import print_function, division
+import argparse
+import re
+import sys
+from nctools import bbox, dxf, ent, gerbernc, utils
 
-__version__ = '1.11-beta'
+__version__ = '1.12-beta'
 
 _lic = """dxf2nc {}
 Copyright © 2012-2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
@@ -30,11 +34,6 @@ HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
 LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.""".format(__version__)
-
-import argparse
-import re
-import sys
-from nctools import bbox, dxf, ent, gerbernc, utils
 
 
 class LicenseAction(argparse.Action):
@@ -168,12 +167,6 @@ def main(argv):
             es = 'Original extents: {:.1f} ≤ x ≤ {:.1f} mm,' \
                 ' {:.1f} ≤ y ≤ {:.1f} mm'
             msg.say(es.format(bb.minx, bb.maxx, bb.miny, bb.maxy))
-            # move entities so that the bounding box begins at 0,0
-            if bb.minx != 0 or bb.miny != 0:
-                ms = 'Moving all entities by ({:.1f}, {:.1f}) mm'
-                msg.say(ms.format(-bb.minx, -bb.miny))
-                for e in entities:
-                    e.move(-bb.minx, -bb.miny)
             for layer in layers:
                 msg.say('Found layer: "{}"'.format(layer))
                 le = [e for e in entities if e.layer == layer]
