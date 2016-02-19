@@ -6,7 +6,6 @@
 import argparse
 import logging
 import sys
-import cairo
 from nctools import dxfreader, lines, utils, plot
 
 __version__ = '2.0.0-beta'
@@ -97,7 +96,7 @@ def main(argv):
 
         else:
             logging.info('Found 1 entity')
-        segments = dxfreader.mksegments(entities)
+        segments = lines.mksegments(entities)
         bboxes = [lines.bbox(s) for s in segments]
         minx, miny, maxx, maxy = lines.merge_bbox(bboxes)
         out, ctx = plot.setup(ofn, minx, miny, maxx, maxy)
