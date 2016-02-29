@@ -8,11 +8,12 @@ import logging
 import math
 import pprint
 import sys
-from nctools import dxfreader, utils
+from nctools import dxfreader as dx
+from nctools import utils as ut
 
 __version__ = '2.0.0-beta'
 _lic = """readdxf {}
-Copyright © 2011-2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+Copyright © 2011-2016 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -71,18 +72,25 @@ def main(argv):
     if not args.files:
         parser.print_help()
         sys.exit(0)
-    for f in utils.xpand(args.files):
+    for f in ut.xpand(args.files):
+        print('Filename: {}'.format(f))
         try:
-            data = dxfreader.parse(f)
-            entities = dxfreader.entities(data)
+            data = dx.parse(f)
+            if args.verbose:
+                for d in data:
+                    pprint.pprint(d)
+            entities = dx.entities(data)
         except Exception as ex:
-            utils.skip(ex, f)
+            ut.skip(ex, f)
             continue
         if not args.all:
-            numbered = dxfreader.numberedlayers(entities)
-            entities = [e for e in entities if e[8] in numbered]
+            numbered = dx.numberedlayers(entities)
+            bylayer = {nm: dx.fromlayer(entities, nm)
+                       for nm in numbered}
+            entities = []
+            for layerent in bylayer.values():
+                entities += layerent
         num = len(entities)
-        print('Filename: {}'.format(f))
         if num == 0:
             logging.warning('no entities found!')
             continue
@@ -91,25 +99,25 @@ def main(argv):
             if args.verbose:
                 for e in entities:
                     pprint.pprint(e)
-            layers = {e[8] for e in entities}
-            for layer in sorted(layers):
+            layers = dx.layernames(entities)
+            for layer in layers:
                 print('Layer: "{}"'.format(layer))
-                le = [e for e in entities if e[8] == layer]
-                for e in le:
+                for e in dx.fromlayer(entities, layer):
                     printent(e, args.verbose)
 
 
 def printent(e, v):
     """Print a DXF entity"""
     def line():
-        xs, ys = float(e[10]), float(e[20])
-        xe, ye = float(e[11]), float(e[21])
+        xs, ys = float(dx.bycode(e, 10)), float(dx.bycode(e, 20))
+        xe, ye = float(dx.bycode(e, 11)), float(dx.bycode(e, 21))
         outs = '  LINE from ({:.2f}, {:.2f}) to ({:.2f}, {:.2f})'
         print(outs.format(xs, ys, xe, ye))
 
     def arc():
-        xc, yc, R = float(e[10]), float(e[20]), float(e[40])
-        sa, ea = float(e[50]), float(e[51])
+        xc, yc, R = (float(dx.bycode(e, 10)), float(dx.bycode(e, 20)),
+                     float(dx.bycode(e, 40)))
+        sa, ea = float(dx.bycode(e, 50)), float(dx.bycode(e, 51))
         sar, ear = math.radians(sa), math.radians(ea)
         xs, ys = xc + R*math.cos(sar), yc + R*math.sin(sar)
         xe, ye = xc + R*math.cos(ear), yc + R*math.sin(ear)
@@ -123,10 +131,10 @@ def printent(e, v):
         print('  POLYLINE')
 
     def vertex():
-        x, y = float(e[10]), float(e[20])
+        x, y = float(dx.bycode(e, 10)), float(dx.bycode(e, 20))
         outs = '    VERTEX at ({:.2f}, {:.2f})'.format(x, y)
         if 42 in e:
-            v = math.degrees(math.atan(float(e[42]))*4)
+            v = math.degrees(math.atan(float(dx.bycode(e, 42)))*4)
             outs += ', curve angle {:.1f}°'.format(v)
         print(outs)
 
@@ -136,13 +144,14 @@ def printent(e, v):
     printdict = {'LINE': line, 'ARC': arc,
                  'POLYLINE': polyline, 'VERTEX': vertex,
                  'SEQEND': endseq}
+    k = dx.bycode(e, 0)
     try:
-        printdict[e[0]]()
+        printdict[k]()
     except KeyError:
         if v:
-            print('  {} entity: {}'.format(e[0], e))
+            print('  {} entity: {}'.format(k, e))
         else:
-            print('  {} entity'.format(e[0]))
+            print('  {} entity'.format(k))
 
 
 if __name__ == '__main__':

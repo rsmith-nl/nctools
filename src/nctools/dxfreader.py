@@ -3,7 +3,7 @@
 #
 # Copyright © 2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-04-16 11:57:29 +0200
-# Last modified: 2016-02-19 11:20:54 +0100
+# Last modified: 2016-02-29 22:27:11 +0100
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -58,8 +58,33 @@ def entities(data):
     entdata = data[soe+1:eoe]
     idx = [n for n, d in enumerate(entdata) if d[0] == 0] + [len(entdata)]
     pairs = list(zip(idx, idx[1:]))
-    entities = [dict(entdata[b:e]) for b, e in pairs]
+    # FIXME: dict doesn't work with LWPOLYLINE, which has multiple groups
+    # 10 and 20:
+    # entities = [dict(entdata[b:e]) for b, e in pairs]
+    entities = [tuple(entdata[b:e]) for b, e in pairs]
     return entities
+
+
+def layername(ent):
+    """Get the layer name of an entity."""
+    return [v for k, v in ent if k == 8][0]
+
+
+def bycode(ent, group):
+    """Get the data with the given group code from an entity.
+
+    Arguments:
+        ent: An iterable of (group, data) tuples.
+        group: Group code that you want to retrieve.
+
+    Returns:
+        The data for the given group code. Can be a list of items if the group
+        code occurs multiple times.
+    """
+    data = [v for k, v in ent if k == group]
+    if len(data) == 1:
+        return data[0]
+    return data
 
 
 def layernames(entities):
@@ -72,7 +97,7 @@ def layernames(entities):
     Returns:
         A sorted list of layer names.
     """
-    lnames = list(set(e[8] for e in entities))
+    lnames = list(set(layername(e) for e in entities))
     lnames.sort()
     return lnames
 
@@ -106,4 +131,4 @@ def fromlayer(entities, name):
     Returns:
         A list of entities.
     """
-    return [e for e in entities if e[8] == name]
+    return [e for e in entities if layername(e) == name]

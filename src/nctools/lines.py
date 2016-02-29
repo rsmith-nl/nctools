@@ -3,7 +3,7 @@
 #
 # Copyright © 2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-11-14 18:56:39 +0100
-# Last modified: 2016-02-19 23:12:09 +0100
+# Last modified: 2016-02-19 23:23:49 +0100
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -100,6 +100,7 @@ def mksegments(entities, ndigits=2):
             else:
                 addition.append(ep)
         lines += [addition]
+    # Convert lwpolylines
     return lines
 
 

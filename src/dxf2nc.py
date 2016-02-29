@@ -100,6 +100,8 @@ def main(argv):
         for layername in layers:
             out.newpiece()
             thislayer = dxfreader.fromlayer(entities, layername)
+            ls = '{} entities found in layer "{}".'
+            logging.info(ls.format(num, layername))
             segments = lines.mksegments(thislayer)
             fs = '{} segments in layer "{}"'
             logging.info(fs.format(len(segments), layername))
