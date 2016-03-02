@@ -1,9 +1,9 @@
 # file: lines.py
 # vim:fileencoding=utf-8:ft=python
 #
-# Copyright © 2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+# Copyright © 2015,2016 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-11-14 18:56:39 +0100
-# Last modified: 2016-02-19 23:23:49 +0100
+# Last modified: 2016-03-02 22:04:43 +0100
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -34,7 +34,7 @@ len() can be used.
 """
 
 import math
-
+from nctools import dxfreader as dx
 
 devlim = 1  # maximum deviation from arc, spline
 
@@ -54,12 +54,14 @@ def mksegments(entities, ndigits=2):
         return round(float(n), ndigits)
 
     def line(e):
-        return [(fr(e[10]), fr(e[20])), (fr(e[11]), fr(e[21]))]
+        return [(fr(dx.bycode(e, 10)), fr(dx.bycode(e, 20))),
+                (fr(dx.bycode(e, 11)), fr(dx.bycode(e, 21)))]
 
     def arc(e):
-        cx, cy = fr(e[10]), fr(e[20])
-        R = fr(e[40])
-        sa, ea = math.radians(float(e[50])), math.radians(float(e[51]))
+        cx, cy = fr(dx.bycode(e, 10)), fr(dx.bycode(e, 20))
+        R = fr(dx.bycode(e, 40))
+        sa, ea = (math.radians(float(dx.bycode(e, 50))),
+                  math.radians(float(dx.bycode(e, 51))))
         if ea > sa:
             da = ea - sa
         else:
@@ -77,19 +79,20 @@ def mksegments(entities, ndigits=2):
         return pnts
 
     # Convert lines
-    lines = [line(e) for e in entities if e[0] == 'LINE']
+    lines = [line(e) for e in entities if dx.bycode(e, 0) == 'LINE']
     # Convert arcs
-    lines += [arc(e) for e in entities if e[0] == 'ARC']
+    lines += [arc(e) for e in entities if dx.bycode(e, 0) == 'ARC']
     # Convert polylines
-    pi = [n for n, e in enumerate(entities) if e[0] == 'POLYLINE']
-    se = [n for n, e in enumerate(entities) if e[0] == 'SEQEND']
+    pi = [n for n, e in enumerate(entities) if dx.bycode(e, 0) == 'POLYLINE']
+    se = [n for n, e in enumerate(entities) if dx.bycode(e, 0) == 'SEQEND']
     for start in pi:
         end = [n for n in se if n > start][0]
         poly = entities[start:end]
-        points = [(fr(e[10]), fr(e[20])) for e in poly[1:]]
-        angles = [math.atan(float(e[42]))*4 if 42 in e else None for e in
-                  poly[1:]]
-        if 70 in poly[0] and (int(poly[0][70]) & 1):  # closed polyline
+        points = [(fr(dx.bycode(e, 10)), fr(dx.bycode(e, 20)))
+                  for e in poly[1:]]
+        angles = [math.atan(float(dx.bycode(e, 42)))*4 if 42 in e else None
+                  for e in poly[1:]]
+        if 70 in poly[0] and (int(dx.bycode(poly[0], 70)) & 1):  # closed
             points.append(points[0])
         ends = zip(points, points[1:], angles)
         addition = [points[0]]
