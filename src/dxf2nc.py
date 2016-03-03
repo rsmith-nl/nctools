@@ -6,7 +6,8 @@
 import argparse
 import logging
 import sys
-from nctools import dxfreader, lines, gerbernc, utils
+from nctools import dxfreader as dx
+from nctools import lines, gerbernc, utils
 
 __version__ = '2.0.0-beta'
 
@@ -78,8 +79,8 @@ def main(argv):
         logging.info('Starting file "{}"'.format(f))
         try:
             ofn = utils.outname(f, extension='')
-            data = dxfreader.parse(f)
-            entities = dxfreader.entities(data)
+            data = dx.parse(f)
+            entities = dx.entities(data)
         except ValueError as ex:
             logging.info(str(ex))
             fns = "error during processing. Skipping file '{}'."
@@ -89,8 +90,8 @@ def main(argv):
             logging.info(str(ex))
             logging.error("i/o error in file '{}'. Skipping it.".format(f))
             continue
-        layers = dxfreader.numberedlayers(entities)
-        entities = [e for e in entities if e[8] in layers]
+        layers = dx.numberedlayers(entities)
+        entities = [e for e in entities if dx.bycode(e, 8) in layers]
         num = len(entities)
         if num == 0:
             logging.info("no entities found! Skipping file '{}'.".format(f))
@@ -99,7 +100,7 @@ def main(argv):
         out = gerbernc.Writer(ofn)
         for layername in layers:
             out.newpiece()
-            thislayer = dxfreader.fromlayer(entities, layername)
+            thislayer = dx.fromlayer(entities, layername)
             ls = '{} entities found in layer "{}".'
             logging.info(ls.format(num, layername))
             segments = lines.mksegments(thislayer)
