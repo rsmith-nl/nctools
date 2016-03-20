@@ -36,40 +36,30 @@ simple = {'M0': eof, 'M00': eof,
 withargs = {'H': 'file #{}', 'N': 'piece #{}', 'F': 'feed rate {} in/min'}
 
 
-def main(argv):
-    """Entry point for this script.
-
-    :param argv: command line arguments
-    """
-    if len(argv) == 1:
-        binary = os.path.basename(argv[0])
-        print("{} ver. {}".format(binary, __version__), file=sys.stderr)
-        print("Usage: {} [file ...]".format(binary), file=sys.stderr)
-        sys.exit(0)
-    del argv[0]  # delete the name of the script.
-    # Real work starts here.
-    for fn in argv:
-        with open(fn) as df:
-            data = df.read()
-        print("/Reading file '{}'./".format(fn))
-        items = data.split('*')
-        if len(items[-1]) == 0:
-            del items[-1]
-        print("/This file contains {} blocks./".format(len(items)))
-        for cmd in items:
-            if cmd in simple:
-                print('{:20s} /{}/'.format(cmd, simple[cmd]))
-            elif cmd[0] in withargs:
-                arg = withargs[cmd[0]].format(cmd[1:])
-                print('{:20s} /{}/'.format(cmd, arg))
-            elif cmd.startswith('X'):
-                x, y = cmd[1:].split('Y')
-                x, y = float(x)*25.4/100, float(y)*25.4/100
-                fs = '{:20s} /move to x = {:.0f} mm, y = {:.0f} mm/'
-                print(fs.format(cmd, x, y))
-            else:
-                print(cmd)
-
-
-if __name__ == '__main__':
-    main(sys.argv)
+if len(sys.argv) == 1:
+    binary = os.path.basename(sys.argv[0])
+    print("{} ver. {}".format(binary, __version__), file=sys.stderr)
+    print("Usage: {} [file ...]".format(binary), file=sys.stderr)
+    sys.exit(0)
+del sys.argv[0]  # delete the name of the script.
+for fn in sys.argv:
+    with open(fn) as df:
+        data = df.read()
+    print("/Reading file '{}'./".format(fn))
+    items = data.split('*')
+    if len(items[-1]) == 0:
+        del items[-1]
+    print("/This file contains {} blocks./".format(len(items)))
+    for cmd in items:
+        if cmd in simple:
+            print('{:20s} /{}/'.format(cmd, simple[cmd]))
+        elif cmd[0] in withargs:
+            arg = withargs[cmd[0]].format(cmd[1:])
+            print('{:20s} /{}/'.format(cmd, arg))
+        elif cmd.startswith('X'):
+            x, y = cmd[1:].split('Y')
+            x, y = float(x)*25.4/100, float(y)*25.4/100
+            fs = '{:20s} /move to x = {:.0f} mm, y = {:.0f} mm/'
+            print(fs.format(cmd, x, y))
+        else:
+            print(cmd)

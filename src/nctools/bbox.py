@@ -3,7 +3,7 @@
 #
 # Copyright © 2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-05-03 20:18:19 +0200
-# Last modified: 2015-11-15 10:05:43 +0100
+# Last modified: 2016-03-20 14:50:49 +0100
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -29,12 +29,14 @@
 
 
 class BBox(object):
+    """A two- to three-dimensional bounding box."""
     __slots__ = ['minx', 'maxx', 'miny', 'maxy', 'minz', 'maxz', 'dim']
 
     def __init__(self, pnts):
         """Create a BBox from a list of points.
 
-        :param pnts: a list of 2-tuples or 3-tuples of numbers
+        Arguments:
+            pnts: A list of 2-tuples or 3-tuples of numbers.
         """
         if not pnts:
             raise ValueError('no points to create BBox')
@@ -66,7 +68,8 @@ class BBox(object):
     def update(self, pnts):
         """Grow the BBox to include pnts.
 
-        :param pnts: a list of 2-tuples or 3-tuples of numbers
+        Arguments:
+            pnts: A list of 2-tuples or 3-tuples of numbers.
         """
         if len(pnts) in (2, 3) and isinstance(pnts[0], (int, float)):
             pnts = [pnts]
@@ -85,8 +88,11 @@ class BBox(object):
     def inside(self, pnts):
         """Determine if all the points are inside the BBox.
 
-        :param pnts: a list of 2-tuples or 3-tuples of numbers
-        :returns: True if all points are in the BBox.
+        Arguments:
+            pnts: A list of 2-tuples or 3-tuples of numbers.
+
+        Returns:
+            True if all points are in the BBox, False otherwise.
         """
         single = False
         if len(pnts) in (2, 3) and isinstance(pnts[0], (int, float)):
@@ -107,16 +113,12 @@ class BBox(object):
 
     @property
     def width(self):
-        """Returns the width of the bounding box
-        :returns: width of the bounding box
-        """
+        """The width of the bounding box"""
         return self.maxx - self.minx
 
     @property
     def height(self):
-        """Returns the height of the bounding box
-        :returns: height of the bounding box
-        """
+        """The height of the bounding box"""
         return self.maxy - self.miny
 
     @property
@@ -130,8 +132,11 @@ class BBox(object):
 def merge(bbs):
     """Merge a list of bounding boxes
 
-    :bbs: A tuple or list of bounding boxes.
-    :returns: A new BBox then encompasses them all.
+    Arguments:
+        bbs: An iterable of bounding boxes.
+
+    Returns:
+        A new BBox then encompasses them all.
     """
     pnts = [p for b in bbs for p in b.points]
     return BBox(pnts)

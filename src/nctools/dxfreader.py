@@ -3,7 +3,7 @@
 #
 # Copyright © 2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-04-16 11:57:29 +0200
-# Last modified: 2016-02-29 22:27:11 +0100
+# Last modified: 2016-03-20 15:02:44 +0100
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -33,8 +33,10 @@ import re
 def parse(filename):
     """Read a DXF file and break it into (group, data) tuples.
 
-    :param filename: Name of a DXF file to read.
-    :returns: A list of (group, data) tuples
+    Arguments:
+        filename: Name of a DXF file to read.
+    Returns:
+        A list of (group, data) tuples.
     """
     with open(filename, encoding='cp1252') as dxffile:
         lines = dxffile.readlines()
@@ -92,7 +94,7 @@ def layernames(entities):
     Get all layer names from the entities
 
     Arguments:
-        Entities: An iterable if dictionaries, each containing a DXF entity.
+        entities: An iterable if dictionaries, each containing a DXF entity.
 
     Returns:
         A sorted list of layer names.

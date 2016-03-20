@@ -1,6 +1,6 @@
 # vim:fileencoding=utf-8
-# Copyright © 2013-2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# $Date: 2015-04-27 18:04:10 +0200 $
+# Copyright © 2013-2016 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+# Last modified: 2016-03-20 15:00:49 +0100
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -43,8 +43,8 @@ class Reader(object):
     def _newpiece(self, c):
         """Parse the N instruction.
 
-        :c: text to parse
-        :returns: text, (number of piece)
+        Arguments:
+            c: text to parse
         """
         num = int(c[1:])
         return 'newpiece() # {}'.format(c[1:]), (num)
@@ -52,9 +52,8 @@ class Reader(object):
     def _moveto(self, c):
         """Parse a movement instruction.
 
-        :c: text to parse
-        :pnt: current (x,y) point
-        :returns: text, (startpoint, endpoint)
+        Arguments:
+            c: text to parse
         """
         oldpos = self.pos
         x, y = [int(t) for t in c[1:].split('Y')]
@@ -66,9 +65,8 @@ class Reader(object):
     def _arc(self, c):
         """Parse an arc movement instruction.
 
-        :c: text to parse
-        :pnt: current (x,y) point
-        :returns: text, (startpoint, endpoint, center of arc)
+        Arguments:
+        c: text to parse
         """
         oldpos = self.pos
         if c[2] == '2':
@@ -101,10 +99,7 @@ class Reader(object):
         self.pos = None
 
     def __iter__(self):
-        """Iterate over the NC commands.
-
-        :yields: text, (other results)
-        """
+        """Iterate over the NC commands."""
         yield '# Path: {}'. format(self.path), (self.path)
         yield '# Name of part: {}'.format(self.name), (self.name)
         fs = '# Length: {:.1f} mm, width {:.1f} mm'
@@ -130,10 +125,11 @@ class Writer(object):
     def __init__(self, path, name=None, anglim=60):
         """Initialize the writer.
 
-        :param path: the output file
-        :param name: name of the program. If not given, the basename without
-        any extension will be used.
-        :param anglim: limit of angle between continuou cuts.
+        Arguments:
+            path: the output file
+            name: name of the program. If not given, the basename without
+                  any extension will be used.
+            anglim: limit of angle between continuou cuts.
         """
         self.path = path
         self.name = name
@@ -179,8 +175,9 @@ class Writer(object):
         """Move the cutting head from the current position to the indicated
         position in a straight line.
 
-        :param x: x coordinate in mm
-        :param y: y coordinate in mm
+        Arguments:
+            x: x coordinate in mm
+            y: y coordinate in mm
         """
         x, y = mm2cin([x, y])
         if self.cut:  # We're cutting
@@ -200,8 +197,7 @@ class Writer(object):
         self.pos = (x, y)
 
     def write(self):
-        """Write the NC file.
-        """
+        """Write the NC file."""
         self.__enter__()
         self.__exit__(None, None, None)
 
@@ -228,8 +224,11 @@ class Writer(object):
 def mm2cin(arg):
     """Convert millimeters to 1/100 in
 
-    :param arg: number or sequence of numbers
-    :returns: converted number or sequence
+    Arguments:
+        arg: Number or sequence of numbers.
+
+    Returns:
+        Converted number or sequence.
     """
     if not type(arg) in [list, tuple]:
         return float(arg) * 100.0 / 25.4
@@ -239,28 +238,12 @@ def mm2cin(arg):
 def cin2mm(arg):
     """Convert 1/100 in to millimeters
 
-    :param arg: number or sequence of numbers
-    :returns: converted number or sequence
+    Arguments:
+        arg: Number or sequence of numbers.
+
+    Returns:
+        Converted number or sequence.
     """
     if not type(arg) in [list, tuple]:
         return float(arg) * 0.254
     return [float(j) * 0.254 for j in arg]
-
-
-if __name__ == '__main__':
-    from os import remove
-    nm = '/tmp/foo.nc'
-    # Write a sample file
-    with Writer(nm) as w:
-        w.moveto(0, 0)
-        w.down()
-        w.moveto(100, 0)
-        w.moveto(100, 100)
-        w.moveto(0, 100)
-        w.moveto(0, 0)
-        print('NC code:', w)
-    # Read it back
-    rd = Reader(nm)
-    for cmd, _ in rd:
-        print(cmd)
-    remove(nm)

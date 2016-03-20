@@ -1,6 +1,6 @@
 # vim:fileencoding=utf-8
-# Copyright © 2013-2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# $Date: 2015-04-27 18:04:10 +0200 $
+# Copyright © 2013-2016 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+# Last modified: 2016-03-20 15:01:06 +0100
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -41,7 +41,8 @@ class Msg(object):
     def say(self, *args):
         """Print a message prepended by the elapsed time.
 
-        :param *args: stuff to print
+        Arguments:
+            *args: stuff to print
         """
         if not self.output:
             return
@@ -52,10 +53,13 @@ class Msg(object):
 def outname(inname, extension, addenum=''):
     """Creates the name of the output filename based on the input filename.
 
-    :param inname: name + path of the input file
-    :param extension: extension of the output file.
-    :param addenum: string to append to filename
-    :returns: output file name.
+    Arguments:
+        inname: Name + path of the input file.
+        extension: Extension of the output file.
+        addenum: String to append to filename.
+
+    Returns:
+        Output file name.
     """
     rv = os.path.splitext(os.path.basename(inname))[0]
     if rv.startswith('.') or rv.isspace():
@@ -68,8 +72,9 @@ def outname(inname, extension, addenum=''):
 def skip(error, filename):
     """Skip a file in case of an error
 
-    :param error: exception
-    :param filename: name of file to skip
+    Arguments:
+        error: Exception
+        filename: Name of file to skip
     """
     print("Cannot read file: {}".format(error))
     print("Skipping file '{}'".format(filename))
@@ -79,8 +84,11 @@ def xpand(args):
     """Expand command line arguments for operating systems incapable of doing
     so.
 
-    :param args: list of argument
-    :returns: expanded argument list
+    Arguments:
+        args: List of arguments.
+
+    Returns:
+        Expanded argument list.
     """
     xa = []
     for a in args:
