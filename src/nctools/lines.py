@@ -3,7 +3,7 @@
 #
 # Copyright © 2015,2016 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-11-14 18:56:39 +0100
-# Last modified: 2016-03-02 22:04:43 +0100
+# Last modified: 2016-03-28 01:36:43 +0200
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -118,37 +118,40 @@ def combine_segments(segments):
     Returns:
         A list of closed segments and a list of open segments.
     """
+    def grow_segment(segment, addition):
+        if segment[-1] == addition[0]:  # append addition
+            return segment + addition[1:]
+        elif segment[-1] == addition[-1]:  # append reversed addition
+            return segment + reversed(addition[:-1])
+        elif segment[0] == addition[-1]:  # prepend addition
+            return addition[:-1] + segment
+        elif segment[0] == addition[0]:  # prepend reversed addition
+            return reversed(addition[1:]) + segment
+        else:
+            raise ValueError("addition doesn't fit segment")
+
+    def store(segment, loops, openseg):
+        if segment[0] == segment[-1]:
+            loops.append(seg)
+        else:
+            openseg.append(seg)
+
     openseg = []
     loops = []
-    while len(segments) > 1:
-        sp, ep = segments[0][0], segments[0][-1]
-        rem = segments[1:]
-        sprem, eprem = [s[0] for s in rem], [s[-1] for s in rem]
-        if sp in sprem:
-            idx = sprem.index(sp) + 1
-            frag = segments.pop(idx)[1:]
-            frag.reverse()
-            newseg = frag + segments[0]
-        elif sp in eprem:
-            idx = eprem.index(sp) + 1
-            newseg = segments.pop(idx)[:-1] + segments[0]
-        elif ep in sprem:
-            idx = sprem.index(sp) + 1
-            newseg = segments[0] + segments.pop(idx)[1:]
-        elif ep in eprem:
-            idx = eprem.index(ep) + 1
-            frag = segments.pop(idx)[:-1]
-            frag.reverse()
-            newseg = segments[0] + frag
-        else:
-            # no connections found
-            head = segments.pop()
-            if closed(head):
-                loops.append(head)
-            else:
-                openseg.append(head)
-            continue
-        segments[0] = newseg
+    seg = None
+    while len(segments) > 0:
+        if not seg:
+            seg = segments.pop(0)
+        fits = [s for s in segments if seg[0] in s or seg[-1] in s]
+        if fits:
+            add = fits[0]  # (arbitrarily) use the first that fits.
+            segments.remove(add)
+            seg = grow_segment(seg, add)
+        else:  # Nothing fits
+            store(seg, loops, openseg)
+            seg = None
+    if seg:
+        store(seg, loops, openseg)
     return loops, openseg
 
 
