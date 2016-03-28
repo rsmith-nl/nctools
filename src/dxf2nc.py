@@ -123,7 +123,7 @@ def cut_contours(seg, w, layer, keyfunc):
     """Assemble segments into contours before cutting them."""
     closedseg, openseg = lines.combine_segments(seg)
     fs = '{} {} segments in layer "{}"'
-    for a, b in (('closed ', closedseg), ('open ', openseg)):
+    for a, b in (('closed', closedseg), ('open', openseg)):
         logging.info(fs.format(len(b), a, layer))
     openseg.sort(key=keyfunc)
     cut_segments(openseg, w)
