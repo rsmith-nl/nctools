@@ -3,7 +3,7 @@
 #
 # Copyright © 2015,2016 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-11-14 18:56:39 +0100
-# Last modified: 2016-03-28 01:36:43 +0200
+# Last modified: 2016-03-28 17:57:53 +0200
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -33,6 +33,7 @@ Since line segments are lists, standard member functions like reverse() and
 len() can be used.
 """
 
+import copy
 import math
 from nctools import dxfreader as dx
 
@@ -113,7 +114,7 @@ def combine_segments(segments):
 
     Arguments:
         segments: List of segments. A segment is a list of two or more
-            (x,y) tuples. This list will be consumed by this function.
+            (x,y) tuples.
 
     Returns:
         A list of closed segments and a list of open segments.
@@ -139,6 +140,7 @@ def combine_segments(segments):
     openseg = []
     loops = []
     seg = None
+    segments = copy.deepcopy(segments)
     while len(segments) > 0:
         if not seg:
             seg = segments.pop(0)
