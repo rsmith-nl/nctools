@@ -42,6 +42,52 @@ class LicenseAction(argparse.Action):
         sys.exit()
 
 
+# Key functions for sorting segments
+def distkey(s):
+    """
+    Sort key for sorting segments by distance from the origin.
+
+    Argument:
+        s: Segment; list of 2-tuples (x,y)
+
+    Returns:
+        The square of the distance from the lower-left corner of the bounding
+        box to the origin.
+    """
+    bx, by, _, _ = lines.bbox(s)
+    return bx*bx+by*by
+
+
+def bbxykey(s):
+    """
+    Sort key for segments first by the left of the bounding box and then
+    by the bottom.
+
+    Argument:
+        s: Segment; list of 2-tuples (x,y)
+
+    Returns:
+        A 2-tuple that is the lower left corner of the bounding box.
+    """
+    bb = lines.bbox(s)
+    return (bb[0], bb[1])
+
+
+def bbyxkey(s):
+    """
+    Sort key for segments first by the bottom of the bounding box and then
+    by the left.
+
+    Argument:
+        s: Segment; list of 2-tuples (x,y)
+
+    Returns:
+        A 2-tuple that is the reversed lower left corner of the bounding box.
+    """
+    bb = lines.bbox(s)
+    return (bb[1], bb[0])
+
+
 def main(argv):
     """Main program for the dxf2nc utility.
 
@@ -59,6 +105,9 @@ def main(argv):
     parser.add_argument('--log', default='warning',
                         choices=['debug', 'info', 'warning', 'error'],
                         help="logging level (defaults to 'warning')")
+    parser.add_argument('-s', '--sort', default='xy',
+                        choices=['xy', 'yx', 'dist'],
+                        help="sorting algorithm to use (defaults to 'xy')")
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-L', '--license', action=LicenseAction, nargs=0,
                        help="print the license")
@@ -71,6 +120,8 @@ def main(argv):
                         format='%(levelname)s: %(message)s')
     logging.debug('Command line arguments = {}'.format(argv))
     logging.debug('Parsed arguments = {}'.format(args))
+    sorters = {'xy': bbxykey, 'yx': bbyxkey, 'dist': distkey}
+    sortkey = sorters[args.sort]
     if not args.files:
         parser.print_help()
         sys.exit(0)
@@ -107,22 +158,22 @@ def main(argv):
             fs = '{} segments in layer "{}"'
             logging.info(fs.format(len(segments), layername))
             if args.contours:
-                cut_contours(segments, out, layername)
+                cut_contours(segments, out, layername, sortkey)
             else:
-                # TODO: sort segments
+                segments.sort(key=sortkey)
                 cut_segments(segments, out)
         out.write()
 
 
-def cut_contours(seg, w, layer):
-    """Assemble contours into segments"""
+def cut_contours(seg, w, layer, keyfunc):
+    """Assemble segments into contours before cutting them."""
     closedseg, openseg = lines.combine_segments(seg)
     fs = '{} {} segments in layer "{}"'
     for a, b in (('closed ', closedseg), ('open ', openseg)):
         logging.info(fs.format(len(b), a, layer))
-    # TODO: Sort open segments
+    openseg.sort(key=keyfunc)
     cut_segments(openseg, w)
-    # TODO: Sort closed segments
+    closedseg.sort(key=keyfunc)
     cut_segments(closedseg, w)
 
 
