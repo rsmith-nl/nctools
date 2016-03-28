@@ -3,7 +3,7 @@
 #
 # Copyright © 2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-05-03 20:18:19 +0200
-# Last modified: 2015-11-24 14:24:32 +0100
+# Last modified: 2016-03-28 16:18:37 +0200
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -28,6 +28,7 @@
 """Utilities for plotting."""
 
 import datetime
+import math
 import os
 import time
 import cairo
@@ -110,17 +111,42 @@ def lines(context, lines, lw=2, marks=True):
     context.stroke()
     context.restore()
     if marks:
-        # Print start marks
         context.save()
         context.set_line_width(lw)
-        context.new_path()
-        context.set_source_rgb(1.0, 0.0, 0.0)
         for ln in lines:
-            context.move_to(*ln[0])
-            context.rel_move_to(-5, -5)
-            context.rel_line_to(5, 5)
-            context.rel_line_to(5, -5)
-        context.stroke()
+            # Print start mark
+            fp, sp = ln[0], ln[1]
+            dx, dy = sp[0] - fp[0], sp[1] - fp[1]
+            a = math.pi/2 - math.atan2(dx, dy)
+            context.save()
+            context.set_line_width(1)
+            context.translate(*fp)
+            context.rotate(a)
+            context.new_path()
+            context.move_to(-5, 2)
+            context.set_source_rgb(0.0, 0.0, 1.0)
+            context.line_to(0, 0)
+            context.line_to(-5, -2)
+            context.move_to(0, 2)
+            context.line_to(5, 0)
+            context.line_to(0, -2)
+            context.stroke()
+            context.restore()
+            # Print end mark
+            fp, sp = ln[-2], ln[-1]
+            dx, dy = sp[0] - fp[0], sp[1] - fp[1]
+            a = math.pi/2 - math.atan2(dx, dy)
+            context.save()
+            context.set_line_width(1)
+            context.translate(*sp)
+            context.rotate(a)
+            context.new_path()
+            context.move_to(-5, 2)
+            context.set_source_rgb(1.0, 0.0, 0.0)
+            context.line_to(0, 0)
+            context.line_to(-5, -2)
+            context.stroke()
+            context.restore()
         context.restore()
 
 

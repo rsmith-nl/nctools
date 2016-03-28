@@ -6,12 +6,13 @@
 import argparse
 import logging
 import sys
-from nctools import dxfreader, lines, utils, plot
+from nctools import dxfreader as dxf
+from nctools import lines, utils, plot
 
 __version__ = '2.0.0-beta'
 
 _lic = """dxf2pdf {}
-Copyright © 2011-2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+Copyright © 2011-2016 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -58,6 +59,9 @@ def main(argv):
                         help="logging level (defaults to 'warning')")
     parser.add_argument('-a', '--all', action="store_true",
                         help='process all layers (default: numbered layers)')
+    parser.add_argument('-m', '--markers', action="store_true",
+                        help='add start (blue) and end (red) markers'
+                             ' (default: no)')
     parser.add_argument('files', nargs='*', help='one or more file names',
                         metavar='file')
     args = parser.parse_args(argv)
@@ -72,8 +76,8 @@ def main(argv):
         logging.info('Starting file "{}"'.format(f))
         try:
             ofn = utils.outname(f, extension='.pdf', addenum='_dxf')
-            data = dxfreader.parse(f)
-            entities = dxfreader.entities(data)
+            data = dxf.parse(f)
+            entities = dxf.entities(data)
         except ValueError as ex:
             logging.info(str(ex))
             fns = "Cannot construct output filename. Skipping file '{}'."
@@ -84,25 +88,21 @@ def main(argv):
             logging.error("Cannot open the file '{}'. Skipping it.".format(f))
             continue
         if not args.all:
-            numbered = dxfreader.numberedlayers(entities)
-            entities = [e for e in entities if e[8] in numbered]
+            layers = dxf.numberedlayers(entities)
+            entities = [e for e in entities if dxf.bycode(e, 8) in layers]
         # Output
         num = len(entities)
         if num == 0:
-            logging.warning('No entities found!')
+            logging.info("No entities found! Skipping file '{}'.".format(f))
             continue
-        if num > 1:
-            logging.info('Found {} entities'.format(num))
-
-        else:
-            logging.info('Found 1 entity')
+        logging.info('Found {} entities'.format(num))
         segments = lines.mksegments(entities)
         bboxes = [lines.bbox(s) for s in segments]
         minx, miny, maxx, maxy = lines.merge_bbox(bboxes)
         out, ctx = plot.setup(ofn, minx, miny, maxx, maxy)
         plot.grid(ctx, minx, miny, maxx, maxy)
         logging.info('Plotting the entities')
-        plot.lines(ctx, segments, marks=False)
+        plot.lines(ctx, segments, marks=args.markers)
         plot.title(ctx, 'dxf2pdf', ofn, maxy-miny)
         out.show_page()
         logging.info('Writing output file "{}"'.format(ofn))
