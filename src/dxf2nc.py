@@ -42,52 +42,6 @@ class LicenseAction(argparse.Action):
         sys.exit()
 
 
-# Key functions for sorting segments
-def distkey(s):
-    """
-    Sort key for sorting segments by distance from the origin.
-
-    Argument:
-        s: Segment; list of 2-tuples (x,y)
-
-    Returns:
-        The square of the distance from the lower-left corner of the bounding
-        box to the origin.
-    """
-    bx, by, _, _ = lines.bbox(s)
-    return bx*bx+by*by
-
-
-def bbxykey(s):
-    """
-    Sort key for segments first by the left of the bounding box and then
-    by the bottom.
-
-    Argument:
-        s: Segment; list of 2-tuples (x,y)
-
-    Returns:
-        A 2-tuple that is the lower left corner of the bounding box.
-    """
-    bb = lines.bbox(s)
-    return (bb[0], bb[1])
-
-
-def bbyxkey(s):
-    """
-    Sort key for segments first by the bottom of the bounding box and then
-    by the left.
-
-    Argument:
-        s: Segment; list of 2-tuples (x,y)
-
-    Returns:
-        A 2-tuple that is the reversed lower left corner of the bounding box.
-    """
-    bb = lines.bbox(s)
-    return (bb[1], bb[0])
-
-
 def main(argv):
     """Main program for the dxf2nc utility.
 
@@ -111,7 +65,7 @@ def main(argv):
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-L', '--license', action=LicenseAction, nargs=0,
                        help="print the license")
-    group.add_argument('-V', '--version', action='version',
+    group.add_argument('-v', '--version', action='version',
                        version=__version__)
     parser.add_argument('files', nargs='*', help='one or more file names',
                         metavar='file')
@@ -120,7 +74,7 @@ def main(argv):
                         format='%(levelname)s: %(message)s')
     logging.debug('Command line arguments = {}'.format(argv))
     logging.debug('Parsed arguments = {}'.format(args))
-    sorters = {'xy': bbxykey, 'yx': bbyxkey, 'dist': distkey}
+    sorters = {'xy': utils.bbxykey, 'yx': utils.bbyxkey, 'dist': utils.distkey}
     sortkey = sorters[args.sort]
     if not args.files:
         parser.print_help()

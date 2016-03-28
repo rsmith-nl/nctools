@@ -1,6 +1,6 @@
 # vim:fileencoding=utf-8
 # Copyright © 2013-2016 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Last modified: 2016-03-20 15:01:06 +0100
+# Last modified: 2016-03-28 21:02:52 +0200
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -25,29 +25,9 @@
 
 """Utilities for nctools."""
 
-from datetime import datetime
 import glob
 import os.path
-
-
-class Msg(object):
-    """Message printer"""
-
-    def __init__(self, output=True):
-        """Start the timer"""
-        self.start = datetime.now()
-        self.output = output
-
-    def say(self, *args):
-        """Print a message prepended by the elapsed time.
-
-        Arguments:
-            *args: stuff to print
-        """
-        if not self.output:
-            return
-        delta = datetime.now() - self.start
-        print('['+str(delta)[:-4]+']:', *args)
+from nctools import lines
 
 
 def outname(inname, extension, addenum=''):
@@ -98,3 +78,49 @@ def xpand(args):
         else:
             xa += [a]
     return xa
+
+
+# Key functions for sorting segments
+def distkey(s):
+    """
+    Sort key for sorting segments by distance from the origin.
+
+    Argument:
+        s: Segment; list of 2-tuples (x,y)
+
+    Returns:
+        The square of the distance from the lower-left corner of the bounding
+        box to the origin.
+    """
+    bx, by, _, _ = lines.bbox(s)
+    return bx*bx+by*by
+
+
+def bbxykey(s):
+    """
+    Sort key for segments first by the left of the bounding box and then
+    by the bottom.
+
+    Argument:
+        s: Segment; list of 2-tuples (x,y)
+
+    Returns:
+        A 2-tuple that is the lower left corner of the bounding box.
+    """
+    bb = lines.bbox(s)
+    return (bb[0], bb[1])
+
+
+def bbyxkey(s):
+    """
+    Sort key for segments first by the bottom of the bounding box and then
+    by the left.
+
+    Argument:
+        s: Segment; list of 2-tuples (x,y)
+
+    Returns:
+        A 2-tuple that is the reversed lower left corner of the bounding box.
+    """
+    bb = lines.bbox(s)
+    return (bb[1], bb[0])

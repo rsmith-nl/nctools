@@ -54,11 +54,15 @@ def main(argv):
                        help="print the license")
     group.add_argument('-v', '--version', action='version',
                        version=__version__)
+    argtxt4 = "assemble connected lines into contours (off by default)"
+    parser.add_argument('-c', '--contours', help=argtxt4, dest='contours',
+                        action="store_true")
     parser.add_argument('--log', default='warning',
                         choices=['debug', 'info', 'warning', 'error'],
                         help="logging level (defaults to 'warning')")
-    parser.add_argument('-a', '--all', action="store_true",
-                        help='process all layers (default: numbered layers)')
+    parser.add_argument('-s', '--sort', default='xy',
+                        choices=['xy', 'yx', 'dist'],
+                        help="sorting algorithm to use (defaults to 'xy')")
     parser.add_argument('-m', '--markers', action="store_true",
                         help='add start (blue) and end (red) markers'
                              ' (default: no)')
@@ -69,6 +73,8 @@ def main(argv):
                         format='%(levelname)s: %(message)s')
     logging.debug('Command line arguments = {}'.format(argv))
     logging.debug('Parsed arguments = {}'.format(args))
+    sorters = {'xy': utils.bbxykey, 'yx': utils.bbyxkey, 'dist': utils.distkey}
+    sortkey = sorters[args.sort]
     if not args.files:
         parser.print_help()
         sys.exit(0)
@@ -87,22 +93,37 @@ def main(argv):
             logging.info(str(ex))
             logging.error("Cannot open the file '{}'. Skipping it.".format(f))
             continue
-        if not args.all:
-            layers = dxf.numberedlayers(entities)
-            entities = [e for e in entities if dxf.bycode(e, 8) in layers]
+        layers = dxf.numberedlayers(entities)
+        entities = [e for e in entities if dxf.bycode(e, 8) in layers]
         # Output
         num = len(entities)
         if num == 0:
             logging.info("No entities found! Skipping file '{}'.".format(f))
             continue
-        logging.info('Found {} entities'.format(num))
-        segments = lines.mksegments(entities)
-        bboxes = [lines.bbox(s) for s in segments]
-        minx, miny, maxx, maxy = lines.merge_bbox(bboxes)
-        out, ctx = plot.setup(ofn, minx, miny, maxx, maxy)
-        plot.grid(ctx, minx, miny, maxx, maxy)
-        logging.info('Plotting the entities')
-        plot.lines(ctx, segments, marks=args.markers)
+        logging.info('{} entities found'.format(num))
+        for layername in layers:
+            thislayer = dxf.fromlayer(entities, layername)
+            bboxes = [lines.bbox(s) for s in thislayer]
+            minx, miny, maxx, maxy = lines.merge_bbox(bboxes)
+            ls = '{} entities found in layer "{}".'
+            logging.info(ls.format(num, layername))
+            out, ctx = plot.setup(ofn, minx, miny, maxx, maxy)
+            plot.grid(ctx, minx, miny, maxx, maxy)
+            logging.info('Plotting the entities')
+            segments = lines.mksegments(thislayer)
+            if args.contours:
+                closedseg, openseg = lines.combine_segments(segments)
+                fs = '{} {} segments in layer "{}"'
+                for a, b in (('closed ', closedseg), ('open ', openseg)):
+                    logging.info(fs.format(len(b), a, layername))
+                openseg.sort(key=sortkey)
+                plot.lines(ctx, openseg, marks=args.markers)
+                closedseg.sort(key=sortkey)
+                plot.lines(ctx, openseg, marks=args.markers)
+            else:
+                fs = '{} segments in layer "{}"'
+                logging.info(fs.format(len(segments), layername))
+                plot.lines(ctx, thislayer, marks=args.markers)
         plot.title(ctx, 'dxf2pdf', ofn, maxy-miny)
         out.show_page()
         logging.info('Writing output file "{}"'.format(ofn))
