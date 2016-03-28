@@ -120,7 +120,7 @@ def main(argv):
                 openseg.sort(key=sortkey)
                 plot.lines(ctx, openseg, marks=args.markers)
                 closedseg.sort(key=sortkey)
-                plot.lines(ctx, openseg, marks=args.markers)
+                plot.lines(ctx, closedseg, marks=args.markers)
             else:
                 fs = '{} segments in layer "{}"'
                 logging.info(fs.format(len(segments), layername))
