@@ -101,20 +101,21 @@ def main(argv):
             logging.info("No entities found! Skipping file '{}'.".format(f))
             continue
         logging.info('{} entities found'.format(num))
+        allsegments = lines.mksegments(entities)
+        bboxes = [lines.bbox(s) for s in allsegments]
+        minx, miny, maxx, maxy = lines.merge_bbox(bboxes)
+        out, ctx = plot.setup(ofn, minx, miny, maxx, maxy)
+        plot.grid(ctx, minx, miny, maxx, maxy)
         for layername in layers:
             thislayer = dxf.fromlayer(entities, layername)
-            bboxes = [lines.bbox(s) for s in thislayer]
-            minx, miny, maxx, maxy = lines.merge_bbox(bboxes)
-            ls = '{} entities found in layer "{}".'
-            logging.info(ls.format(num, layername))
-            out, ctx = plot.setup(ofn, minx, miny, maxx, maxy)
-            plot.grid(ctx, minx, miny, maxx, maxy)
-            logging.info('Plotting the entities')
             segments = lines.mksegments(thislayer)
+            ls = '{} entities found in layer "{}".'
+            logging.info(ls.format(len(thislayer), layername))
+            logging.info('Plotting the entities')
             if args.contours:
                 closedseg, openseg = lines.combine_segments(segments)
                 fs = '{} {} segments in layer "{}"'
-                for a, b in (('closed ', closedseg), ('open ', openseg)):
+                for a, b in (('closed', closedseg), ('open', openseg)):
                     logging.info(fs.format(len(b), a, layername))
                 openseg.sort(key=sortkey)
                 plot.lines(ctx, openseg, marks=args.markers)
@@ -123,7 +124,7 @@ def main(argv):
             else:
                 fs = '{} segments in layer "{}"'
                 logging.info(fs.format(len(segments), layername))
-                plot.lines(ctx, thislayer, marks=args.markers)
+                plot.lines(ctx, segments, marks=args.markers)
         plot.title(ctx, 'dxf2pdf', ofn, maxy-miny)
         out.show_page()
         logging.info('Writing output file "{}"'.format(ofn))

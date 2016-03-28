@@ -3,7 +3,7 @@
 #
 # Copyright © 2015,2016 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-11-14 18:56:39 +0100
-# Last modified: 2016-03-28 17:57:53 +0200
+# Last modified: 2016-03-28 22:44:26 +0200
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -123,11 +123,11 @@ def combine_segments(segments):
         if segment[-1] == addition[0]:  # append addition
             return segment + addition[1:]
         elif segment[-1] == addition[-1]:  # append reversed addition
-            return segment + reversed(addition[:-1])
+            return segment + list(reversed(addition[:-1]))
         elif segment[0] == addition[-1]:  # prepend addition
             return addition[:-1] + segment
         elif segment[0] == addition[0]:  # prepend reversed addition
-            return reversed(addition[1:]) + segment
+            return list(reversed(addition[1:])) + segment
         else:
             raise ValueError("addition doesn't fit segment")
 
