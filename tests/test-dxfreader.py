@@ -3,14 +3,14 @@
 #
 # Author: R.F. Smith <rsmith@xs4all.nl>
 # Created: 2016-03-28 01:44:10 +0200
-# Last modified: 2016-03-28 02:39:35 +0200
+# Last modified: 2016-03-28 10:36:32 +0200
 
 """Tests for the dxfreader module.
 
 Run from the tests directory with: nosetests-3.5 -v test-dxfreader.py"""
 
 import pathmagic
-import dxfreader
+from nctools import dxfreader as dxf
 
 data = []
 ents = []
@@ -19,7 +19,7 @@ names = []
 
 def test_parse():
     global data
-    data = dxfreader.parse('../testfiles/demo.dxf')
+    data = dxf.parse('../testfiles/demo.dxf')
     assert len(data) == 4768
     assert data[0] == (0, 'SECTION')
     assert data[-1] == (0, 'EOF')
@@ -27,7 +27,7 @@ def test_parse():
 
 def test_entities():
     global ents
-    ents = dxfreader.entities(data)
+    ents = dxf.entities(data)
     start = ((0, 'LINE'), (5, '359'), (330, '475'), (100, 'AcDbEntity'),
              (8, 'deel 1'), (100, 'AcDbLine'), (10, '999.9999999999984'),
              (20, '100.0'), (30, '0.0'), (11, '1100.0'), (21, '100.0'),
@@ -43,10 +43,10 @@ def test_entities():
 
 def test_layernames():
     global names
-    names = dxfreader.layernames(ents)
+    names = dxf.layernames(ents)
     assert names == ['deel 1']
 
 
 def test_numberedlayers():
-    numnames = dxfreader.numberedlayers(ents)
+    numnames = dxf.numberedlayers(ents)
     assert numnames == ['deel 1']
