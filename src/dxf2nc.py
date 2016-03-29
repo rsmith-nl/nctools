@@ -42,83 +42,6 @@ class LicenseAction(argparse.Action):
         sys.exit()
 
 
-def main(argv):
-    """Main program for the dxf2nc utility.
-
-    Arguments:
-        argv: command line arguments
-    """
-    parser = argparse.ArgumentParser(description=__doc__)
-    argtxt2 = """minimum rotation angle in degrees where the knife needs
-    to be lifted to prevent breaking (defaults to 60°)"""
-    argtxt4 = "assemble connected lines into contours (off by default)"
-    parser.add_argument('-a', '--angle', help=argtxt2, dest='ang',
-                        metavar='F', type=float, default=60)
-    parser.add_argument('-c', '--contours', help=argtxt4, dest='contours',
-                        action="store_true")
-    parser.add_argument('--log', default='warning',
-                        choices=['debug', 'info', 'warning', 'error'],
-                        help="logging level (defaults to 'warning')")
-    parser.add_argument('-s', '--sort', default='xy',
-                        choices=['xy', 'yx', 'dist'],
-                        help="sorting algorithm to use (defaults to 'xy')")
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument('-L', '--license', action=LicenseAction, nargs=0,
-                       help="print the license")
-    group.add_argument('-v', '--version', action='version',
-                       version=__version__)
-    parser.add_argument('files', nargs='*', help='one or more file names',
-                        metavar='file')
-    args = parser.parse_args(argv)
-    logging.basicConfig(level=getattr(logging, args.log.upper(), None),
-                        format='%(levelname)s: %(message)s')
-    logging.debug('Command line arguments = {}'.format(argv))
-    logging.debug('Parsed arguments = {}'.format(args))
-    sorters = {'xy': utils.bbxykey, 'yx': utils.bbyxkey, 'dist': utils.distkey}
-    sortkey = sorters[args.sort]
-    if not args.files:
-        parser.print_help()
-        sys.exit(0)
-    for f in utils.xpand(args.files):
-        # parts = []
-        logging.info('Starting file "{}"'.format(f))
-        try:
-            ofn = utils.outname(f, extension='')
-            data = dx.parse(f)
-            entities = dx.entities(data)
-        except ValueError as ex:
-            logging.info(str(ex))
-            fns = "error during processing. Skipping file '{}'."
-            logging.error(fns.format(f))
-            continue
-        except IOError as ex:
-            logging.info(str(ex))
-            logging.error("i/o error in file '{}'. Skipping it.".format(f))
-            continue
-        layers = dx.numberedlayers(entities)
-        entities = [e for e in entities if dx.bycode(e, 8) in layers]
-        num = len(entities)
-        if num == 0:
-            logging.info("no entities found! Skipping file '{}'.".format(f))
-            continue
-        logging.info('{} entities found.'.format(num))
-        out = gerbernc.Writer(ofn)
-        for layername in layers:
-            out.newpiece()
-            thislayer = dx.fromlayer(entities, layername)
-            ls = '{} entities found in layer "{}".'
-            logging.info(ls.format(num, layername))
-            segments = lines.mksegments(thislayer)
-            fs = '{} segments in layer "{}"'
-            logging.info(fs.format(len(segments), layername))
-            if args.contours:
-                cut_contours(segments, out, layername, sortkey)
-            else:
-                segments.sort(key=sortkey)
-                cut_segments(segments, out)
-        out.write()
-
-
 def cut_contours(seg, w, layer, keyfunc):
     """Assemble segments into contours before cutting them."""
     closedseg, openseg = lines.combine_segments(seg)
@@ -146,5 +69,71 @@ def cut_segments(seg, w):
         w.up()
 
 
-if __name__ == '__main__':
-    main(sys.argv[1:])
+parser = argparse.ArgumentParser(description=__doc__)
+argtxt2 = """minimum rotation angle in degrees where the knife needs
+to be lifted to prevent breaking (defaults to 60°)"""
+argtxt4 = "assemble connected lines into contours (off by default)"
+parser.add_argument('-a', '--angle', help=argtxt2, dest='ang',
+                    metavar='F', type=float, default=60)
+parser.add_argument('-c', '--contours', help=argtxt4, dest='contours',
+                    action="store_true")
+parser.add_argument('--log', default='warning',
+                    choices=['debug', 'info', 'warning', 'error'],
+                    help="logging level (defaults to 'warning')")
+parser.add_argument('-s', '--sort', default='xy',
+                    choices=['xy', 'yx', 'dist'],
+                    help="sorting algorithm to use (defaults to 'xy')")
+group = parser.add_mutually_exclusive_group()
+group.add_argument('-L', '--license', action=LicenseAction, nargs=0,
+                   help="print the license")
+group.add_argument('-v', '--version', action='version',
+                   version=__version__)
+parser.add_argument('files', nargs='*', help='one or more file names',
+                    metavar='file')
+args = parser.parse_args(sys.argv[1:])
+logging.basicConfig(level=getattr(logging, args.log.upper(), None),
+                    format='%(levelname)s: %(message)s')
+logging.debug('Command line arguments = {}'.format(sys.argv))
+logging.debug('Parsed arguments = {}'.format(args))
+sorters = {'xy': utils.bbxykey, 'yx': utils.bbyxkey, 'dist': utils.distkey}
+sortkey = sorters[args.sort]
+if not args.files:
+    parser.print_help()
+    sys.exit(0)
+for f in utils.xpand(args.files):
+    logging.info('Starting file "{}"'.format(f))
+    try:
+        ofn = utils.outname(f, extension='')
+        data = dx.parse(f)
+        entities = dx.entities(data)
+    except ValueError as ex:
+        logging.info(str(ex))
+        fns = "error during processing. Skipping file '{}'."
+        logging.error(fns.format(f))
+        continue
+    except IOError as ex:
+        logging.info(str(ex))
+        logging.error("i/o error in file '{}'. Skipping it.".format(f))
+        continue
+    layers = dx.numberedlayers(entities)
+    entities = [e for e in entities if dx.bycode(e, 8) in layers]
+    num = len(entities)
+    if num == 0:
+        logging.info("no entities found! Skipping file '{}'.".format(f))
+        continue
+    logging.info('{} entities found.'.format(num))
+    out = gerbernc.Writer(ofn)
+    for layername in layers:
+        out.newpiece()
+        thislayer = dx.fromlayer(entities, layername)
+        ls = '{} entities found in layer "{}".'
+        logging.info(ls.format(num, layername))
+        segments = lines.mksegments(thislayer)
+        fs = '{} segments in layer "{}"'
+        logging.info(fs.format(len(segments), layername))
+        if args.contours:
+            cut_contours(segments, out, layername, sortkey)
+        else:
+            segments.sort(key=sortkey)
+            cut_segments(segments, out)
+    out.write()

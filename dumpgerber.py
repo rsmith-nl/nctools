@@ -4,6 +4,7 @@
 #
 # Author: R.F. Smith <rsmith@xs4all.nl>
 # Created: 2015-04-15 16:45:18 +0200
+# Last modified: 2016-03-29 12:34:27 +0200
 
 """Dump the contents of a NC file for a Gerber cutter in a readable form."""
 
@@ -35,7 +36,6 @@ simple = {'M0': eof, 'M00': eof,
           'M70': 'set current position as origin'}
 withargs = {'H': 'file #{}', 'N': 'piece #{}', 'F': 'feed rate {} in/min'}
 
-
 if len(sys.argv) == 1:
     binary = os.path.basename(sys.argv[0])
     print("{} ver. {}".format(binary, __version__), file=sys.stderr)
@@ -58,7 +58,7 @@ for fn in sys.argv:
             print('{:20s} /{}/'.format(cmd, arg))
         elif cmd.startswith('X'):
             x, y = cmd[1:].split('Y')
-            x, y = float(x)*25.4/100, float(y)*25.4/100
+            x, y = round(float(x)*25.4/100, 0), round(float(y)*25.4/100, 0)
             fs = '{:20s} /move to x = {:.0f} mm, y = {:.0f} mm/'
             print(fs.format(cmd, x, y))
         else:

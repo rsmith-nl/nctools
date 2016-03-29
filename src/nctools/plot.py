@@ -1,9 +1,9 @@
 # file: plot.py
 # vim:fileencoding=utf-8:ft=python
 #
-# Copyright © 2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+# Copyright © 2015,2016 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-05-03 20:18:19 +0200
-# Last modified: 2016-03-28 22:47:34 +0200
+# Last modified: 2016-03-29 12:24:20 +0200
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -29,8 +29,6 @@
 
 import datetime
 import math
-import os
-import time
 import cairo
 
 __version__ = '2.0.0-beta'
@@ -150,7 +148,7 @@ def lines(context, lines, lw=2, marks=True):
         context.restore()
 
 
-def title(context, prog, ofn, h, offset=40):
+def title(context, prog, ofn, h, offset=40, options=None):
     """
     Write the title on the plot.
 
@@ -158,8 +156,9 @@ def title(context, prog, ofn, h, offset=40):
         context: Drawing context.
         prog: Name of the program.
         ofn: Name of the output file.
-        h: top of the drawing area
+        h: Top of the drawing area
         offset: Border around the drawing.
+        options: A list of strings describing the options used
     """
     context.save()
     context.set_matrix(cairo.Matrix(xx=1.0, yy=1.0))
@@ -171,9 +170,13 @@ def title(context, prog, ofn, h, offset=40):
     txt = ' '.join(['Produced by:', prog, __version__, 'on',
                     str(datetime.datetime.now())[:-10]])
     context.show_text(txt)
+    if options:
+        context.move_to(5, 2*fh+5)
+        txt = 'Options: ' + ', '.join(options)
+        context.show_text(txt)
     context.stroke()
     context.move_to(5, h+2*offset-(fh))
-    txt = 'File: "{}", last modified: {}'
-    context.show_text(txt.format(ofn, time.ctime(os.path.getmtime(ofn))))
+    txt = 'File: "{}"'
+    context.show_text(txt.format(ofn))
     context.stroke()
     context.restore()
