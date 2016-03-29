@@ -1,6 +1,6 @@
 # vim:fileencoding=utf-8
 # Copyright © 2013-2016 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Last modified: 2016-03-20 15:00:49 +0100
+# Last modified: 2016-03-29 10:15:28 +0200
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -30,93 +30,6 @@ The language and file format for PCB machines is different!
 import math
 import os.path as op
 from nctools import bbox
-
-
-class Reader(object):
-    """Reads a subset of Gerber NC files. It defaults to coordinates in
-    centi-inches format.
-    """
-
-    cmds = {'M0': '# end of file', 'M00': '# program stop',
-            'M01': '# optional stop', 'M14': 'down()', 'M15': 'up()'}
-
-    def _newpiece(self, c):
-        """Parse the N instruction.
-
-        Arguments:
-            c: text to parse
-        """
-        num = int(c[1:])
-        return 'newpiece() # {}'.format(c[1:]), (num)
-
-    def _moveto(self, c):
-        """Parse a movement instruction.
-
-        Arguments:
-            c: text to parse
-        """
-        oldpos = self.pos
-        x, y = [int(t) for t in c[1:].split('Y')]
-        p, q = cin2mm([x, y])
-        self.pos = (p, q)
-        s = 'moveto({:.1f}, {:.1f})'
-        return s.format(p, q), (oldpos, self.pos)
-
-    def _arc(self, c):
-        """Parse an arc movement instruction.
-
-        Arguments:
-        c: text to parse
-        """
-        oldpos = self.pos
-        if c[2] == '2':
-            direction = 'arc_cw'
-        elif c[2] == '3':
-            direction = 'arc_ccw'
-        ct = c[4:].replace('Y', ' ').replace('I', ' ').replace('J', ' ')
-        x, y, i, j = [int(n) for n in ct.split()]
-        p, q, r, s = cin2mm([x, y, i, j])
-        self.pos = (p, q)
-        fs = '{}({:.1f}, {:.1f}, {:.1f}, {:.1f})'
-        return fs.format(direction, p, q, r, s), (oldpos, self.pos, (i, j))
-
-    def __init__(self, path):
-        self.path = path
-        with open(path, 'r') as f:
-            c = f.read().split('*')
-            if not c[0].startswith('H') and 'M20' not in c[0:3]:
-                raise ValueError('{} is not a valid NC file.'.format(path))
-        if c[1].startswith('ZX'):
-            ident = c[3].split('/')
-            del c[0:4]
-        elif c[1] == 'M20':
-            ident = c[2].split('/')
-            del c[0:3]
-        self.name = ident[0]
-        self.length = float(ident[1][2:]) * 25.4  # mm
-        self.width = float(ident[2][2:]) * 25.4  # mm
-        self.commands = c
-        self.pos = None
-
-    def __iter__(self):
-        """Iterate over the NC commands."""
-        yield '# Path: {}'. format(self.path), (self.path)
-        yield '# Name of part: {}'.format(self.name), (self.name)
-        fs = '# Length: {:.1f} mm, width {:.1f} mm'
-        yield fs.format(self.length, self.width), (self.length, self.width)
-        for c in self.commands:
-            if c in Reader.cmds.keys():
-                yield Reader.cmds[c], ()
-                if c == 'M0':
-                    raise StopIteration
-            elif c[0] == 'N':
-                yield self._newpiece(c)
-            elif c[0] == 'X':
-                yield self._moveto(c)
-            elif c[:3] in ['G02', 'G03']:
-                yield self._arc(c)
-            else:
-                yield 'unknown command: "{}"'.format(c), ()
 
 
 class Writer(object):
@@ -247,3 +160,47 @@ def cin2mm(arg):
     if not type(arg) in [list, tuple]:
         return float(arg) * 0.254
     return [float(j) * 0.254 for j in arg]
+
+
+def segments(path):
+    """
+    Read a Gerber cloth cutter file and yield the line segments that it cuts.
+
+    Arguments:
+        path: The input file
+
+    Yields:
+        Lists of (x, y) tuples
+    """
+    downcmd = ('M14', 'B')
+    upcmd = ('M15', 'A')
+    stopcmd = ('M0', 'M00')
+    with open(path) as df:
+        data = df.read()
+    items = data.split('*')
+    if len(items[-1]) == 0:
+        del items[-1]
+    pos = (0, 0)
+    segment = []
+    down = False
+    for cmd in items:
+        if cmd in downcmd:
+            down = True
+            if not segment:
+                segment = [pos]
+            elif segment[-1] != pos and len(segment) > 1:
+                yield segment
+                segment = [pos]
+        elif cmd in upcmd:
+            down = False
+        elif cmd in stopcmd:
+            if segment and len(segment) > 1:
+                yield segment
+            return
+        elif cmd.startswith('X'):
+            x, y = cmd[1:].split('Y')
+            x = round(float(x)*25.4/100, 0)
+            y = round(float(y)*25.4/100, 0)
+            pos = (x, y)
+            if down:
+                segment.append(pos)

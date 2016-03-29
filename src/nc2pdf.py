@@ -4,10 +4,8 @@
 """Plot cuts from a Gerber cloth cutter NC file to a PDF."""
 
 import argparse
-import os.path
 import logging
 import sys
-import cairo
 from nctools import gerbernc, plot, utils
 
 __version__ = '2.0.0-beta'
@@ -73,7 +71,7 @@ def main(argv):
         logging.info('starting file "{}"'.format(fn))
         try:
             ofn = utils.outname(fn, extension='.pdf', addenum='_nc')
-            rd = gerbernc.Reader(fn)
+            cuts = list(gerbernc.segments(fn))
         except ValueError as e:
             logging.info(str(e))
             fns = "cannot construct output filename. Skipping file '{}'."
@@ -83,9 +81,10 @@ def main(argv):
             logging.info("Cannot read file: {}".format(e))
             logging.error("i/o error, skipping file '{}'".format(fn))
             continue
-        cuts, xvals, yvals = getcuts(rd)
         cnt = len(cuts)
         logging.info('got {} cuts'.format(cnt))
+        xvals = [pnt[0] for s in cuts for pnt in s]
+        yvals = [pnt[1] for s in cuts for pnt in s]
         minx, maxx = min(xvals), max(xvals)
         miny, maxy = min(yvals), max(yvals)
         bs = '{} range from {:.1f} mm to {:.1f} mm'
@@ -100,50 +99,6 @@ def main(argv):
         logging.info('Writing output file "{}"'.format(ofn))
         out.finish()
         logging.info('File "{}" done.'.format(fn))
-
-
-def getcuts(rd):
-    """
-    Make a list of cuts
-
-    Arguments:
-        rd: nctools.gerbernc.Reader object
-
-    Returns: A list of lists of (x,y) tuples representing the cuts.
-    """
-    cuts = []
-    x = []
-    y = []
-    section = None
-    cutting = False
-    new = False
-    pos = None
-    for c, args in rd:
-        if c.startswith('down'):
-            cutting = True
-            if not pos:
-                raise ValueError('Start of cutting without pos')
-            if new:
-                new = False
-                if section:
-                    cuts.append(section)
-                section = [pos]
-        elif c.startswith('up'):
-            cutting = False
-        elif c.startswith('moveto'):
-            _, newpos = args
-            if cutting:
-                section.append(newpos)
-            xv, yv = newpos
-            x.append(xv)
-            y.append(yv)
-            pos = newpos
-        elif c.startswith('newpiece'):
-            # Place a marker and start a new section at the next knife down.
-            new = True
-    if section:
-        cuts.append(section)
-    return cuts, x, y
 
 
 if __name__ == '__main__':
