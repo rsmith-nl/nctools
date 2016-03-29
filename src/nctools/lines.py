@@ -3,7 +3,7 @@
 #
 # Copyright © 2015,2016 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-11-14 18:56:39 +0100
-# Last modified: 2016-03-28 22:44:26 +0200
+# Last modified: 2016-03-30 01:34:46 +0200
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -37,10 +37,11 @@ import copy
 import math
 from nctools import dxfreader as dx
 
-devlim = 1  # maximum deviation from arc, spline
+devlim = 0.5  # maximum deviation from arc, spline
+epsilon = 0.25  # maximum x and y between points that are considered equal
 
 
-def mksegments(entities, ndigits=2):
+def mksegments(entities, ndigits=3):
     """
     Convert an iterable of entities to a list of line segments.
 
@@ -59,7 +60,7 @@ def mksegments(entities, ndigits=2):
                 (fr(dx.bycode(e, 11)), fr(dx.bycode(e, 21)))]
 
     def arc(e):
-        cx, cy = fr(dx.bycode(e, 10)), fr(dx.bycode(e, 20))
+        cx, cy = float(dx.bycode(e, 10)), float(dx.bycode(e, 20))
         R = fr(dx.bycode(e, 40))
         sa, ea = (math.radians(float(dx.bycode(e, 50))),
                   math.radians(float(dx.bycode(e, 51))))
@@ -108,6 +109,27 @@ def mksegments(entities, ndigits=2):
     return lines
 
 
+def _eq(p, k):
+    dx = abs(k[0] - p[0])
+    dy = abs(k[1] - p[1])
+    if dx < epsilon and dy < epsilon:
+        return True
+    return False
+
+
+def _grow_segment(segment, addition):
+    if _eq(segment[-1], addition[0]):  # append addition
+        return segment + addition[1:]
+    elif _eq(segment[-1], addition[-1]):  # append reversed addition
+        return segment + list(reversed(addition[:-1]))
+    elif _eq(segment[0], addition[-1]):  # prepend addition
+        return addition[:-1] + segment
+    elif _eq(segment[0], addition[0]):  # prepend reversed addition
+        return list(reversed(addition[1:])) + segment
+    else:
+        raise ValueError("addition doesn't fit segment")
+
+
 def combine_segments(segments):
     """
     Combine the segments where possible.
@@ -119,41 +141,28 @@ def combine_segments(segments):
     Returns:
         A list of closed segments and a list of open segments.
     """
-    def grow_segment(segment, addition):
-        if segment[-1] == addition[0]:  # append addition
-            return segment + addition[1:]
-        elif segment[-1] == addition[-1]:  # append reversed addition
-            return segment + list(reversed(addition[:-1]))
-        elif segment[0] == addition[-1]:  # prepend addition
-            return addition[:-1] + segment
-        elif segment[0] == addition[0]:  # prepend reversed addition
-            return list(reversed(addition[1:])) + segment
-        else:
-            raise ValueError("addition doesn't fit segment")
-
-    def store(segment, loops, openseg):
-        if segment[0] == segment[-1]:
-            loops.append(seg)
-        else:
-            openseg.append(seg)
-
     openseg = []
     loops = []
-    seg = None
+    first = None
     segments = copy.deepcopy(segments)
     while len(segments) > 0:
-        if not seg:
-            seg = segments.pop(0)
-        fits = [s for s in segments if seg[0] in s or seg[-1] in s]
-        if fits:
-            add = fits[0]  # (arbitrarily) use the first that fits.
-            segments.remove(add)
-            seg = grow_segment(seg, add)
-        else:  # Nothing fits
-            store(seg, loops, openseg)
-            seg = None
-    if seg:
-        store(seg, loops, openseg)
+        if not first:
+            first = segments.pop(0)
+        for second in segments:
+            try:
+                first = _grow_segment(first, second)
+                segments.remove(second)
+                if closed(first):
+                    loops.append(first)
+                    first = None
+                break
+            except ValueError:
+                continue
+        else:  # list exhausted, but no break
+            openseg.append(first)
+            first = None
+    if first:
+        openseg.append(first)
     return loops, openseg
 
 
@@ -213,7 +222,7 @@ def length(line):
     return sum(dist)
 
 
-def closed(line, delta=1e-3):
+def closed(line):
     """
     Determine if a list of line segments is closed.
 
@@ -225,8 +234,7 @@ def closed(line, delta=1e-3):
         True if the last point in the line equals the first point. False
         otherwise.
     """
-    first, last = line[0], line[-1]
-    return abs(first[0]-last[0]) < delta and abs(first[1]-last[1]) < delta
+    return _eq(line[0], line[-1])
 
 
 def setstart(line, newstart):

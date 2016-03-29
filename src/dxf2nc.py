@@ -75,6 +75,10 @@ to be lifted to prevent breaking (defaults to 60°)"""
 argtxt4 = "assemble connected lines into contours (off by default)"
 parser.add_argument('-a', '--angle', help=argtxt2, dest='ang',
                     metavar='F', type=float, default=60)
+parser.add_argument('-d', '--dist',
+                    help="maximum distance between points considered equal "
+                         "(defaults to 0.25 mm)",
+                    metavar='mm', type=float, default=0.25)
 parser.add_argument('-c', '--contours', help=argtxt4, dest='contours',
                     action="store_true")
 parser.add_argument('--log', default='warning',
@@ -97,6 +101,7 @@ logging.debug('Command line arguments = {}'.format(sys.argv))
 logging.debug('Parsed arguments = {}'.format(args))
 sorters = {'xy': utils.bbxykey, 'yx': utils.bbyxkey, 'dist': utils.distkey}
 sortkey = sorters[args.sort]
+lines.epsilon = args.dist
 if not args.files:
     parser.print_help()
     sys.exit(0)
