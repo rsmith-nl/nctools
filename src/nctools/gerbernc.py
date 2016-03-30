@@ -1,6 +1,6 @@
 # vim:fileencoding=utf-8
 # Copyright © 2013-2016 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Last modified: 2016-03-29 10:15:28 +0200
+# Last modified: 2016-03-30 15:07:52 +0200
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -29,7 +29,6 @@ The language and file format for PCB machines is different!
 
 import math
 import os.path as op
-from nctools import bbox
 
 
 class Writer(object):
@@ -73,15 +72,27 @@ class Writer(object):
         self.ang = None
         self.commands += ['M15']
 
+    def _bbupdate(self, pnt):
+        if self.bbox is None:
+            self.bbox = (pnt[0], pnt[1], pnt[0], pnt[1])
+        else:
+            a, b, c, d = self.bbox
+            if pnt[0] < a:
+                a = pnt[0]
+            elif pnt[0] > c:
+                c = pnt[0]
+            if pnt[1] < b:
+                a = pnt[1]
+            elif pnt[1] > d:
+                d = pnt[1]
+            self.bbox = (a, b, c, d)
+
     def down(self):
         """Start cutting (lower the knife)."""
         if not self.pos:
             raise ValueError('start cutting at unknown position')
         self.cut = True
-        if self.bbox is None:
-            self.bbox = bbox.BBox(self.pos)
-        else:
-            self.bbox.update(self.pos)
+        self._bbupdate(self.pos)
         self.commands += ['M14']
 
     def moveto(self, x, y):
@@ -94,7 +105,7 @@ class Writer(object):
         """
         x, y = mm2cin([x, y])
         if self.cut:  # We're cutting
-            self.bbox.update((x, y))
+            self._bbupdate((x, y))
             dx, dy = x - self.pos[0], y - self.pos[1]
             newang = math.degrees(math.atan2(dy, dx))
             if newang < 0.0:
@@ -121,8 +132,9 @@ class Writer(object):
 
     def __exit__(self, exc_type, exc_value, traceback):
         """Stop context manager."""
-        li = self.bbox.width/100.0
-        wi = self.bbox.height/100.0
+        a, b, c, d = self.bbox
+        li = abs(a-c)/100.0
+        wi = abs(b-d)/100.0
         self.commands[2] = '{}/L={:.3f}/W={:.3f}'.format(self.name, li, wi)
         if self.commands[-1].startswith('N'):
             del self.commands[-1]  # Remove unnecessary newpiece()
