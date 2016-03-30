@@ -27,6 +27,12 @@ branch.
 
 General remarks about the programs
 ==================================
+These programs are command-line utilities. There are no GUI front-ends planned
+at the moment.
+
+For convenience, the programs that need the ``nctools`` module come packed
+with it. So you can just drop them in your $PATH somewhere.
+
 All these programs can read files in other directories. They will however only
 write files in the current working directory. The output filename will be
 generated from the input filename by removing any directories and the
@@ -41,8 +47,6 @@ actions:
 * Assemble connected entities into contours.
 * Sort entities in by the minimum x value of their bounding box in ascending
   order.
-* Move all entities so that the lower left corner for the bounding box
-  for all entities is at (0,0).
 
 
 dxf2nc
@@ -72,7 +76,7 @@ Gerber numeric code files are basically text files but do not contain line
 breaks, which makes them hard to read. The readnc utility can be used to
 display the file in a more human-readable format.
 
-Usage: dxf2nc.py [file.dxf ...]
+See ``dxf2nc -h`` output for usage instructions.
 
 The software for our machine doesn't use extensions for nc files, so this
 program just strips the dxf extension from the filename.
@@ -85,7 +89,7 @@ handy to view a PDF file. The lines, arcs and polylines from the DXF file are
 shown on top of a 100x100 mm grid. The drawn elements are color coded to show
 their sequence in the file.
 
-Usage: dxf2pdf.py [file.dxf ...]
+See ``dxf2pdf -h`` output for usage instructions.
 
 In this case, the output filename for the input file 'foo.dxf' will be
 'foo_dxf.pdf'
@@ -93,6 +97,8 @@ In this case, the output filename for the input file 'foo.dxf' will be
 
 dxfgerber
 ---------
+(doesn't work at the moment; needs refactoring)
+
 The cutworks software that comes with a gerber cutter doesn't
 automatically optimize the cutting paths it reads from dxf files. It
 essentially cuts lines in the order it finds them in the dxf file. This was
@@ -113,7 +119,7 @@ This program reads a Gerber NC file and plots the cuts as a PDF. It assumes
 units of 1/100 inch and only reads knife up/down and movements. It colors the
 cuts to indicate their sequence in the nc file.
 
-Usage: nc2pdf.py [file ...]
+See ``nc2pdf -h`` output for usage instructions.
 
 In this case, the output filename for the input file 'foo.nc' will be
 'foo_nc.pdf'
@@ -125,7 +131,7 @@ Gerber numeric code files are basically text files but do not contain line
 breaks, which makes them hard to read. This utility can be used to display the
 file in a more human-readable format.
 
-Usage: dumpgerber.py [file ...]
+See ``dumpgerber -h`` output for usage instructions.
 
 Example output::
 
@@ -156,40 +162,40 @@ debugging tool for the nctools module than a really useful program. It
 gathers entities into contours for testing purposes of that functionality. A
 visual alternative would be to use dxf2pdf.
 
-Usage: ./readdxf.py [file.dxf ...]
+See ``readdxf -h`` output for usage instructions.
 
 Example output::
 
-    Filename: test/snijden-CSM1.dxf
-    Contains: 444 entities
-    Layer: "0"
-    INSERT entity
-    INSERT entity
-    INSERT entity
-    INSERT entity
-    INSERT entity
-    INSERT entity
-    INSERT entity
-    INSERT entity
-    INSERT entity
-    INSERT entity
-    INSERT entity
-    Layer: "DIM"
-    DIMENSION entity
-    DIMENSION entity
-    DIMENSION entity
-    DIMENSION entity
-    Layer: "CSM450"
-    LINE from (784.44, 3360.90) to (1983.20, 3360.90)
-    LINE from (1746.81, 3672.17) to (2007.21, 3672.17)
-    LINE from (1983.20, 3360.90) to (1959.98, 3672.17)
-    LINE from (1383.82, 4610.10) to (2007.21, 4610.10)
-    LINE from (1383.82, 4610.10) to (1002.21, 4610.10)
-    LINE from (2007.21, 4610.10) to (2007.21, 3672.17)
-    LINE from (844.01, 4610.10) to (784.44, 3360.90)
-    LINE from (1002.21, 4610.10) to (844.01, 4610.10)
-    LINE from (1265.13, 4167.08) to (1507.00, 4167.08)
-    LINE from (1472.62, 4378.83) to (1246.55, 4379.29)
-    LINE from (1246.55, 4379.29) to (1265.13, 4167.08)
-    LINE from (1497.34, 4351.15) to (1507.00, 4167.08)
+    Filename: testfiles/snijden-CSM1.dxf
+    Contains: 425 entities
+    Layer: "deel 1"
+    LINE from (0.00, 0.00) to (1198.75, 0.00)
+    LINE from (962.37, 311.26) to (1222.77, 311.26)
+    LINE from (1198.75, 0.00) to (1175.54, 311.26)
+    LINE from (599.38, 1249.19) to (1222.77, 1249.19)
+    LINE from (599.38, 1249.19) to (217.77, 1249.19)
+    LINE from (1222.77, 1249.19) to (1222.77, 311.26)
+    LINE from (59.57, 1249.19) to (0.00, 0.00)
+    LINE from (217.77, 1249.19) to (59.57, 1249.19)
+    LINE from (480.69, 806.18) to (722.56, 806.18)
+    LINE from (688.18, 1017.93) to (462.11, 1018.39)
+    LINE from (462.11, 1018.39) to (480.69, 806.18)
+    LINE from (712.90, 990.25) to (722.56, 806.18)
+    POLYLINE
+        VERTEX at (712.90, 990.25)
+        VERTEX at (712.89, 990.49)
+        VERTEX at (712.87, 990.74)
+        VERTEX at (712.85, 990.99)
+        ...
+        VERTEX at (688.42, 1017.89)
+        VERTEX at (688.18, 1017.93)
+    ENDSEQ
+    LINE from (811.74, 1141.23) to (387.01, 1141.23)
+    LINE from (387.01, 641.28) to (811.74, 641.28)
+    LINE from (256.88, 1011.10) to (256.88, 771.40)
+    LINE from (941.88, 771.40) to (941.88, 1011.10)
+    ARC from (387.01, 1141.22) to (256.88, 1011.10)
+        centered at (387.01, 1011.09), radius 130.13, from 90.0° to 180.0°
+    ARC from (256.88, 771.40) to (387.01, 641.28)
+        centered at (387.01, 771.41), radius 130.13, from 180.0° to 270.0°
     ...
