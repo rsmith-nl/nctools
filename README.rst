@@ -1,7 +1,7 @@
 NCtools
 #######
 
-:date: 2015-04-27
+:date: 2016-03-30
 :author: Roland Smith
 
 
@@ -97,8 +97,6 @@ In this case, the output filename for the input file 'foo.dxf' will be
 
 dxfgerber
 ---------
-(doesn't work at the moment; needs refactoring)
-
 The cutworks software that comes with a gerber cutter doesn't
 automatically optimize the cutting paths it reads from dxf files. It
 essentially cuts lines in the order it finds them in the dxf file. This was
@@ -106,7 +104,7 @@ the original program to optimize DXF files for use with the Gerber software.
 It assembles connected lines/arcs into contours so that the cutter won't jump
 all over the part. The dxf2nc program is intended as its replacement.
 
-Usage: dxfgerber.py [file.dxf ...]
+See ``dxfgerber -h`` output for usage instructions.
 
 Since the output of this command is also a DXF file, the output filename has
 '_mod' appended. So the input file 'baz.dxf' has the associated output file
