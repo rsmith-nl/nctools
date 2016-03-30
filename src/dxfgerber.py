@@ -1,26 +1,29 @@
 # dxfgerber - main program
 # vim:fileencoding=utf-8
 
-"""Reads DXF files and re-orders the entities so that entities that fit
-together are stored as a chain in the output DXF file."""
+"""Reorganizes entities in a DXF file. For each numbered layer (except layer 0)
+in numbered order it groups connected lines together in polylines and writes
+them and any remaining loose lines in sorted order."""
 
 import argparse
-import sys
 import logging
-from nctools import bbox, dxf, ent, utils
+import sys
+from nctools import dxfreader as dx
+from nctools import lines, utils
 
 __version__ = '2.0.0-beta'
-_lic = """dxfgerber {}
-Copyright © 2011-2016 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+
+_lic = """dxfgerber.py {}
+Copyright © 2016 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
 are met:
 1. Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
+   notice, this list of conditions and the following disclaimer.
 2. Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
 
 THIS SOFTWARE IS PROVIDED BY AUTHOR AND CONTRIBUTORS ``AS IS'' AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -34,6 +37,21 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.""".format(__version__)
 
+dxfheader = '  0\r\nSECTION\r\n  2\r\nENTITIES\r\n'
+dxffooter = '  0\r\nENDSEC\n  0\r\nEOF\r\n'
+linefmt = ('0\r\nLINE\r\n  8\r\n{layer}\r\n 10\r\n{x1:.3f}\r\n 20\r\n{y1:.3f}'
+           ' 30\r\n0\r\n 11\r\n{x2:.3f}\r\n 21\r\n{y2:.3f}\r\n 31\r\n0\r\n')
+# The flag in plheader should be 8 for an open polyline or 9 for a closed one.
+# I'm assuming that in a closed segment the last point (equal to first) can be
+# left out.
+plheader = ('0\r\nPOLYLINE\r\n100\r\nAcDb3dPolyline\r\n 66\r\n   1\r\n'
+            '  8\r\n{layer}\r\n 10\r\n0\r\n 20\r\n0\r\n'
+            ' 30\r\n0\r\n 70\r\n{flag:3d}\r\n')
+vertex = ('0\r\nVERTEX\r\n100\r\nAcDbVertex\r\n100\r\nAcDb3dPolylineVertex\r\n'
+          '  8\r\n{layer}\r\n'
+          ' 10\r\n{x}\r\n 20\r\n{y}\r\n 30\r\n0\r\n 70\r\n32\r\n')
+plfooter = '0\r\nSEQEND\r\n  8\r\n{layer}\r\n'
+
 
 class LicenseAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
@@ -41,27 +59,63 @@ class LicenseAction(argparse.Action):
         sys.exit()
 
 
+def write_segment(s, out, layer):
+    if len(s) == 2:
+        out.write(linefmt.format(layer=layer, x1=s[0][0], y1=s[0][1],
+                                 x2=s[1][0], y2=s[1][1]))
+    elif len(s) > 2:
+        if lines.closed(s):
+            flag = 9
+            pnts = s[:-1]
+        else:
+            flag = 8
+            pnts = s
+        out.write(plheader.format(layer=layer, flag=flag))
+        for a, b in pnts:
+            out.write(vertex.format(layer=layer, x=a, y=b))
+        out.write(plfooter.format(layer=layer))
+
+
+def write_allseg(seg, out, layer, keyfunc):
+    """Assemble segments into contours before writing them."""
+    closedseg, openseg = lines.combine_segments(seg)
+    fs = '{} {} segments in layer "{}"'
+    for a, b in (('closed', closedseg), ('open', openseg)):
+        logging.info(fs.format(len(b), a, layer))
+    openseg.sort(key=keyfunc)
+    for s in openseg:
+        write_segment(s, out, layer)
+    closedseg.sort(key=keyfunc)
+    for s in closedseg:
+        write_segment(s, out, layer)
+
+
 parser = argparse.ArgumentParser(description=__doc__)
-argtxt = """maximum distance between two points considered equal when
-searching for contours (defaults to 0.5 mm)"""
-parser.add_argument('-l', '--limit', nargs=1, help=argtxt, dest='limit',
-                    metavar='F', type=float, default=0.5)
-group = parser.add_mutually_exclusive_group()
-group.add_argument('-L', '--license', action=LicenseAction, nargs=0,
-                   help="print the license")
+parser.add_argument('-d', '--dist',
+                    help="maximum distance between points considered equal "
+                         "(defaults to 0.25 mm)",
+                    metavar='mm', type=float, default=0.25)
 parser.add_argument('--log', default='warning',
                     choices=['debug', 'info', 'warning', 'error'],
                     help="logging level (defaults to 'warning')")
-group.add_argument('-V', '--version', action='version',
+parser.add_argument('-s', '--sort', default='xy',
+                    choices=['xy', 'yx', 'dist'],
+                    help="sorting algorithm to use (defaults to 'xy')")
+group = parser.add_mutually_exclusive_group()
+group.add_argument('-L', '--license', action=LicenseAction, nargs=0,
+                   help="print the license")
+group.add_argument('-v', '--version', action='version',
                    version=__version__)
 parser.add_argument('files', nargs='*', help='one or more file names',
                     metavar='file')
-args = parser.parse_args(sys.argv)
+args = parser.parse_args(sys.argv[1:])
 logging.basicConfig(level=getattr(logging, args.log.upper(), None),
-                    format='%% %(levelname)s: %(message)s')
-logging.debug('command line arguments = {}'.format(sys.argv[1:]))
-logging.debug('parsed arguments = {}'.format(args))
-lim = args.limit**2
+                    format='%(levelname)s: %(message)s')
+logging.debug('Command line arguments = {}'.format(sys.argv))
+logging.debug('Parsed arguments = {}'.format(args))
+sorters = {'xy': utils.bbxykey, 'yx': utils.bbyxkey, 'dist': utils.distkey}
+sortkey = sorters[args.sort]
+lines.epsilon = args.dist
 if not args.files:
     parser.print_help()
     sys.exit(0)
@@ -69,38 +123,32 @@ for f in utils.xpand(args.files):
     logging.info('Starting file "{}"'.format(f))
     try:
         ofn = utils.outname(f, extension='.dxf', addenum='_mod')
-        entities = dxf.reader(f)
-    except Exception as ex:  # pylint: disable=W0703
-        utils.skip(ex, f)
+        data = dx.parse(f)
+        entities = dx.entities(data)
+    except ValueError as ex:
+        logging.info(str(ex))
+        fns = "error during processing. Skipping file '{}'."
+        logging.error(fns.format(f))
         continue
+    except IOError as ex:
+        logging.info(str(ex))
+        logging.error("i/o error in file '{}'. Skipping it.".format(f))
+        continue
+    layers = dx.numberedlayers(entities)
+    entities = [e for e in entities if dx.bycode(e, 8) in layers]
     num = len(entities)
     if num == 0:
-        logging.info('No entities found!')
+        logging.info("no entities found! Skipping file '{}'.".format(f))
         continue
-    if num > 1:
-        logging.info('Contains {} entities'.format(num))
-        bbe = [e.bbox for e in entities]
-        bb = bbox.merge(bbe)
-        logging.info('Gathering connected entities into contours')
-        contours, rement = ent.findcontours(entities, lim)
-        ncon = 'Found {} contours, {} remaining single entities'
-        logging.info(ncon.format(len(contours), len(rement)))
-        entities = contours + rement
-        logging.info('Sorting entities')
-        entities.sort(key=lambda e: (e.bbox.minx, e.bbox.miny))
-    else:
-        logging.info('Contains: 1 entity')
-        bb = entities[0].bbox
-    es = 'Original extents: {:.1f} ≤ x ≤ {:.1f} mm, {:.1f} ≤ y ≤ {:.1f} mm'
-    logging.info(es.format(bb.minx, bb.maxx, bb.miny, bb.maxy))
-    # move entities so that the bounding box begins at 0,0
-    if bb.minx != 0 or bb.miny != 0:
-        ms = 'Moving all entities by ({:.1f}, {:.1f}) mm'
-        logging.info(ms.format(-bb.minx, -bb.miny))
-        for e in entities:
-            e.move(-bb.minx, -bb.miny)
-    length = sum(e.length for e in entities)
-    logging.info('Total length of entities: {:.0f} mm'.format(length))
-    logging.info('Writing output to "{}"'.format(ofn))
-    dxf.writer(ofn, 'dxfgerber', entities)
-    logging.info('File "{}" done.'.format(f))
+    logging.info('{} entities found.'.format(num))
+    with open(ofn, 'w') as out:
+        out.write(dxfheader)
+        for layername in layers:
+            thislayer = dx.fromlayer(entities, layername)
+            ls = '{} entities found in layer "{}".'
+            logging.info(ls.format(num, layername))
+            segments = lines.mksegments(thislayer)
+            fs = '{} segments in layer "{}"'
+            logging.info(fs.format(len(segments), layername))
+            write_allseg(segments, out, layername, sortkey)
+        out.write(dxffooter)
