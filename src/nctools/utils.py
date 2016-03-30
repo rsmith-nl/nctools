@@ -1,6 +1,6 @@
 # vim:fileencoding=utf-8
 # Copyright © 2013-2016 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Last modified: 2016-03-28 21:02:52 +0200
+# Last modified: 2016-03-30 22:12:13 +0200
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -47,17 +47,6 @@ def outname(inname, extension, addenum=''):
     if extension and not extension.startswith('.'):
         extension = '.' + extension
     return rv + addenum + extension
-
-
-def skip(error, filename):
-    """Skip a file in case of an error
-
-    Arguments:
-        error: Exception
-        filename: Name of file to skip
-    """
-    print("Cannot read file: {}".format(error))
-    print("Skipping file '{}'".format(filename))
 
 
 def xpand(args):
