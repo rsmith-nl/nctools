@@ -43,69 +43,6 @@ class LicenseAction(argparse.Action):
         sys.exit()
 
 
-def main(argv):
-    """Main program for the readdxf utility.
-
-    Arguments:
-        argv: command line arguments
-    """
-    parser = argparse.ArgumentParser(description=__doc__)
-    argtext1 = 'show details of unknown entities'
-    parser.add_argument('-v', '--verbose', help=argtext1, action="store_true")
-    parser.add_argument('-a', '--all', action="store_true",
-                        help='process all layers (default: numbered layers)')
-    parser.add_argument('--log', default='warning',
-                        choices=['debug', 'info', 'warning', 'error'],
-                        help="logging level (defaults to 'warning')")
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument('-L', '--license', action=LicenseAction, nargs=0,
-                       help="print the license")
-    group.add_argument('-V', '--version', action='version',
-                       version=__version__)
-    parser.add_argument('files', metavar='file', nargs='*',
-                        help='one or more file names')
-    args = parser.parse_args(argv)
-    logging.basicConfig(level=getattr(logging, args.log.upper(), None),
-                        format='%(levelname)s: %(message)s')
-    logging.debug('Command line arguments = {}'.format(argv))
-    logging.debug('Parsed arguments = {}'.format(args))
-    if not args.files:
-        parser.print_help()
-        sys.exit(0)
-    for f in ut.xpand(args.files):
-        print('Filename: {}'.format(f))
-        try:
-            data = dx.parse(f)
-            if args.verbose:
-                for d in data:
-                    pprint.pprint(d)
-            entities = dx.entities(data)
-        except Exception as ex:
-            ut.skip(ex, f)
-            continue
-        if not args.all:
-            numbered = dx.numberedlayers(entities)
-            bylayer = {nm: dx.fromlayer(entities, nm)
-                       for nm in numbered}
-            entities = []
-            for layerent in bylayer.values():
-                entities += layerent
-        num = len(entities)
-        if num == 0:
-            logging.warning('no entities found!')
-            continue
-        else:
-            print('Contains: {} entities'.format(num))
-            if args.verbose:
-                for e in entities:
-                    pprint.pprint(e)
-            layers = dx.layernames(entities)
-            for layer in layers:
-                print('Layer: "{}"'.format(layer))
-                for e in dx.fromlayer(entities, layer):
-                    printent(e, args.verbose)
-
-
 def printent(e, v):
     """Print a DXF entity"""
     def line():
@@ -154,5 +91,57 @@ def printent(e, v):
             print('  {} entity'.format(k))
 
 
-if __name__ == '__main__':
-    main(sys.argv[1:])
+parser = argparse.ArgumentParser(description=__doc__)
+argtext1 = 'show details of unknown entities'
+parser.add_argument('-v', '--verbose', help=argtext1, action="store_true")
+parser.add_argument('-a', '--all', action="store_true",
+                    help='process all layers (default: numbered layers)')
+parser.add_argument('--log', default='warning',
+                    choices=['debug', 'info', 'warning', 'error'],
+                    help="logging level (defaults to 'warning')")
+group = parser.add_mutually_exclusive_group()
+group.add_argument('-L', '--license', action=LicenseAction, nargs=0,
+                   help="print the license")
+group.add_argument('-V', '--version', action='version',
+                   version=__version__)
+parser.add_argument('files', metavar='file', nargs='*',
+                    help='one or more file names')
+args = parser.parse_args(sys.argv[1:])
+logging.basicConfig(level=getattr(logging, args.log.upper(), None),
+                    format='%(levelname)s: %(message)s')
+logging.debug('Command line arguments = {}'.format(sys.argv[1:]))
+logging.debug('Parsed arguments = {}'.format(args))
+if not args.files:
+    parser.print_help()
+    sys.exit(0)
+for f in ut.xpand(args.files):
+    print('Filename: {}'.format(f))
+    try:
+        data = dx.parse(f)
+        if args.verbose:
+            for d in data:
+                pprint.pprint(d)
+        entities = dx.entities(data)
+    except Exception as ex:
+        ut.skip(ex, f)
+        continue
+    if not args.all:
+        numbered = dx.numberedlayers(entities)
+        bylayer = {nm: dx.fromlayer(entities, nm) for nm in numbered}
+        entities = []
+        for layerent in bylayer.values():
+            entities += layerent
+    num = len(entities)
+    if num == 0:
+        logging.warning('no entities found!')
+        continue
+    else:
+        print('Contains: {} entities'.format(num))
+        if args.verbose:
+            for e in entities:
+                pprint.pprint(e)
+        layers = dx.layernames(entities)
+        for layer in layers:
+            print('Layer: "{}"'.format(layer))
+            for e in dx.fromlayer(entities, layer):
+                printent(e, args.verbose)

@@ -1,7 +1,7 @@
-NCtools
-#######
+README for NCtools
+##################
 
-:date: 2016-03-30
+:date: 2016-03-31
 :author: Roland Smith
 
 
@@ -10,19 +10,28 @@ Introduction
 These programs and modules were created because the existing software to
 generate NC code for our gerber cloth cutter has some deficiencies.
 
-Note that this software was _not_ written fot Gerber PCB milling machines! The
+Note that this software was _not_ written for Gerber PCB milling machines! The
 generated code was tested on a Gerber Garment Technology S-3000 cutter, with
 the C-200MT controller software.
 
-All programs use the `nctools` modules. The dxf submodule can extract LINE,
+Most programs use the ``nctools`` modules. The dxfreader submodule can extract LINE,
 ARC, CIRCLE and POLYLINE entities from a DXF file. Note that it does *not*
 handle other entities like BLOCK. The module _assumes_ that the units in the
-file are millimeters. It also only writes nc code in centi-inches. All of
-these programs require the Python interpreter. Currently both the ‘master’ and
-‘develop’ branches use Python 3.
+file are millimeters. It also only writes nc code in centi-inches.
 
 At this time these programs are going through a rewrite, done on the ‘develop’
 branch.
+
+
+Requirements
+============
+* Python 3. (Developed with Python 3.4 and 3.5)
+* the ``cairo`` library and its python bindings for ``dxf2pdf`` and ``nx2pdf``
+
+
+Installation
+============
+See INSTALL.TXT
 
 
 General remarks about the programs
@@ -31,7 +40,7 @@ These programs are command-line utilities. There are no GUI front-ends planned
 at the moment.
 
 For convenience, the programs that need the ``nctools`` module come packed
-with it. So you can just drop them in your $PATH somewhere.
+with it. So on UNIX/Linux you can just drop them in your $PATH somewhere.
 
 All these programs can read files in other directories. They will however only
 write files in the current working directory. The output filename will be
@@ -39,14 +48,6 @@ generated from the input filename by removing any directories and the
 extension. Where necessary, new extensions and/or modifiers are added. So an
 input file '..\foo\bar.dxf' will generally result in an output file named
 'bar' with the appropriate extension.
-
-Those programs that produce output files in general all perform the following
-actions:
-
-* Read entities.
-* Assemble connected entities into contours.
-* Sort entities in by the minimum x value of their bounding box in ascending
-  order.
 
 
 dxf2nc
@@ -62,18 +63,19 @@ and assembles connected entities into lists called contours. If necessary, the
 direction of entities in a contour is changed so that all entities can be cut
 in one continuous movement.
 
-These contours and any remaining lines and arcs are then sorted in ascending
-order from the left edge of their bounding box.
+These contours and any remaining lines and arcs are then sorted as given by
+the options. The default is to sort first in ascending x and then in ascending
+y.
 
 The machine that these programs were originally written for is an older
 machine, whose controllen doesn't even understand arcs, only straight lines.
 So it also converts arcs into line segments. By default the length of these
-segments is such that the deviation from the curve is not more than 1 mm. It
+segments is such that the deviation from the curve is not more than 0.5 mm. It
 ignores the $MEASUREMENT variable in the dxf file because that is often not
 set correctly and assumes that the units in the dxf file are millimeters.
 
 Gerber numeric code files are basically text files but do not contain line
-breaks, which makes them hard to read. The readnc utility can be used to
+breaks, which makes them hard to read. The ``readnc`` utility can be used to
 display the file in a more human-readable format.
 
 See ``dxf2nc -h`` output for usage instructions.
@@ -86,8 +88,8 @@ dxf2pdf
 -------
 This program reads a DXF file and generates a PDF file from it. This comes in
 handy to view a PDF file. The lines, arcs and polylines from the DXF file are
-shown on top of a 100x100 mm grid. The drawn elements are color coded to show
-their sequence in the file.
+shown on top of a 100x100 mm grid. Optionally the beginning and ending of
+lines are marked.
 
 See ``dxf2pdf -h`` output for usage instructions.
 
