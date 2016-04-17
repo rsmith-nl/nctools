@@ -3,7 +3,7 @@
 #
 # Copyright © 2015,2016 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-11-14 18:56:39 +0100
-# Last modified: 2016-03-30 01:34:46 +0200
+# Last modified: 2016-04-17 15:18:25 +0200
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -37,8 +37,8 @@ import copy
 import math
 from nctools import dxfreader as dx
 
-devlim = 0.5  # maximum deviation from arc, spline
-epsilon = 0.25  # maximum x and y between points that are considered equal
+DEVLIM = 0.5  # maximum deviation from arc, spline
+EPSILON = 0.25  # maximum x and y between points that are considered equal
 
 
 def mksegments(entities, ndigits=3):
@@ -68,10 +68,10 @@ def mksegments(entities, ndigits=3):
             da = ea - sa
         else:
             da = 2*math.pi - sa + ea
-        if devlim > R:
+        if DEVLIM > R:
             cnt = 1
         else:
-            maxstep = 2*math.acos(1-devlim/R)
+            maxstep = 2*math.acos(1-DEVLIM/R)
             if da < 0:
                 maxstep = -maxstep
             cnt = math.ceil(da/maxstep)
@@ -112,7 +112,7 @@ def mksegments(entities, ndigits=3):
 def _eq(p, k):
     dx = abs(k[0] - p[0])
     dy = abs(k[1] - p[1])
-    if dx < epsilon and dy < epsilon:
+    if dx < EPSILON and dy < EPSILON:
         return True
     return False
 
