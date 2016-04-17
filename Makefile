@@ -15,7 +15,7 @@ VER=2.0.0-beta
 all: dxf2nc
 
 # This actually builds all scripts.
-dxf2nc: build.py src/*.py
+dxf2nc: build.py src/*.py src/nctools/*.py
 	python3 build.py
 
 clean::
