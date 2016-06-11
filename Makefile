@@ -1,4 +1,4 @@
-.PHONY: all install uninstall dist clean refresh check setver
+.PHONY: all install uninstall dist clean refresh check setver tests
 
 # Installation locations
 PREFIX=/usr/local
@@ -31,3 +31,6 @@ check::
 
 setver::
 	sed -i '' -e "s/^__version__.*/__version__ = '${VER}'/" ${PYFILES}
+
+tests::
+	py.test-3.5 -v tests/

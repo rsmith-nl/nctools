@@ -3,14 +3,15 @@
 #
 # Author: R.F. Smith <rsmith@xs4all.nl>
 # Created: 2016-03-28 12:45:47 +0200
-# Last modified: 2016-03-28 13:22:21 +0200
+# Last modified: 2016-06-11 13:42:04 +0200
 
-"""Tests for the lines module.
+"""Tests for the lines module."""
 
-Run from the tests directory with: nosetests-3.5 -v test-lines.py"""
+import sys
 
-import pathmagic
-from nctools import lines
+sys.path.insert(1, 'src')
+
+from nctools import lines  # noqa
 
 
 def test_mksegments_line():
@@ -38,8 +39,9 @@ def test_mksegments_arc():
            (100, 'AcDbArc'), (50, '169.1930771251396'),
            (51, '190.8069228748603'))]
     rv = lines.mksegments(arc)
-    ev = [[(114.19, 500), (103.55, 425.33), (100, 350), (103.55, 274.67),
-           (114.19, 200)]]
+    ev = [[(114.188, 500.0), (106.316, 450.331), (101.581, 400.265),
+          (100.0, 350.0), (101.581, 299.735), (106.316, 249.669),
+          (114.188, 200.0)]]
     assert rv[0] == ev[0]
 
 

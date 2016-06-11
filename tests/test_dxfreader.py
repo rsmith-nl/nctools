@@ -3,14 +3,15 @@
 #
 # Author: R.F. Smith <rsmith@xs4all.nl>
 # Created: 2016-03-28 01:44:10 +0200
-# Last modified: 2016-03-28 10:36:32 +0200
+# Last modified: 2016-06-11 13:37:10 +0200
 
-"""Tests for the dxfreader module.
+"""Tests for the dxfreader module."""
 
-Run from the tests directory with: nosetests-3.5 -v test-dxfreader.py"""
+import sys
 
-import pathmagic
-from nctools import dxfreader as dxf
+sys.path.insert(1, 'src')
+
+from nctools import dxfreader as dxf  # noqa
 
 data = []
 ents = []
@@ -19,7 +20,7 @@ names = []
 
 def test_parse():
     global data
-    data = dxf.parse('../testfiles/demo.dxf')
+    data = dxf.parse('testfiles/demo.dxf')
     assert len(data) == 4768
     assert data[0] == (0, 'SECTION')
     assert data[-1] == (0, 'EOF')

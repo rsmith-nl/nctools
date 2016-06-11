@@ -199,3 +199,18 @@ Example output::
     ARC from (256.88, 771.40) to (387.01, 641.28)
         centered at (387.01, 771.41), radius 130.13, from 180.0° to 270.0°
     ...
+
+
+Tests
+=====
+
+Some tests for the source code can be found in the ``tests`` directory. They
+can be run using pytest_.
+
+.. _pytest: http://pytest.org/
+
+To run the tests;
+
+.. code-block:: console
+
+    > py.test -v tests/
