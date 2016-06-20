@@ -48,10 +48,9 @@ def cut_contours(seg, w, layer, keyfunc):
     fs = '{} {} segments in layer "{}"'
     for a, b in (('closed', closedseg), ('open', openseg)):
         logging.info(fs.format(len(b), a, layer))
-    openseg.sort(key=keyfunc)
-    cut_segments(openseg, w)
-    closedseg.sort(key=keyfunc)
-    cut_segments(closedseg, w)
+    allseg = openseg + closedseg
+    allseg.sort(key=keyfunc)
+    cut_segments(allseg, w)
 
 
 def cut_segments(seg, w):
