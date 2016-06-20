@@ -131,7 +131,7 @@ for f in utils.xpand(args.files):
         out.newpiece()
         thislayer = dx.fromlayer(entities, layername)
         ls = '{} entities found in layer "{}".'
-        logging.info(ls.format(num, layername))
+        logging.info(ls.format(len(thislayer), layername))
         segments = lines.mksegments(thislayer)
         fs = '{} segments in layer "{}"'
         logging.info(fs.format(len(segments), layername))
