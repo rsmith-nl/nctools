@@ -107,7 +107,7 @@ if not args.files:
 for f in utils.xpand(args.files):
     logging.info('Starting file "{}"'.format(f))
     try:
-        ofn = utils.outname(f, extension='')
+        ofn = utils.outname(f, extension='.nc')
         data = dx.parse(f)
         entities = dx.entities(data)
     except ValueError as ex:
