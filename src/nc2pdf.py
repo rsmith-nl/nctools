@@ -1,6 +1,5 @@
 # nc2pdf - main program
 # vim:fileencoding=utf-8
-
 """Plot cuts from a Gerber cloth cutter NC file to a PDF."""
 
 import argparse
@@ -43,18 +42,20 @@ class LicenseAction(argparse.Action):
 
 parser = argparse.ArgumentParser(description=__doc__)
 group = parser.add_mutually_exclusive_group()
-group.add_argument('-L', '--license', action=LicenseAction, nargs=0,
-                   help="print the license")
-group.add_argument('-v', '--version', action='version',
-                   version=__version__)
-parser.add_argument('--log', default='warning',
-                    choices=['debug', 'info', 'warning', 'error'],
-                    help="logging level (defaults to 'warning')")
-parser.add_argument('files', nargs='*', help='one or more file names',
-                    metavar='file')
+group.add_argument(
+    '-L', '--license', action=LicenseAction, nargs=0, help="print the license")
+group.add_argument('-v', '--version', action='version', version=__version__)
+parser.add_argument(
+    '--log',
+    default='warning',
+    choices=['debug', 'info', 'warning', 'error'],
+    help="logging level (defaults to 'warning')")
+parser.add_argument(
+    'files', nargs='*', help='one or more file names', metavar='file')
 args = parser.parse_args(sys.argv[1:])
-logging.basicConfig(level=getattr(logging, args.log.upper(), None),
-                    format='%(levelname)s: %(message)s')
+logging.basicConfig(
+    level=getattr(logging, args.log.upper(), None),
+    format='%(levelname)s: %(message)s')
 logging.debug('command line arguments = {}'.format(sys.argv))
 logging.debug('parsed arguments = {}'.format(args))
 if not args.files:
@@ -87,7 +88,7 @@ for fn in utils.xpand(args.files):
     out, ctx = plot.setup(ofn, minx, miny, maxx, maxy)
     plot.grid(ctx, minx, miny, maxx, maxy)
     plot.lines(ctx, cuts)
-    plot.title(ctx, 'nc2pdf', ofn, maxy-miny)
+    plot.title(ctx, 'nc2pdf', ofn, maxy - miny)
     out.show_page()
     logging.info('Writing output file "{}"'.format(ofn))
     out.finish()

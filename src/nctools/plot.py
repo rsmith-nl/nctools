@@ -48,9 +48,9 @@ def setup(ofn, minx, miny, maxx, maxy, offset=40):
     Returns:
         (output surface, drawing context)
     """
-    w = (maxx - minx) + 2*offset
-    h = (maxy - miny) + 2*offset
-    xf = cairo.Matrix(xx=1.0, yy=-1.0, x0=offset-minx, y0=maxy+offset)
+    w = (maxx - minx) + 2 * offset
+    h = (maxy - miny) + 2 * offset
+    xf = cairo.Matrix(xx=1.0, yy=-1.0, x0=offset - minx, y0=maxy + offset)
     out = cairo.PDFSurface(ofn, w, h)
     ctx = cairo.Context(out)
     ctx.set_matrix(xf)
@@ -116,7 +116,7 @@ def lines(context, lines, lw=2, marks=True):
             # Print start mark
             fp, sp = ln[0], ln[1]
             dx, dy = sp[0] - fp[0], sp[1] - fp[1]
-            a = math.pi/2 - math.atan2(dx, dy)
+            a = math.pi / 2 - math.atan2(dx, dy)
             context.save()
             context.set_line_width(1)
             context.translate(*fp)
@@ -134,7 +134,7 @@ def lines(context, lines, lw=2, marks=True):
             # Print end mark
             fp, sp = ln[-2], ln[-1]
             dx, dy = sp[0] - fp[0], sp[1] - fp[1]
-            a = math.pi/2 - math.atan2(dx, dy)
+            a = math.pi / 2 - math.atan2(dx, dy)
             context.save()
             context.set_line_width(1)
             context.translate(*sp)
@@ -167,16 +167,18 @@ def title(context, prog, ofn, h, offset=40, options=None):
     fh = 10
     context.set_source_rgb(0.0, 0.0, 0.0)
     context.set_font_size(fh)
-    context.move_to(5, fh+5)
-    txt = ' '.join(['Produced by:', prog, __version__, 'on',
-                    str(datetime.datetime.now())[:-10]])
+    context.move_to(5, fh + 5)
+    txt = ' '.join([
+        'Produced by:', prog, __version__, 'on',
+        str(datetime.datetime.now())[:-10]
+    ])
     context.show_text(txt)
     if options:
-        context.move_to(5, 2*fh+5)
+        context.move_to(5, 2 * fh + 5)
         txt = 'Options: ' + ', '.join(options)
         context.show_text(txt)
     context.stroke()
-    context.move_to(5, h+2*offset-(fh))
+    context.move_to(5, h + 2 * offset - (fh))
     txt = 'File: "{}"'
     context.show_text(txt.format(ofn))
     context.stroke()

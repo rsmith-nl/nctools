@@ -118,7 +118,7 @@ class Writer(object):
             if newang < 0.0:
                 newang += 360.0
             if self.ang is not None:
-                angdif = math.fabs(newang-self.ang)
+                angdif = math.fabs(newang - self.ang)
                 if angdif > 180:
                     angdif = 360 - angdif
                 if angdif > self.anglim:
@@ -140,8 +140,8 @@ class Writer(object):
     def __exit__(self, exc_type, exc_value, traceback):
         """Stop context manager."""
         a, b, c, d = self.bbox
-        li = abs(a-c)/100.0
-        wi = abs(b-d)/100.0
+        li = abs(a - c) / 100.0
+        wi = abs(b - d) / 100.0
         self.commands[2] = '{}/L={:.3f}/W={:.3f}'.format(self.name, li, wi)
         if self.commands[-1].startswith('N'):
             del self.commands[-1]  # Remove unnecessary newpiece()
@@ -220,8 +220,8 @@ def segments(path):
             return
         elif cmd.startswith('X'):
             x, y = cmd[1:].split('Y')
-            x = round(float(x)*25.4/100, 0)
-            y = round(float(y)*25.4/100, 0)
+            x = round(float(x) * 25.4 / 100, 0)
+            y = round(float(y) * 25.4 / 100, 0)
             pos = (x, y)
             if down:
                 segment.append(pos)

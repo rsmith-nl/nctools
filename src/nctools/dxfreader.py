@@ -59,7 +59,7 @@ def entities(data):
     """
     soe = [n for n, d in enumerate(data) if d[1] == 'ENTITIES'][0]
     eoe = [n for n, d in enumerate(data) if d[1] == 'ENDSEC' and n > soe][0]
-    entdata = data[soe+1:eoe]
+    entdata = data[soe + 1:eoe]
     idx = [n for n, d in enumerate(entdata) if d[0] == 0] + [len(entdata)]
     pairs = list(zip(idx, idx[1:]))
     # FIXME: dict doesn't work with LWPOLYLINE, which has multiple groups

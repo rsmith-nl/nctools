@@ -52,6 +52,7 @@ def mksegments(entities, ndigits=3):
     Returns:
         A list of line segments. Line segments are lists of ≥2 (x,y) tuples.
     """
+
     def fr(n):
         return round(float(n), ndigits)
 
@@ -67,17 +68,18 @@ def mksegments(entities, ndigits=3):
         if ea > sa:
             da = ea - sa
         else:
-            da = 2*math.pi - sa + ea
+            da = 2 * math.pi - sa + ea
         if DEVLIM > R:
             cnt = 1
         else:
-            maxstep = 2*math.acos(1-DEVLIM/R)
+            maxstep = 2 * math.acos(1 - DEVLIM / R)
             if da < 0:
                 maxstep = -maxstep
-            cnt = math.ceil(da/maxstep)
-        step = da/cnt
-        angs = [sa+i*step for i in range(cnt+1)]
-        pnts = [(fr(cx+R*math.cos(a)), fr(cy+R*math.sin(a))) for a in angs]
+            cnt = math.ceil(da / maxstep)
+        step = da / cnt
+        angs = [sa + i * step for i in range(cnt + 1)]
+        pnts = [(fr(cx + R * math.cos(a)), fr(cy + R * math.sin(a)))
+                for a in angs]
         return pnts
 
     # Convert lines
@@ -92,8 +94,10 @@ def mksegments(entities, ndigits=3):
         poly = entities[start:end]
         points = [(fr(dx.bycode(e, 10)), fr(dx.bycode(e, 20)))
                   for e in poly[1:]]
-        angles = [math.atan(float(dx.bycode(e, 42)))*4 if 42 in e else None
-                  for e in poly[1:]]
+        angles = [
+            math.atan(float(dx.bycode(e, 42))) * 4 if 42 in e else None
+            for e in poly[1:]
+        ]
         if 70 in poly[0] and (int(dx.bycode(poly[0], 70)) & 1):  # closed
             points.append(points[0])
         ends = zip(points, points[1:], angles)
@@ -193,17 +197,17 @@ def _arcdata(sp, ep, angs):
     xe, ye = ep
     if angs == 0.0:
         raise ValueError('not a curved section')
-    xm, ym = (xs + xe)/2.0, (ys + ye)/2.0
+    xm, ym = (xs + xe) / 2.0, (ys + ye) / 2.0
     xp, yp = xm - xs, ym - ys
     lp = math.sqrt(xp**2 + yp**2)
-    lq = lp/math.tan(angs/2.0)
-    f = lq/lp
+    lq = lp / math.tan(angs / 2.0)
+    f = lq / lp
     if angs > 0:
         xc, yc = xm - f * yp, ym + f * xp
     else:
         xc, yc = xm + f * yp, ym - f * xp
-    R = math.sqrt((xc-xs)**2 + (yc-ys)**2)
-    twopi = 2*math.pi
+    R = math.sqrt((xc - xs)**2 + (yc - ys)**2)
+    twopi = 2 * math.pi
     a0 = math.atan2(ys - yc, xs - xc)
     a1 = math.atan2(ye - yc, xe - xc)
     if angs > 0:
@@ -229,8 +233,10 @@ def length(line):
     Returns:
         The sum of the lengths of the line segments between the listed points.
     """
-    dist = [math.sqrt((c-a)**2+(d-b)**2) for ((a, b), (c, d))
-            in zip(line, line[1:])]
+    dist = [
+        math.sqrt((c - a)**2 + (d - b)**2)
+        for ((a, b), (c, d)) in zip(line, line[1:])
+    ]
     return sum(dist)
 
 
@@ -290,7 +296,7 @@ def bbox_area(line):
         The product of width*height.
     """
     a, b, c, d = bbox(line)
-    return (c-a)*(d-b)
+    return (c - a) * (d - b)
 
 
 def merge_bbox(bboxes):

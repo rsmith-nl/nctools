@@ -72,30 +72,45 @@ parser = argparse.ArgumentParser(description=__doc__)
 argtxt2 = """minimum rotation angle in degrees where the knife needs
 to be lifted to prevent breaking (defaults to 60°)"""
 argtxt4 = "assemble connected lines into contours (off by default)"
-parser.add_argument('-a', '--angle', help=argtxt2, dest='ang',
-                    metavar='F', type=float, default=60)
-parser.add_argument('-d', '--dist',
-                    help="maximum distance between points considered equal "
-                         "(defaults to 0.25 mm)",
-                    metavar='mm', type=float, default=0.25)
-parser.add_argument('-c', '--contours', help=argtxt4, dest='contours',
-                    action="store_true")
-parser.add_argument('--log', default='warning',
-                    choices=['debug', 'info', 'warning', 'error'],
-                    help="logging level (defaults to 'warning')")
-parser.add_argument('-s', '--sort', default='xy',
-                    choices=['xy', 'yx', 'dist'],
-                    help="sorting algorithm to use (defaults to 'xy')")
+parser.add_argument(
+    '-a',
+    '--angle',
+    help=argtxt2,
+    dest='ang',
+    metavar='F',
+    type=float,
+    default=60)
+parser.add_argument(
+    '-d',
+    '--dist',
+    help="maximum distance between points considered equal "
+    "(defaults to 0.25 mm)",
+    metavar='mm',
+    type=float,
+    default=0.25)
+parser.add_argument(
+    '-c', '--contours', help=argtxt4, dest='contours', action="store_true")
+parser.add_argument(
+    '--log',
+    default='warning',
+    choices=['debug', 'info', 'warning', 'error'],
+    help="logging level (defaults to 'warning')")
+parser.add_argument(
+    '-s',
+    '--sort',
+    default='xy',
+    choices=['xy', 'yx', 'dist'],
+    help="sorting algorithm to use (defaults to 'xy')")
 group = parser.add_mutually_exclusive_group()
-group.add_argument('-L', '--license', action=LicenseAction, nargs=0,
-                   help="print the license")
-group.add_argument('-v', '--version', action='version',
-                   version=__version__)
-parser.add_argument('files', nargs='*', help='one or more file names',
-                    metavar='file')
+group.add_argument(
+    '-L', '--license', action=LicenseAction, nargs=0, help="print the license")
+group.add_argument('-v', '--version', action='version', version=__version__)
+parser.add_argument(
+    'files', nargs='*', help='one or more file names', metavar='file')
 args = parser.parse_args(sys.argv[1:])
-logging.basicConfig(level=getattr(logging, args.log.upper(), None),
-                    format='%(levelname)s: %(message)s')
+logging.basicConfig(
+    level=getattr(logging, args.log.upper(), None),
+    format='%(levelname)s: %(message)s')
 logging.debug('Command line arguments = {}'.format(sys.argv))
 logging.debug('Parsed arguments = {}'.format(args))
 sorters = {'xy': utils.bbxykey, 'yx': utils.bbyxkey, 'dist': utils.distkey}

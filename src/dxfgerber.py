@@ -65,8 +65,9 @@ class LicenseAction(argparse.Action):
 def write_segment(s, out, layer):
     """Write a segment to a file."""
     if len(s) == 2:
-        out.write(linefmt.format(layer=layer, x1=s[0][0], y1=s[0][1],
-                                 x2=s[1][0], y2=s[1][1]))
+        out.write(
+            linefmt.format(
+                layer=layer, x1=s[0][0], y1=s[0][1], x2=s[1][0], y2=s[1][1]))
     elif len(s) > 2:
         if lines.closed(s):
             flag = 9
@@ -95,26 +96,35 @@ def write_allseg(seg, out, layer, keyfunc):
 
 
 parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument('-d', '--dist',
-                    help="maximum distance between points considered equal "
-                         "(defaults to 0.25 mm)",
-                    metavar='mm', type=float, default=0.25)
-parser.add_argument('--log', default='warning',
-                    choices=['debug', 'info', 'warning', 'error'],
-                    help="logging level (defaults to 'warning')")
-parser.add_argument('-s', '--sort', default='xy',
-                    choices=['xy', 'yx', 'dist'],
-                    help="sorting algorithm to use (defaults to 'xy')")
+parser.add_argument(
+    '-d',
+    '--dist',
+    help="maximum distance between points considered equal "
+    "(defaults to 0.25 mm)",
+    metavar='mm',
+    type=float,
+    default=0.25)
+parser.add_argument(
+    '--log',
+    default='warning',
+    choices=['debug', 'info', 'warning', 'error'],
+    help="logging level (defaults to 'warning')")
+parser.add_argument(
+    '-s',
+    '--sort',
+    default='xy',
+    choices=['xy', 'yx', 'dist'],
+    help="sorting algorithm to use (defaults to 'xy')")
 group = parser.add_mutually_exclusive_group()
-group.add_argument('-L', '--license', action=LicenseAction, nargs=0,
-                   help="print the license")
-group.add_argument('-v', '--version', action='version',
-                   version=__version__)
-parser.add_argument('files', nargs='*', help='one or more file names',
-                    metavar='file')
+group.add_argument(
+    '-L', '--license', action=LicenseAction, nargs=0, help="print the license")
+group.add_argument('-v', '--version', action='version', version=__version__)
+parser.add_argument(
+    'files', nargs='*', help='one or more file names', metavar='file')
 args = parser.parse_args(sys.argv[1:])
-logging.basicConfig(level=getattr(logging, args.log.upper(), None),
-                    format='%(levelname)s: %(message)s')
+logging.basicConfig(
+    level=getattr(logging, args.log.upper(), None),
+    format='%(levelname)s: %(message)s')
 logging.debug('Command line arguments = {}'.format(sys.argv))
 logging.debug('Parsed arguments = {}'.format(args))
 sorters = {'xy': utils.bbxykey, 'yx': utils.bbyxkey, 'dist': utils.distkey}

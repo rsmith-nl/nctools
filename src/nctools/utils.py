@@ -22,7 +22,6 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
-
 """Utilities for nctools."""
 
 import glob
@@ -83,7 +82,7 @@ def distkey(s):
         box to the origin.
     """
     bx, by, _, _ = lines.bbox(s)
-    return bx*bx+by*by
+    return bx * bx + by * by
 
 
 def bbxykey(s):

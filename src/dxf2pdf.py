@@ -43,26 +43,34 @@ class LicenseAction(argparse.Action):
 
 parser = argparse.ArgumentParser(description=__doc__)
 group = parser.add_mutually_exclusive_group()
-group.add_argument('-L', '--license', action=LicenseAction, nargs=0,
-                   help="print the license")
-group.add_argument('-v', '--version', action='version',
-                   version=__version__)
+group.add_argument(
+    '-L', '--license', action=LicenseAction, nargs=0, help="print the license")
+group.add_argument('-v', '--version', action='version', version=__version__)
 argtxt4 = "assemble connected lines into contours (off by default)"
-parser.add_argument('-c', '--contours', help=argtxt4, dest='contours',
-                    action="store_true")
-parser.add_argument('--log', default='warning',
-                    choices=['debug', 'info', 'warning', 'error'],
-                    help="logging level (defaults to 'warning')")
-parser.add_argument('-s', '--sort', default='xy',
-                    choices=['xy', 'yx', 'dist'],
-                    help="sorting algorithm to use (defaults to 'xy')")
-parser.add_argument('-m', '--markers', action="store_true",
-                    help='add start (blue) and end (red) markers')
-parser.add_argument('files', nargs='*', help='one or more file names',
-                    metavar='file')
+parser.add_argument(
+    '-c', '--contours', help=argtxt4, dest='contours', action="store_true")
+parser.add_argument(
+    '--log',
+    default='warning',
+    choices=['debug', 'info', 'warning', 'error'],
+    help="logging level (defaults to 'warning')")
+parser.add_argument(
+    '-s',
+    '--sort',
+    default='xy',
+    choices=['xy', 'yx', 'dist'],
+    help="sorting algorithm to use (defaults to 'xy')")
+parser.add_argument(
+    '-m',
+    '--markers',
+    action="store_true",
+    help='add start (blue) and end (red) markers')
+parser.add_argument(
+    'files', nargs='*', help='one or more file names', metavar='file')
 args = parser.parse_args(sys.argv[1:])
-logging.basicConfig(level=getattr(logging, args.log.upper(), None),
-                    format='%(levelname)s: %(message)s')
+logging.basicConfig(
+    level=getattr(logging, args.log.upper(), None),
+    format='%(levelname)s: %(message)s')
 logging.debug('Command line arguments = {}'.format(sys.argv))
 logging.debug('Parsed arguments = {}'.format(args))
 sorters = {'xy': utils.bbxykey, 'yx': utils.bbyxkey, 'dist': utils.distkey}
@@ -122,7 +130,7 @@ for f in utils.xpand(args.files):
             fs = '{} segments in layer "{}"'
             logging.info(fs.format(len(segments), layername))
             plot.lines(ctx, segments, marks=args.markers)
-    plot.title(ctx, 'dxf2pdf', ofn, maxy-miny, options=opts)
+    plot.title(ctx, 'dxf2pdf', ofn, maxy - miny, options=opts)
     out.show_page()
     logging.info('Writing output file "{}"'.format(ofn))
     out.finish()
