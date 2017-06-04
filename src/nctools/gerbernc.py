@@ -1,6 +1,6 @@
 # vim:fileencoding=utf-8
 # Copyright © 2013-2016 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Last modified: 2016-03-30 15:07:52 +0200
+# Last modified: 2017-06-04 16:08:22 +0200
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -22,8 +22,9 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
+"""
+Classes for reading and writing Gerber NC files for a cloth cutter.
 
-"""Classes for reading and writing Gerber NC files for a cloth cutter.
 The language and file format for PCB machines is different!
 """
 
@@ -32,10 +33,11 @@ import os.path as op
 
 
 class Writer(object):
-    """Writes Gerber NC files."""
+    """Write Gerber NC files."""
 
     def __init__(self, path, name=None, anglim=60):
-        """Initialize the writer.
+        """
+        Initialize the writer.
 
         Arguments:
             path: the output file
@@ -59,6 +61,7 @@ class Writer(object):
         self.commands = ['H1', 'M20', '', 'M15']
 
     def __str__(self):
+        """Convert to string."""
         return '*'.join(self.commands)
 
     def newpiece(self):
@@ -73,6 +76,7 @@ class Writer(object):
         self.commands += ['M15']
 
     def _bbupdate(self, pnt):
+        """Update bounding box."""
         if self.bbox is None:
             self.bbox = (pnt[0], pnt[1], pnt[0], pnt[1])
         else:
@@ -96,7 +100,10 @@ class Writer(object):
         self.commands += ['M14']
 
     def moveto(self, x, y):
-        """Move the cutting head from the current position to the indicated
+        """
+        Move the cutting head.
+
+        The move is done from the current position to the indicated
         position in a straight line.
 
         Arguments:
@@ -147,7 +154,8 @@ class Writer(object):
 
 
 def mm2cin(arg):
-    """Convert millimeters to 1/100 in
+    """
+    Convert millimeters to 1/100 in.
 
     Arguments:
         arg: Number or sequence of numbers.
@@ -161,7 +169,8 @@ def mm2cin(arg):
 
 
 def cin2mm(arg):
-    """Convert 1/100 in to millimeters
+    """
+    Convert 1/100 in to millimeters.
 
     Arguments:
         arg: Number or sequence of numbers.

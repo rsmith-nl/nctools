@@ -1,7 +1,6 @@
 # dxf2pdf - main program
 # vim:fileencoding=utf-8
-
-"""Reads DXF files and renders them as PDF files."""
+"""Read DXF files and renders them as PDF files."""
 
 import argparse
 import logging
@@ -12,7 +11,7 @@ from nctools import lines, utils, plot
 __version__ = '2.0.0-beta'
 
 _lic = """dxf2pdf {}
-Copyright © 2011-2016 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+Copyright © 2011-2017 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions

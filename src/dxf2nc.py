@@ -1,7 +1,6 @@
 # dxf2nc - main program
 # vim:fileencoding=utf-8
-
-"""Converts a DXF file to a cutting program for a Gerber cloth cutter."""
+"""Convert a DXF file to a cutting program for a Gerber cloth cutter."""
 
 import argparse
 import logging
@@ -12,7 +11,7 @@ from nctools import lines, gerbernc, utils
 __version__ = '2.0.0-beta'
 
 _lic = """dxf2nc {}
-Copyright © 2012-2016 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+Copyright © 2012-2017 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -54,7 +53,8 @@ def cut_contours(seg, w, layer, keyfunc):
 
 
 def cut_segments(seg, w):
-    """Generate cutting commands for a list of segments.
+    """
+    Generate cutting commands for a list of segments.
 
     Arguments:
         seg: List of line segments.

@@ -3,7 +3,7 @@
 #
 # Copyright © 2015,2016 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-05-03 20:18:19 +0200
-# Last modified: 2016-03-29 12:24:20 +0200
+# Last modified: 2017-06-04 16:13:05 +0200
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -24,7 +24,6 @@
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 """Utilities for plotting."""
 
 import datetime
@@ -63,7 +62,7 @@ def setup(ofn, minx, miny, maxx, maxy, offset=40):
 
 def grid(context, minx, miny, maxx, maxy, spacing=100):
     """
-    Plot a 100x100 grid
+    Plot a 100x100 grid.
 
     Arguments:
         context: Drawing context.
@@ -91,7 +90,9 @@ def grid(context, minx, miny, maxx, maxy, spacing=100):
 
 def lines(context, lines, lw=2, marks=True):
     """
-    Plot a list of lines. Each line is a list of 2-tuples (x, y).
+    Plot a list of lines.
+
+    Each line is a list of 2-tuples (x, y).
 
     Arguments:
         context: Drawing context.

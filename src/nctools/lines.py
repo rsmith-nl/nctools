@@ -3,7 +3,7 @@
 #
 # Copyright © 2015,2016 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-11-14 18:56:39 +0100
-# Last modified: 2016-04-17 15:18:25 +0200
+# Last modified: 2017-06-04 16:12:34 +0200
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -24,10 +24,10 @@
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+"""
+A module for dealing with line segments.
 
-"""A module for dealing with line segments.
-Basically, a line segment is a list of two or more
-2-tuples (x,y).
+Basically, a line segment is a list of two or more 2-tuples (x,y).
 
 Since line segments are lists, standard member functions like reverse() and
 len() can be used.
@@ -110,6 +110,16 @@ def mksegments(entities, ndigits=3):
 
 
 def _eq(p, k):
+    """
+    Decide equality of points.
+
+    Arguments:
+        p: A point represented by a 2-tuple or list of numbers.
+        k: A point represented by a 2-tuple or list of numbers.
+
+    Returns:
+        True if the coordinates of the point do not differ more than EPSILON.
+    """
     dx = abs(k[0] - p[0])
     dy = abs(k[1] - p[1])
     if dx < EPSILON and dy < EPSILON:
@@ -118,6 +128,7 @@ def _eq(p, k):
 
 
 def _grow_segment(segment, addition):
+    """Combine two segments into one, if possible."""
     if _eq(segment[-1], addition[0]):  # append addition
         return segment + addition[1:]
     elif _eq(segment[-1], addition[-1]):  # append reversed addition
@@ -167,7 +178,8 @@ def combine_segments(segments):
 
 
 def _arcdata(sp, ep, angs):
-    """Calculate arc properties for a curved polyline section
+    """
+    Calculate arc properties for a curved polyline section.
 
     Arguments:
         sp: startpoint
@@ -238,7 +250,8 @@ def closed(line):
 
 
 def setstart(line, newstart):
-    """Change the start point of a closed line segment.
+    """
+    Change the start point of a closed line segment.
 
     Arguments:
         line: list of 2-tuples (x, y)

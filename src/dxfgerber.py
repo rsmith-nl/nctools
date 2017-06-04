@@ -1,9 +1,12 @@
 # dxfgerber - main program
 # vim:fileencoding=utf-8
+"""
+Reorganizes entities in a DXF file.
 
-"""Reorganizes entities in a DXF file. For each numbered layer (except layer 0)
-in numbered order it groups connected lines together in polylines and writes
-them and any remaining loose lines in sorted order."""
+For each numbered layer (except layer 0) in numbered order it groups connected
+lines together in polylines and writes them and any remaining loose lines in
+sorted order.
+"""
 
 import argparse
 import logging
@@ -14,7 +17,7 @@ from nctools import lines, utils
 __version__ = '2.0.0-beta'
 
 _lic = """dxfgerber.py {}
-Copyright © 2016 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+Copyright © 2016,2017 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -60,6 +63,7 @@ class LicenseAction(argparse.Action):
 
 
 def write_segment(s, out, layer):
+    """Write a segment to a file."""
     if len(s) == 2:
         out.write(linefmt.format(layer=layer, x1=s[0][0], y1=s[0][1],
                                  x2=s[1][0], y2=s[1][1]))

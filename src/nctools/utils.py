@@ -1,6 +1,6 @@
 # vim:fileencoding=utf-8
 # Copyright © 2013-2016 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Last modified: 2016-03-30 22:12:13 +0200
+# Last modified: 2017-06-04 16:15:09 +0200
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -31,7 +31,8 @@ from nctools import lines
 
 
 def outname(inname, extension, addenum=''):
-    """Creates the name of the output filename based on the input filename.
+    """
+    Create the name of the output filename based on the input filename.
 
     Arguments:
         inname: Name + path of the input file.
@@ -50,8 +51,8 @@ def outname(inname, extension, addenum=''):
 
 
 def xpand(args):
-    """Expand command line arguments for operating systems incapable of doing
-    so.
+    """
+    Expand command line arguments.
 
     Arguments:
         args: List of arguments.
@@ -87,8 +88,7 @@ def distkey(s):
 
 def bbxykey(s):
     """
-    Sort key for segments first by the left of the bounding box and then
-    by the bottom.
+    Sort key for segments by the (left, bottom) of the bounding box.
 
     Argument:
         s: Segment; list of 2-tuples (x,y)
@@ -102,8 +102,7 @@ def bbxykey(s):
 
 def bbyxkey(s):
     """
-    Sort key for segments first by the bottom of the bounding box and then
-    by the left.
+    Sort key for segments by the bottom then left of the bounding box.
 
     Argument:
         s: Segment; list of 2-tuples (x,y)

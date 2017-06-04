@@ -3,7 +3,7 @@
 #
 # Copyright © 2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-04-16 11:57:29 +0200
-# Last modified: 2016-03-20 15:02:44 +0100
+# Last modified: 2017-06-04 16:05:49 +0200
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -24,17 +24,18 @@
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 """Module for retrieving the drawing entities from DXF files."""
 
 import re
 
 
 def parse(filename):
-    """Read a DXF file and break it into (group, data) tuples.
+    """
+    Read a DXF file and break it into (group, data) tuples.
 
     Arguments:
         filename: Name of a DXF file to read.
+
     Returns:
         A list of (group, data) tuples.
     """
@@ -46,7 +47,8 @@ def parse(filename):
 
 
 def entities(data):
-    """Isolate the entity data from a list of (group, data) tuples.
+    """
+    Isolate the entity data from a list of (group, data) tuples.
 
     Arguments:
         data: Input list of DXF (group, data) tuples.
@@ -73,7 +75,8 @@ def layername(ent):
 
 
 def bycode(ent, group):
-    """Get the data with the given group code from an entity.
+    """
+    Get the data with the given group code from an entity.
 
     Arguments:
         ent: An iterable of (group, data) tuples.
@@ -91,7 +94,7 @@ def bycode(ent, group):
 
 def layernames(entities):
     """
-    Get all layer names from the entities
+    Get all layer names from the entities.
 
     Arguments:
         entities: An iterable if dictionaries, each containing a DXF entity.
@@ -106,8 +109,7 @@ def layernames(entities):
 
 def numberedlayers(entities):
     """
-    Get all layer names from the entities that contain a number, except for
-    layer 0.
+    Get layer names from entities that contain a number, except for layer 0.
 
     Arguments:
         entities: An iterable of dictionaries, each containing a DXF entity.
