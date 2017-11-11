@@ -10,7 +10,7 @@ import sys
 from nctools import dxfreader as dx
 from nctools import utils as ut
 
-__version__ = '2.0.0-beta'
+__version__ = '2-beta'
 _lic = """readdxf {}
 Copyright © 2011-2016 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 

@@ -7,7 +7,7 @@ import logging
 import sys
 from nctools import gerbernc, plot, utils
 
-__version__ = '2.0.0-beta'
+__version__ = '2-beta'
 
 _lic = """nc2pdf {}
 Copyright © 2013, 2016 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.

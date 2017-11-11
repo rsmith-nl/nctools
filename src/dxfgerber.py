@@ -14,7 +14,7 @@ import sys
 from nctools import dxfreader as dx
 from nctools import lines, utils
 
-__version__ = '2.0.0-beta'
+__version__ = '2-beta'
 
 _lic = """dxfgerber.py {}
 Copyright © 2016,2017 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.

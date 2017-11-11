@@ -8,7 +8,7 @@ import sys
 from nctools import dxfreader as dxf
 from nctools import lines, utils, plot
 
-__version__ = '2.0.0-beta'
+__version__ = '2-beta'
 
 _lic = """dxf2pdf {}
 Copyright © 2011-2017 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
