@@ -1,11 +1,10 @@
-#!/usr/bin/env python3
 # file: readdxf.py
 # vim:fileencoding=utf-8:fdm=marker:ft=python
 # readdxf - main program
 #
-# Copyright © 2018 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+# Author: R.F. Smith <rsmith@xs4all.nl>
 # Created: 2016-02-19 22:34:29 +0100
-# Last modified: 2018-01-22 23:56:43 +0100
+# Last modified: 2018-01-23 21:27:38 +0100
 """Reads DXF files and prints the entities in human-readable form."""
 
 import argparse
@@ -127,6 +126,9 @@ def process_arguments():
         format='%(levelname)s: %(message)s')
     logging.debug('Command line arguments = {}'.format(sys.argv[1:]))
     logging.debug('Parsed arguments = {}'.format(args))
+    if not args.files:
+        parser.print_help()
+        sys.exit(0)
     return args
 
 

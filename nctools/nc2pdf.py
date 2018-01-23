@@ -1,11 +1,10 @@
-#!/usr/bin/env python3
 # file: nc2pdf.py
 # vim:fileencoding=utf-8:fdm=marker:ft=python
 # nc2pdf - main program
 #
 # Author: R.F. Smith <rsmith@xs4all.nl>
 # Created: 2016-02-19 22:34:29 +0100
-# Last modified: 2018-01-22 23:58:52 +0100
+# Last modified: 2018-01-23 21:24:45 +0100
 """Plot cuts from a Gerber cloth cutter NC file to a PDF."""
 
 import argparse
@@ -45,10 +44,7 @@ class LicenseAction(argparse.Action):
         sys.exit()
 
 
-def main():
-    """
-    Entry point for nc2pdf.py.
-    """
+def process_arguments():
     parser = argparse.ArgumentParser(description=__doc__)
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
@@ -70,6 +66,14 @@ def main():
     if not args.files:
         parser.print_help()
         sys.exit(0)
+    return args
+
+
+def main():
+    """
+    Entry point for nc2pdf.py.
+    """
+    args = process_arguments()
     for fn in utils.xpand(args.files):
         logging.info('starting file "{}"'.format(fn))
         try:
@@ -81,7 +85,7 @@ def main():
             logging.error(fns.format(fn))
             continue
         except IOError as e:
-            logging.info("Cannot read file: {}".format(e))
+            logging.info("cannot read file: {}".format(e))
             logging.error("i/o error, skipping file '{}'".format(fn))
             continue
         cnt = len(cuts)
@@ -99,9 +103,9 @@ def main():
         plot.lines(ctx, cuts)
         plot.title(ctx, 'nc2pdf', ofn, maxy - miny)
         out.show_page()
-        logging.info('Writing output file "{}"'.format(ofn))
+        logging.info('writing output file "{}"'.format(ofn))
         out.finish()
-        logging.info('File "{}" done.'.format(fn))
+        logging.info('file "{}" done.'.format(fn))
 
 
 if __name__ == '__main__':

@@ -1,7 +1,7 @@
 README for NCtools
 ##################
 
-:date: 2016-03-31
+:date: 2018-01-23
 :author: Roland Smith
 
 
@@ -31,16 +31,14 @@ Requirements
 
 Installation
 ============
-See INSTALL.TXT
+
+Run ``./setup.py install``.
 
 
 General remarks about the programs
 ==================================
 These programs are command-line utilities. There are no GUI front-ends planned
 at the moment.
-
-For convenience, the programs that need the ``nctools`` module come packed
-with it. So on UNIX/Linux you can just drop them in your $PATH somewhere.
 
 All these programs can read files in other directories. They will however only
 write files in the current working directory. The output filename will be
@@ -49,6 +47,12 @@ extension. Where necessary, new extensions and/or modifiers are added. So an
 input file '..\foo\bar.dxf' will generally result in an output file named
 'bar' with the appropriate extension.
 
+To try the programs without installing them, run::
+
+    python3 -m nctools.<program> <arguments>
+
+from the root directory of the repository. Every program supports the ``-h``
+or ``--help`` options for an overiew of the arguments and usage.
 
 dxf2nc
 ------
@@ -78,8 +82,6 @@ Gerber numeric code files are basically text files but do not contain line
 breaks, which makes them hard to read. The ``readnc`` utility can be used to
 display the file in a more human-readable format.
 
-See ``dxf2nc -h`` output for usage instructions.
-
 The software for our machine doesn't use extensions for nc files, so this
 program just strips the dxf extension from the filename.
 
@@ -90,8 +92,6 @@ This program reads a DXF file and generates a PDF file from it. This comes in
 handy to view a PDF file. The lines, arcs and polylines from the DXF file are
 shown on top of a 100x100 mm grid. Optionally the beginning and ending of
 lines are marked.
-
-See ``dxf2pdf -h`` output for usage instructions.
 
 In this case, the output filename for the input file 'foo.dxf' will be
 'foo_dxf.pdf'
@@ -106,8 +106,6 @@ the original program to optimize DXF files for use with the Gerber software.
 It assembles connected lines/arcs into contours so that the cutter won't jump
 all over the part. The dxf2nc program is intended as its replacement.
 
-See ``dxfgerber -h`` output for usage instructions.
-
 Since the output of this command is also a DXF file, the output filename has
 '_mod' appended. So the input file 'baz.dxf' has the associated output file
 'baz_mod.dxf'.
@@ -119,8 +117,6 @@ This program reads a Gerber NC file and plots the cuts as a PDF. It assumes
 units of 1/100 inch and only reads knife up/down and movements. It colors the
 cuts to indicate their sequence in the nc file.
 
-See ``nc2pdf -h`` output for usage instructions.
-
 In this case, the output filename for the input file 'foo.nc' will be
 'foo_nc.pdf'
 
@@ -130,8 +126,6 @@ dumpgerber.py
 Gerber numeric code files are basically text files but do not contain line
 breaks, which makes them hard to read. This utility can be used to display the
 file in a more human-readable format.
-
-See ``dumpgerber -h`` output for usage instructions.
 
 Example output::
 
@@ -161,8 +155,6 @@ Reads a DXF file and outputs the entities that it finds. This is more of a
 debugging tool for the nctools module than a really useful program. It
 gathers entities into contours for testing purposes of that functionality. A
 visual alternative would be to use dxf2pdf.
-
-See ``readdxf -h`` output for usage instructions.
 
 Example output::
 
@@ -201,16 +193,11 @@ Example output::
     ...
 
 
-Tests
-=====
+Developers
+==========
 
-Some tests for the source code can be found in the ``tests`` directory. They
-can be run using pytest_.
+You will need py.test_ to run the provided tests. Code checks are done using
+pylama_. Both should be invoked from the root directory of the repository.
 
-.. _pytest: http://pytest.org/
-
-To run the tests;
-
-.. code-block:: console
-
-    > py.test -v tests/
+.. _py.test: https://docs.pytest.org/
+.. _pylama: http://pylama.readthedocs.io/en/latest/

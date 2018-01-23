@@ -1,5 +1,10 @@
+# file: dxfgerber.py
+# vim:fileencoding=utf-8:fdm=marker:ft=python
 # dxfgerber - main program
-# vim:fileencoding=utf-8
+#
+# Author: R.F. Smith <rsmith@xs4all.nl>
+# Created: 2016-02-19 22:34:29 +0100
+# Last modified: 2018-01-23 21:24:33 +0100
 """
 Reorganizes entities in a DXF file.
 
@@ -13,11 +18,10 @@ import logging
 import sys
 from nctools import dxfreader as dx
 from nctools import lines, utils
+from nctools import __version__
 
-__version__ = '2-beta'
-
-_lic = """dxfgerber.py {}
-Copyright © 2016,2017 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+_lic = """dxfgerber {}
+Copyright © 2016-2018 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -95,74 +99,87 @@ def write_allseg(seg, out, layer, keyfunc):
         write_segment(s, out, layer)
 
 
-parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument(
-    '-d',
-    '--dist',
-    help="maximum distance between points considered equal "
-    "(defaults to 0.25 mm)",
-    metavar='mm',
-    type=float,
-    default=0.25)
-parser.add_argument(
-    '--log',
-    default='warning',
-    choices=['debug', 'info', 'warning', 'error'],
-    help="logging level (defaults to 'warning')")
-parser.add_argument(
-    '-s',
-    '--sort',
-    default='xy',
-    choices=['xy', 'yx', 'dist'],
-    help="sorting algorithm to use (defaults to 'xy')")
-group = parser.add_mutually_exclusive_group()
-group.add_argument(
-    '-L', '--license', action=LicenseAction, nargs=0, help="print the license")
-group.add_argument('-v', '--version', action='version', version=__version__)
-parser.add_argument(
-    'files', nargs='*', help='one or more file names', metavar='file')
-args = parser.parse_args(sys.argv[1:])
-logging.basicConfig(
-    level=getattr(logging, args.log.upper(), None),
-    format='%(levelname)s: %(message)s')
-logging.debug('Command line arguments = {}'.format(sys.argv))
-logging.debug('Parsed arguments = {}'.format(args))
-sorters = {'xy': utils.bbxykey, 'yx': utils.bbyxkey, 'dist': utils.distkey}
-sortkey = sorters[args.sort]
-lines.epsilon = args.dist
-if not args.files:
-    parser.print_help()
-    sys.exit(0)
-for f in utils.xpand(args.files):
-    logging.info('Starting file "{}"'.format(f))
-    try:
-        ofn = utils.outname(f, extension='.dxf', addenum='_mod')
-        data = dx.parse(f)
-        entities = dx.entities(data)
-    except ValueError as ex:
-        logging.info(str(ex))
-        fns = "error during processing. Skipping file '{}'."
-        logging.error(fns.format(f))
-        continue
-    except IOError as ex:
-        logging.info(str(ex))
-        logging.error("i/o error in file '{}'. Skipping it.".format(f))
-        continue
-    layers = dx.numberedlayers(entities)
-    entities = [e for e in entities if dx.bycode(e, 8) in layers]
-    num = len(entities)
-    if num == 0:
-        logging.info("no entities found! Skipping file '{}'.".format(f))
-        continue
-    logging.info('{} entities found.'.format(num))
-    with open(ofn, 'w') as out:
-        out.write(dxfheader)
-        for layername in layers:
-            thislayer = dx.fromlayer(entities, layername)
-            ls = '{} entities found in layer "{}".'
-            logging.info(ls.format(num, layername))
-            segments = lines.mksegments(thislayer)
-            fs = '{} segments in layer "{}"'
-            logging.info(fs.format(len(segments), layername))
-            write_allseg(segments, out, layername, sortkey)
-        out.write(dxffooter)
+def process_arguments():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        '-d',
+        '--dist',
+        help="maximum distance between points considered equal "
+        "(defaults to 0.25 mm)",
+        metavar='mm',
+        type=float,
+        default=0.25)
+    parser.add_argument(
+        '--log',
+        default='warning',
+        choices=['debug', 'info', 'warning', 'error'],
+        help="logging level (defaults to 'warning')")
+    parser.add_argument(
+        '-s',
+        '--sort',
+        default='xy',
+        choices=['xy', 'yx', 'dist'],
+        help="sorting algorithm to use (defaults to 'xy')")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
+        '-L', '--license', action=LicenseAction, nargs=0, help="print the license")
+    group.add_argument('-v', '--version', action='version', version=__version__)
+    parser.add_argument(
+        'files', nargs='*', help='one or more file names', metavar='file')
+    args = parser.parse_args(sys.argv[1:])
+    logging.basicConfig(
+        level=getattr(logging, args.log.upper(), None),
+        format='%(levelname)s: %(message)s')
+    logging.debug('command line arguments = {}'.format(sys.argv))
+    logging.debug('parsed arguments = {}'.format(args))
+    if not args.files:
+        parser.print_help()
+        sys.exit(0)
+    return args
+
+
+def main():
+    """
+    Entry point for dxfgerber.py.
+    """
+    args = process_arguments()
+    sorters = {'xy': utils.bbxykey, 'yx': utils.bbyxkey, 'dist': utils.distkey}
+    sortkey = sorters[args.sort]
+    lines.epsilon = args.dist
+    for f in utils.xpand(args.files):
+        logging.info('starting file "{}"'.format(f))
+        try:
+            ofn = utils.outname(f, extension='.dxf', addenum='_mod')
+            data = dx.parse(f)
+            entities = dx.entities(data)
+        except ValueError as ex:
+            logging.info(str(ex))
+            fns = "error during processing. Skipping file '{}'."
+            logging.error(fns.format(f))
+            continue
+        except IOError as ex:
+            logging.info(str(ex))
+            logging.error("i/o error in file '{}'. Skipping it.".format(f))
+            continue
+        layers = dx.numberedlayers(entities)
+        entities = [e for e in entities if dx.bycode(e, 8) in layers]
+        num = len(entities)
+        if num == 0:
+            logging.info("no entities found! Skipping file '{}'.".format(f))
+            continue
+        logging.info('{} entities found.'.format(num))
+        with open(ofn, 'w') as out:
+            out.write(dxfheader)
+            for layername in layers:
+                thislayer = dx.fromlayer(entities, layername)
+                ls = '{} entities found in layer "{}".'
+                logging.info(ls.format(num, layername))
+                segments = lines.mksegments(thislayer)
+                fs = '{} segments in layer "{}"'
+                logging.info(fs.format(len(segments), layername))
+                write_allseg(segments, out, layername, sortkey)
+            out.write(dxffooter)
+
+
+if __name__ == '__main__':
+    main()

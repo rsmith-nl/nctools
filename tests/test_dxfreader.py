@@ -3,13 +3,13 @@
 #
 # Author: R.F. Smith <rsmith@xs4all.nl>
 # Created: 2016-03-28 01:44:10 +0200
-# Last modified: 2016-06-11 13:37:10 +0200
+# Last modified: 2018-01-23 22:02:38 +0100
 
 """Tests for the dxfreader module."""
 
 import sys
 
-sys.path.insert(1, 'src')
+sys.path.insert(1, '.')
 
 from nctools import dxfreader as dxf  # noqa
 

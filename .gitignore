@@ -1,12 +1,9 @@
-dxf2nc
-dxf2pdf
-dxfgerber
-nc2pdf
-readdxf
 *.pyc
 *.pyo
 backup-*.tar.gz
-dist
+dist/
+build/
+nctools.egg-info/
 *.pdf
 .ropeproject/
 .cache/

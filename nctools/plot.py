@@ -3,7 +3,7 @@
 #
 # Copyright © 2015,2016 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-05-03 20:18:19 +0200
-# Last modified: 2017-06-04 16:13:05 +0200
+# Last modified: 2018-01-23 21:50:09 +0100
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -29,8 +29,7 @@
 import datetime
 import math
 import cairo
-
-__version__ = '2-beta'
+from .version import __version__
 
 
 def setup(ofn, minx, miny, maxx, maxy, offset=40):

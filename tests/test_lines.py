@@ -3,13 +3,13 @@
 #
 # Author: R.F. Smith <rsmith@xs4all.nl>
 # Created: 2016-03-28 12:45:47 +0200
-# Last modified: 2016-06-11 13:42:04 +0200
+# Last modified: 2018-01-23 22:02:50 +0100
 
 """Tests for the lines module."""
 
 import sys
 
-sys.path.insert(1, 'src')
+sys.path.insert(1, '.')
 
 from nctools import lines  # noqa
 
