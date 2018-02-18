@@ -4,7 +4,7 @@
 #
 # Author: R.F. Smith <rsmith@xs4all.nl>
 # Created: 2016-02-19 22:34:29 +0100
-# Last modified: 2018-01-23 21:26:11 +0100
+# Last modified: 2018-02-10 14:15:29 +0100
 """Read DXF files and renders them as PDF files."""
 
 import argparse
@@ -71,6 +71,11 @@ def process_arguments():
         action="store_true",
         help='add start (blue) and end (red) markers')
     parser.add_argument(
+        '-a',
+        '--alllayers',
+        action="store_true",
+        help='process all layers (default: numbered layers)')
+    parser.add_argument(
         'files', nargs='*', help='one or more file names', metavar='file')
     args = parser.parse_args(sys.argv[1:])
     logging.basicConfig(
@@ -92,8 +97,11 @@ def output(ifn, ofn, entities, args):
         opts.append('markers')
     sorters = {'xy': utils.bbxykey, 'yx': utils.bbyxkey, 'dist': utils.distkey}
     sortkey = sorters[args.sort]
-    layers = dxf.numberedlayers(entities)
-    entities = [e for e in entities if dxf.bycode(e, 8) in layers]
+    if not args.alllayers:
+        layers = dxf.numberedlayers(entities)
+        entities = [e for e in entities if dxf.bycode(e, 8) in layers]
+    else:
+        layers = dxf.layernames(entities)
     num = len(entities)
     if num == 0:
         logging.info("no entities found! Skipping file '{}'.".format(ifn))
