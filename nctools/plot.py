@@ -167,10 +167,7 @@ def title(context, prog, ofn, h, offset=40, options=None):
     context.set_source_rgb(0.0, 0.0, 0.0)
     context.set_font_size(fh)
     context.move_to(5, fh + 5)
-    txt = ' '.join([
-        'Produced by:', prog, __version__, 'on',
-        str(datetime.datetime.now())[:-10]
-    ])
+    txt = ' '.join(['Produced by:', prog, __version__, 'on', str(datetime.datetime.now())[:-10]])
     context.show_text(txt)
     if options:
         context.move_to(5, 2 * fh + 5)

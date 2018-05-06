@@ -57,14 +57,15 @@ def mksegments(entities, ndigits=3):
         return round(float(n), ndigits)
 
     def line(e):
-        return [(fr(dx.bycode(e, 10)), fr(dx.bycode(e, 20))),
-                (fr(dx.bycode(e, 11)), fr(dx.bycode(e, 21)))]
+        return [
+            (fr(dx.bycode(e, 10)), fr(dx.bycode(e, 20))),
+            (fr(dx.bycode(e, 11)), fr(dx.bycode(e, 21)))
+        ]
 
     def arc(e):
         cx, cy = float(dx.bycode(e, 10)), float(dx.bycode(e, 20))
         R = fr(dx.bycode(e, 40))
-        sa, ea = (math.radians(float(dx.bycode(e, 50))),
-                  math.radians(float(dx.bycode(e, 51))))
+        sa, ea = (math.radians(float(dx.bycode(e, 50))), math.radians(float(dx.bycode(e, 51))))
         if ea > sa:
             da = ea - sa
         else:
@@ -78,8 +79,7 @@ def mksegments(entities, ndigits=3):
             cnt = math.ceil(da / maxstep)
         step = da / cnt
         angs = [sa + i * step for i in range(cnt + 1)]
-        pnts = [(fr(cx + R * math.cos(a)), fr(cy + R * math.sin(a)))
-                for a in angs]
+        pnts = [(fr(cx + R * math.cos(a)), fr(cy + R * math.sin(a))) for a in angs]
         return pnts
 
     # Convert lines
@@ -92,12 +92,8 @@ def mksegments(entities, ndigits=3):
     for start in pi:
         end = [n for n in se if n > start][0]
         poly = entities[start:end]
-        points = [(fr(dx.bycode(e, 10)), fr(dx.bycode(e, 20)))
-                  for e in poly[1:]]
-        angles = [
-            math.atan(float(dx.bycode(e, 42))) * 4 if 42 in e else None
-            for e in poly[1:]
-        ]
+        points = [(fr(dx.bycode(e, 10)), fr(dx.bycode(e, 20))) for e in poly[1:]]
+        angles = [math.atan(float(dx.bycode(e, 42))) * 4 if 42 in e else None for e in poly[1:]]
         if 70 in poly[0] and (int(dx.bycode(poly[0], 70)) & 1):  # closed
             points.append(points[0])
         ends = zip(points, points[1:], angles)
@@ -233,10 +229,7 @@ def length(line):
     Returns:
         The sum of the lengths of the line segments between the listed points.
     """
-    dist = [
-        math.sqrt((c - a)**2 + (d - b)**2)
-        for ((a, b), (c, d)) in zip(line, line[1:])
-    ]
+    dist = [math.sqrt((c - a)**2 + (d - b)**2) for ((a, b), (c, d)) in zip(line, line[1:])]
     return sum(dist)
 
 

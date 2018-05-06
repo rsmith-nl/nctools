@@ -39,6 +39,7 @@ SUCH DAMAGE.""".format(__version__)
 
 
 class LicenseAction(argparse.Action):
+
     def __call__(self, parser, namespace, values, option_string=None):
         print(_lic)
         sys.exit()
@@ -47,20 +48,19 @@ class LicenseAction(argparse.Action):
 def process_arguments():
     parser = argparse.ArgumentParser(description=__doc__)
     group = parser.add_mutually_exclusive_group()
-    group.add_argument(
-        '-L', '--license', action=LicenseAction, nargs=0, help="print the license")
+    group.add_argument('-L', '--license', action=LicenseAction, nargs=0, help="print the license")
     group.add_argument('-v', '--version', action='version', version=__version__)
     parser.add_argument(
         '--log',
         default='warning',
         choices=['debug', 'info', 'warning', 'error'],
-        help="logging level (defaults to 'warning')")
-    parser.add_argument(
-        'files', nargs='*', help='one or more file names', metavar='file')
+        help="logging level (defaults to 'warning')"
+    )
+    parser.add_argument('files', nargs='*', help='one or more file names', metavar='file')
     args = parser.parse_args(sys.argv[1:])
     logging.basicConfig(
-        level=getattr(logging, args.log.upper(), None),
-        format='%(levelname)s: %(message)s')
+        level=getattr(logging, args.log.upper(), None), format='%(levelname)s: %(message)s'
+    )
     logging.debug('command line arguments = {}'.format(sys.argv))
     logging.debug('parsed arguments = {}'.format(args))
     if not args.files:

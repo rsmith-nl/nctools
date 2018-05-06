@@ -19,28 +19,20 @@ setup(
     author='Roland Smith',
     author_email='rsmith@xs4all.nl',
     url='https://github.com/rsmith-nl/nctools',
-    extras_require={
-        'PDF':  ["cairo>=1.10"]
-    },
+    extras_require={'PDF': ["cairo>=1.10"]},
     provides=[name],
     packages=[name],
     entry_points={
         'console_scripts': [
-            'dumpgerber = nctools.dumpgerber:main',
-            'dxf2nc = nctools.dxf2nc:main',
-            'dxf2pdf = nctools.dxf2pdf:main [PDF]',
-            'dxfgerber = nctools.dxfgerber:main',
-            'nc2pdf = nctools.nc2pdf:main [PDF]',
-            'readdxf = nctools.readdxf:main'
+            'dumpgerber = nctools.dumpgerber:main', 'dxf2nc = nctools.dxf2nc:main',
+            'dxf2pdf = nctools.dxf2pdf:main [PDF]', 'dxfgerber = nctools.dxfgerber:main',
+            'nc2pdf = nctools.nc2pdf:main [PDF]', 'readdxf = nctools.readdxf:main'
         ]
     },
     classifiers=[
-        'Development Status :: 4 - Beta',
-        'Environment :: Console',
-        'Intended Audience :: Manufacturing',
-        'License :: OSI Approved :: BSD License',
-        'Operating System :: OS Independent',
-        'Programming Language :: Python :: 3 :: Only',
+        'Development Status :: 4 - Beta', 'Environment :: Console',
+        'Intended Audience :: Manufacturing', 'License :: OSI Approved :: BSD License',
+        'Operating System :: OS Independent', 'Programming Language :: Python :: 3 :: Only',
         'Topic :: Utilities'
     ],
     long_description=ld
