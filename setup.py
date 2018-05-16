@@ -4,7 +4,7 @@
 #
 # Author: R.F. Smith <rsmith@xs4all.nl>
 # Created: 2018-01-22 18:05:56 +0100
-# Last modified: 2018-01-23 21:55:27 +0100
+# Last modified: 2018-05-16T12:50:42+0200
 
 from setuptools import setup
 
@@ -19,7 +19,7 @@ setup(
     author='Roland Smith',
     author_email='rsmith@xs4all.nl',
     url='https://github.com/rsmith-nl/nctools',
-    extras_require={'PDF': ["cairo>=1.10"]},
+    extras_require={'PDF': ["pycairo>=1.10"]},
     provides=[name],
     packages=[name],
     entry_points={
