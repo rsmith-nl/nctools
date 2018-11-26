@@ -1,4 +1,3 @@
-
 from nctools import dxf
 
 ents = dxf.reader('../test/test1.dxf')
@@ -14,4 +13,3 @@ for e in ents:
 
 # All points that are in >1 lines.
 [ln for k in d for ln in d[k] if len(d[k]) > 1]
-

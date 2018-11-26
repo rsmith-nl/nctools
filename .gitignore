@@ -1,5 +1,9 @@
 *.pyc
 *.pyo
 backup-*.tar.gz
-dist
+dist/
+build/
+nctools.egg-info/
+*.pdf
 .ropeproject/
+.cache/
