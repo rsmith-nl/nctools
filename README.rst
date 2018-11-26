@@ -1,8 +1,13 @@
 README for NCtools
 ##################
 
+:modified: 2018-11-26
 :date: 2018-01-23
 :author: Roland Smith
+
+.. note:: As of November 2018, the Gerber cloth cutter for which I wrote these
+   programs is being retired. As a consequence, I will not spend a lot of time
+   improving the programs anymore, and the github repo will be archived.
 
 
 Introduction
