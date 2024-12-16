@@ -5,9 +5,10 @@ README for NCtools
 :date: 2018-01-23
 :author: Roland Smith
 
-.. note:: As of November 2018, the Gerber cloth cutter for which I wrote these
-   programs is being retired. As a consequence, I will not spend a lot of time
-   improving the programs anymore, and the github repo will be archived.
+.. note:: As of November 2018, the Gerber cloth cutter for which I originally
+   wrote these programs has been retired. As a consequence, I will not spend
+   a lot of time improving the programs anymore, and the github repo will be
+   in maintenance mode.
 
 
 Introduction
@@ -22,15 +23,15 @@ the C-200MT controller software.
 Most programs use the ``nctools`` modules. The dxfreader submodule can extract LINE,
 ARC, CIRCLE and POLYLINE entities from a DXF file. Note that it does *not*
 handle other entities like BLOCK. The module _assumes_ that the units in the
-file are millimeters. It also only writes nc code in centi-inches.
+file are millimeters. It writes nc code in centi-inches.
 
-At this time these programs are going through a rewrite, done on the ‘develop’
+At this time these programs have gone through a rewrite, done on the ‘develop’
 branch.
 
 
 Requirements
 ============
-* Python 3. (Developed with Python 3.4 and 3.5)
+* Python 3. (Developed with Python 3.4+)
 * the ``cairo`` library and its python bindings for ``dxf2pdf`` and ``nx2pdf``
 
 
