@@ -38,7 +38,28 @@ Requirements
 Installation
 ============
 
-Run ``./setup.py install``.
+Most of the programs have no requirements outside the standard library.
+The ``dxf2pdf`` and ``nc2pdf`` scripts require the ``cairo`` module.
+The installation uses  ``build`` and ``flit_core``.
+
+First, create a wheel::
+
+    > python3 -m build -n -w
+
+Installing it for the local user is the preferred method, since this doesn't
+require root/administrator privileges.
+To install it for the local user::
+
+    > python3 -m pip install --user dist/*.whl
+
+To install it system-wide (requires root privileges)::
+
+    # python3 -m pip install dist/*.whl
+
+To remove the installation (require root privileges in case of a system-wide
+installation)::
+
+    python3 -m pip uninstall nctools
 
 
 General remarks about the programs
