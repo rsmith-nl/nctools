@@ -20,7 +20,7 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
-pdf = "cairo >= 1.21"
+pdf = ["cairo >= 1.21"]
 
 [project.urls]
 Repository = "https://github.com/rsmith-nl/nctools"
