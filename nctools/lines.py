@@ -3,7 +3,7 @@
 #
 # Copyright © 2015,2016 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-11-14 18:56:39 +0100
-# Last modified: 2024-12-23T19:39:48+0100
+# Last modified: 2024-12-23T23:19:39+0100
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -105,7 +105,6 @@ def mksegments(entities, ndigits=3):
         step = da / cnt
         angs = [sa + i * step for i in range(cnt + 1)]
         pnts = [(fr(cp[0] + R * math.cos(a)), fr(cp[1] + R * math.sin(a))) for a in angs]
-        print(f"DEBUG: pnts = {pnts}")
         return pnts
 
     # Convert lines
@@ -133,28 +132,34 @@ def mksegments(entities, ndigits=3):
         lines += [addition]
     # TODO: Convert lwpolylines
     lwpoly = [e for e in entities if dx.bycode(e, 0) == 'LWPOLYLINE']
+    print(f"DEBUG: len(lwpoly) = {len(lwpoly)}")
     for poly in lwpoly:
         ends = []
         x, y, b = None, None, None
         closed = False
+        print(f"DEBUG: poly = {poly}")
         for k, v in poly:
             if k == 10:
-                if x:
+                if x is not None:
                     ends.append((x, y, b))
-                    y, b = None, None
+                    print(f"DEBUG: (x, y, b) = {(x, y, b)}")
+                    x, y, b = None, None, None
                 x = fr(v)
             elif k == 20:
                 y = fr(v)
             elif k == 42:
-                b = fr(v)
+                b = float(v)
             elif k == 70:
                 if v == '1':
                     closed = True
-        if x:
+        if x is not None:
             ends.append((x, y, b))
+            print(f"DEBUG: (x, y, b) = {(x, y, b)}")
         if closed:
-            ends.append(ends[0])
-        addition = [ends[0]]
+            print(f"DEBUG: closed = {closed}")
+            ends.append(ends[0][:2])
+        print(f"DEBUG: ends = {ends}")
+        addition = [ends[0][:2]]
         points = zip(ends, ends[1:])
         for sp, ep in points:
             if sp[2]:  # bulge present
@@ -164,9 +169,9 @@ def mksegments(entities, ndigits=3):
                 s = sp[2] * chordlen/2
                 R = s/2 + chordlen**2 / (8*s)
                 cpoffs = R - s
-                if sp[2] > 0:
-                    offs = (chordvec[1]*cpoffs, chordvec[0]*cpoffs)
-                else:
+                if sp[2] > 0:  # CCW
+                    offs = (-chordvec[1]*cpoffs, chordvec[0]*cpoffs)
+                else:  # CW
                     offs = (chordvec[1]*cpoffs, -chordvec[0]*cpoffs)
                 cp = (midchord[0]+offs[0], midchord[1]+offs[1])
                 addition += arc2(sp[:2], ep[:2], cp, R)
