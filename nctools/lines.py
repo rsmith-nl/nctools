@@ -3,7 +3,7 @@
 #
 # Copyright © 2015,2016 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-11-14 18:56:39 +0100
-# Last modified: 2017-06-04 16:12:34 +0200
+# Last modified: 2024-12-23T19:39:48+0100
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -54,15 +54,18 @@ def mksegments(entities, ndigits=3):
     """
 
     def fr(n):
+        """Returns the float n rounded to ndigits."""
         return round(float(n), ndigits)
 
     def line(e):
+        """Take a LINE entity and return it as a list of point tuples."""
         return [
             (fr(dx.bycode(e, 10)), fr(dx.bycode(e, 20))),
             (fr(dx.bycode(e, 11)), fr(dx.bycode(e, 21)))
         ]
 
     def arc(e):
+        """Take an ARC entity and discretize it into line segments."""
         cx, cy = float(dx.bycode(e, 10)), float(dx.bycode(e, 20))
         R = fr(dx.bycode(e, 40))
         sa, ea = (math.radians(float(dx.bycode(e, 50))), math.radians(float(dx.bycode(e, 51))))
@@ -80,6 +83,29 @@ def mksegments(entities, ndigits=3):
         step = da / cnt
         angs = [sa + i * step for i in range(cnt + 1)]
         pnts = [(fr(cx + R * math.cos(a)), fr(cy + R * math.sin(a))) for a in angs]
+        return pnts
+
+    def arc2(sp, ep, cp, R):
+        """Discretize an arc into line segments"""
+        sv = (sp[0]-cp[0], sp[1]-cp[1])
+        ev = (ep[0]-cp[0], ep[1]-cp[1])
+        sa = math.atan2(sv[1], sv[0])
+        ea = math.atan2(ev[1], ev[0])
+        if ea > sa:
+            da = ea - sa
+        else:
+            da = 2 * math.pi - sa + ea
+        if DEVLIM > R:
+            cnt = 1
+        else:
+            maxstep = 2 * math.acos(1 - DEVLIM / R)
+            if da < 0:
+                maxstep = -maxstep
+            cnt = math.ceil(da / maxstep)
+        step = da / cnt
+        angs = [sa + i * step for i in range(cnt + 1)]
+        pnts = [(fr(cp[0] + R * math.cos(a)), fr(cp[1] + R * math.sin(a))) for a in angs]
+        print(f"DEBUG: pnts = {pnts}")
         return pnts
 
     # Convert lines
@@ -105,7 +131,48 @@ def mksegments(entities, ndigits=3):
             else:
                 addition.append(ep)
         lines += [addition]
-    # Convert lwpolylines
+    # TODO: Convert lwpolylines
+    lwpoly = [e for e in entities if dx.bycode(e, 0) == 'LWPOLYLINE']
+    for poly in lwpoly:
+        ends = []
+        x, y, b = None, None, None
+        closed = False
+        for k, v in poly:
+            if k == 10:
+                if x:
+                    ends.append((x, y, b))
+                    y, b = None, None
+                x = fr(v)
+            elif k == 20:
+                y = fr(v)
+            elif k == 42:
+                b = fr(v)
+            elif k == 70:
+                if v == '1':
+                    closed = True
+        if x:
+            ends.append((x, y, b))
+        if closed:
+            ends.append(ends[0])
+        addition = [ends[0]]
+        points = zip(ends, ends[1:])
+        for sp, ep in points:
+            if sp[2]:  # bulge present
+                midchord = ((sp[0]+ep[0])/2, (sp[1]+ep[1])/2)
+                chordlen = math.sqrt((ep[0]-sp[0])**2 + (ep[1]-sp[1])**2)
+                chordvec = ((ep[0]-sp[0])/chordlen, (ep[1]-sp[1])/chordlen)
+                s = sp[2] * chordlen/2
+                R = s/2 + chordlen**2 / (8*s)
+                cpoffs = R - s
+                if sp[2] > 0:
+                    offs = (chordvec[1]*cpoffs, chordvec[0]*cpoffs)
+                else:
+                    offs = (chordvec[1]*cpoffs, -chordvec[0]*cpoffs)
+                cp = (midchord[0]+offs[0], midchord[1]+offs[1])
+                addition += arc2(sp[:2], ep[:2], cp, R)
+            else:
+                addition.append(ep[:2])
+        lines += [addition]
     return lines
 
 
