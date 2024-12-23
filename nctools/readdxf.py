@@ -4,7 +4,7 @@
 #
 # Author: R.F. Smith <rsmith@xs4all.nl>
 # Created: 2016-02-19 22:34:29 +0100
-# Last modified: 2018-01-23 21:27:38 +0100
+# Last modified: 2024-12-23T22:38:03+0100
 """Reads DXF files and prints the entities in human-readable form."""
 
 import argparse
@@ -72,6 +72,32 @@ def printent(e, v):
     def polyline():
         print('  POLYLINE')
 
+    def lwpolyline():
+        print('  LWPOLYLINE')
+        x, y, b = None, None, None
+        closed = ''
+        for k, v in e:
+            if k == 10:
+                if b:
+                    print(f'    x: {x}, y: {y}, b: {b}')
+                elif x:
+                    print(f'    x: {x}, y: {y}')
+                y, b = None, None
+                x = v
+            elif k == 20:
+                y = v
+            elif k == 42:
+                b = v
+            elif k == 70:
+                if v == '1':
+                    closed = 'closed'
+        if b:
+            print(f'    x: {x}, y: {y}, b: {b}')
+        elif x:
+            print(f'    x: {x}, y: {y}')
+        if closed:
+            print('    closed')
+
     def vertex():
         x, y = float(dx.bycode(e, 10)), float(dx.bycode(e, 20))
         outs = '    VERTEX at ({:.2f}, {:.2f})'.format(x, y)
@@ -87,6 +113,7 @@ def printent(e, v):
         'LINE': line,
         'ARC': arc,
         'POLYLINE': polyline,
+        'LWPOLYLINE': lwpolyline,
         'VERTEX': vertex,
         'SEQEND': endseq
     }
