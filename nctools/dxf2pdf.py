@@ -4,7 +4,7 @@
 #
 # Author: R.F. Smith <rsmith@xs4all.nl>
 # Created: 2016-02-19 22:34:29 +0100
-# Last modified: 2018-02-10 14:15:29 +0100
+# Last modified: 2024-12-23T16:12:28+0100
 """Read DXF files and renders them as PDF files."""
 
 import argparse
@@ -98,6 +98,7 @@ def output(ifn, ofn, entities, args):
     sortkey = sorters[args.sort]
     if not args.alllayers:
         layers = dxf.numberedlayers(entities)
+        logging.info(f"{len(layers)} numbered layers found")
         entities = [e for e in entities if dxf.bycode(e, 8) in layers]
     else:
         layers = dxf.layernames(entities)
