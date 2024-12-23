@@ -1,18 +1,14 @@
 README for NCtools
 ##################
 
-:modified: 2018-11-26
+:modified: 2024-12-23
 :date: 2018-01-23
 :author: Roland Smith
-
-.. note:: As of November 2018, the Gerber cloth cutter for which I originally
-   wrote these programs has been retired. As a consequence, I will not spend
-   a lot of time improving the programs anymore, and the github repo will be
-   in maintenance mode.
 
 
 Introduction
 ============
+
 These programs and modules were created because the existing software to
 generate NC code for our gerber cloth cutter has some deficiencies.
 
@@ -21,7 +17,7 @@ generated code was tested on a Gerber Garment Technology S-3000 cutter, with
 the C-200MT controller software.
 
 Most programs use the ``nctools`` modules. The dxfreader submodule can extract LINE,
-ARC, CIRCLE and POLYLINE entities from a DXF file. Note that it does *not*
+ARC, CIRCLE and (LW)POLYLINE entities from a DXF file. Note that it does *not*
 handle other entities like BLOCK. The module _assumes_ that the units in the
 file are millimeters. It writes nc code in centi-inches.
 
@@ -31,16 +27,18 @@ branch.
 
 Requirements
 ============
-* Python 3. (Developed with Python 3.4+)
-* the ``cairo`` library and its python bindings for ``dxf2pdf`` and ``nx2pdf``
+
+* Python 3. (Developed with Python 3.11)
+* the ``cairo`` library and its python bindings (``pycairo``) for ``dxf2pdf``
+  and ``nx2pdf``
 
 
 Installation
 ============
 
 Most of the programs have no requirements outside the standard library.
-The ``dxf2pdf`` and ``nc2pdf`` scripts require the ``cairo`` module.
-The installation uses  ``build`` and ``flit_core``.
+The ``dxf2pdf`` and ``nc2pdf`` scripts require the ``pycairo`` module.
+As of the end of 2024, the installation uses  ``build`` and ``flit_core``.
 
 First, create a wheel::
 
