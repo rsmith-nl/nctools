@@ -3,7 +3,7 @@
 #
 # Copyright © 2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-04-16 11:57:29 +0200
-# Last modified: 2017-06-04 16:05:49 +0200
+# Last modified: 2024-12-23T19:43:43+0100
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -62,9 +62,6 @@ def entities(data):
     entdata = data[soe + 1:eoe]
     idx = [n for n, d in enumerate(entdata) if d[0] == 0] + [len(entdata)]
     pairs = list(zip(idx, idx[1:]))
-    # FIXME: dict doesn't work with LWPOLYLINE, which has multiple groups
-    # 10 and 20:
-    # entities = [dict(entdata[b:e]) for b, e in pairs]
     entities = [tuple(entdata[b:e]) for b, e in pairs]
     return entities
 
