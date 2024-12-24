@@ -19,16 +19,13 @@ classifiers = [
    "Topic :: Utilities"
 ]
 
-[project.optional-dependencies]
-pdf = ["pycairo >= 1.10"]
-
 [project.urls]
 Repository = "https://github.com/rsmith-nl/nctools"
 
 [project.scripts]
 dumpgerber = "nctools.dumpgerber:main"
 dxf2nc = "nctools.dxf2nc:main"
-dxf2pdf = "nctools.dxf2pdf:main[pdf]"
+dxf2pdf = "nctools.dxf2pdf:main"
 dxfgerber = "nctools.dxfgerber:main"
-nc2pdf = "nctools.nc2pdf:main[pdf]"
+nc2pdf = "nctools.nc2pdf:main"
 readdxf = "nctools.readdxf:main"

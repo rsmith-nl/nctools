@@ -3,7 +3,7 @@
 #
 # Copyright © 2015,2016 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-05-03 20:18:19 +0200
-# Last modified: 2018-01-23 21:50:09 +0100
+# Last modified: 2024-12-24T01:08:16+0100
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -28,8 +28,13 @@
 
 import datetime
 import math
-import cairo
 from .version import __version__
+try:
+    import cairo
+except ImportError:
+    print("This functionality requires pycairo.")
+    import sys
+    sys.exit(1)
 
 
 def setup(ofn, minx, miny, maxx, maxy, offset=40):
