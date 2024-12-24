@@ -1,4 +1,4 @@
-The generated programs were tested on a Gerber Garment Technology S-3000
+The generated programs were originally tested on a Gerber Garment Technology S-3000
 cutter. The controller software is C-200MT.
 
 Maximum machine speed is 5472 cm/min. Setting 1 is 305 cm/min, 2 is 610 cm/min

@@ -5,7 +5,7 @@ Principles of nctools
 :tags: 
 :author: Roland Smith
 
-.. Last modified: 2015-11-14 18:31:03 +0100
+.. Last modified: 2024-12-24T11:20:47+0100
 
 
 .. PELICAN_END_SUMMARY
@@ -13,6 +13,7 @@ Principles of nctools
 The main goal of these programs is to generate nc code for a Gerber S-3000
 cutter with a GM200T controller. This is a very simple controller that can
 basically only cut straight lines.
+Modern Gerber machines still support this format.
 
 DXF files contain a lot of information but only the geometric entities like
 (poly)lines, circles and arcs are of interest. So other information will be
