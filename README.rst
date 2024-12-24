@@ -13,13 +13,13 @@ These programs and modules were created because the existing software to
 generate NC code for our gerber cloth cutter has some deficiencies.
 
 Note that this software was _not_ written for Gerber PCB milling machines! The
-generated code was tested on a Gerber Garment Technology S-3000 cutter, with
-the C-200MT controller software.
+generated code was originally tested on a Gerber Garment Technology S-3000
+cutter, with the C-200MT controller software.
 
-Most programs use the ``nctools`` modules. The dxfreader submodule can extract LINE,
-ARC, CIRCLE and (LW)POLYLINE entities from a DXF file. Note that it does *not*
-handle other entities like BLOCK. The module _assumes_ that the units in the
-file are millimeters. It writes nc code in centi-inches.
+Most programs use the ``nctools`` modules. The dxfreader submodule can extract
+LINE, ARC, CIRCLE and (LW)POLYLINE entities from a DXF file. Note that it does
+*not* handle other entities like BLOCK. The module _assumes_ that the units in
+the file are millimeters. It writes nc code in centi-inches.
 
 At this time these programs have gone through a rewrite, done on the ‘develop’
 branch.
@@ -36,17 +36,16 @@ Requirements
 Installation
 ============
 
-Most of the programs have no requirements outside the standard library.
-The ``dxf2pdf`` and ``nc2pdf`` scripts require the ``pycairo`` module.
-As of the end of 2024, the installation uses  ``build`` and ``flit_core``.
+Most of the programs have no requirements outside the standard library.  The
+``dxf2pdf`` and ``nc2pdf`` scripts require the ``pycairo`` module.  As of the
+end of 2024, the installation uses  ``build`` and ``flit_core``.
 
 First, create a wheel::
 
     > python3 -m build -n -w
 
 Installing it for the local user is the preferred method, since this doesn't
-require root/administrator privileges.
-To install it for the local user::
+require root/administrator privileges.  To install it for the local user::
 
     > python3 -m pip install --user dist/*.whl
 
@@ -62,15 +61,16 @@ installation)::
 
 General remarks about the programs
 ==================================
+
 These programs are command-line utilities. There are no GUI front-ends planned
 at the moment.
 
 All these programs can read files in other directories. They will however only
 write files in the current working directory. The output filename will be
-generated from the input filename by removing any directories and the
-extension. Where necessary, new extensions and/or modifiers are added. So an
-input file '..\foo\bar.dxf' will generally result in an output file named
-'bar' with the appropriate extension.
+generated from the input filename by removing any directories and the Where
+necessary, new extensions and/or modifiers are added. So an input file
+'..\foo\bar.dxf' will generally result in an output file named 'bar' with the
+appropriate extension.
 
 To try the programs without installing them, run::
 
@@ -79,18 +79,20 @@ To try the programs without installing them, run::
 from the root directory of the repository. Every program supports the ``-h``
 or ``--help`` options for an overiew of the arguments and usage.
 
+
 dxf2nc
 ------
-The cutworks software that comes with a gerber cutter doesn't
-automatically optimize the cutting paths it reads from dxf files. It
-essentially cuts lines in the order it finds them in the dxf file.
+
+The cutworks software that comes with a gerber cutter doesn't automatically
+optimize the cutting paths it reads from dxf files. It essentially cuts lines
+in the order it finds them in the dxf file.
 
 This program reads a dxf file. The name of the file must end in .dxf or .DXF
 otherwise the program will report an error and quit. It extracts all the LINE,
-ARC and POLYLINE entities from it. It then searches through all these entities
-and assembles connected entities into lists called contours. If necessary, the
-direction of entities in a contour is changed so that all entities can be cut
-in one continuous movement.
+ARC and (LW)POLYLINE entities from it. It then searches through all these
+entities and assembles connected entities into lists called contours. If
+necessary, the direction of entities in a contour is changed so that all
+entities can be cut in one continuous movement.
 
 These contours and any remaining lines and arcs are then sorted as given by
 the options. The default is to sort first in ascending x and then in ascending
@@ -113,10 +115,11 @@ program just strips the dxf extension from the filename.
 
 dxf2pdf
 -------
+
 This program reads a DXF file and generates a PDF file from it. This comes in
-handy to view a PDF file. The lines, arcs and polylines from the DXF file are
-shown on top of a 100x100 mm grid. Optionally the beginning and ending of
-lines are marked.
+handy to view a PDF file. The LINE, ARC and (LW)POLYLINE entities from the DXF
+file are shown on top of a 100x100 mm grid. Optionally the beginning and
+ending of lines are marked.
 
 In this case, the output filename for the input file 'foo.dxf' will be
 'foo_dxf.pdf'
@@ -124,12 +127,13 @@ In this case, the output filename for the input file 'foo.dxf' will be
 
 dxfgerber
 ---------
-The cutworks software that comes with a gerber cutter doesn't
-automatically optimize the cutting paths it reads from dxf files. It
-essentially cuts lines in the order it finds them in the dxf file. This was
-the original program to optimize DXF files for use with the Gerber software.
-It assembles connected lines/arcs into contours so that the cutter won't jump
-all over the part. The dxf2nc program is intended as its replacement.
+
+The cutworks software that comes with a gerber cutter doesn't automatically
+optimize the cutting paths it reads from dxf files. It essentially cuts lines
+in the order it finds them in the dxf file. This was the original program to
+optimize DXF files for use with the Gerber software.  It assembles connected
+lines/arcs into contours so that the cutter won't jump all over the part. The
+dxf2nc program is intended as its replacement.
 
 Since the output of this command is also a DXF file, the output filename has
 '_mod' appended. So the input file 'baz.dxf' has the associated output file
@@ -138,6 +142,7 @@ Since the output of this command is also a DXF file, the output filename has
 
 nc2pdf
 ------
+
 This program reads a Gerber NC file and plots the cuts as a PDF. It assumes
 units of 1/100 inch and only reads knife up/down and movements. It colors the
 cuts to indicate their sequence in the nc file.
@@ -148,6 +153,7 @@ In this case, the output filename for the input file 'foo.nc' will be
 
 dumpgerber.py
 -------------
+
 Gerber numeric code files are basically text files but do not contain line
 breaks, which makes them hard to read. This utility can be used to display the
 file in a more human-readable format.
@@ -176,10 +182,11 @@ Example output::
 
 readdxf
 -------
-Reads a DXF file and outputs the entities that it finds. This is more of a
-debugging tool for the nctools module than a really useful program. It
-gathers entities into contours for testing purposes of that functionality. A
-visual alternative would be to use dxf2pdf.
+
+Reads a DXF file and outputs the entities that it finds. This is more of
+a debugging tool for the nctools module than a really useful program. It
+gathers entities into contours for testing purposes of that functionality.
+A visual alternative would be to use dxf2pdf.
 
 Example output::
 
