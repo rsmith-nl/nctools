@@ -1,9 +1,9 @@
 # file: plot.py
 # vim:fileencoding=utf-8:ft=python
 #
-# Copyright © 2015,2016 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+# Copyright © 2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-05-03 20:18:19 +0200
-# Last modified: 2024-12-24T01:08:16+0100
+# Last modified: 2024-12-24T11:10:17+0100
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -28,7 +28,7 @@
 
 import datetime
 import math
-from .version import __version__
+from .version import __VERSION__
 
 try:
     import cairo
@@ -175,7 +175,7 @@ def title(context, prog, ofn, h, offset=40, options=None):
     context.set_font_size(fh)
     context.move_to(5, fh + 5)
     txt = " ".join(
-        ["Produced by:", prog, __version__, "on", str(datetime.datetime.now())[:-10]]
+        ["Produced by:", prog, __VERSION__, "on", str(datetime.datetime.now())[:-10]]
     )
     context.show_text(txt)
     if options:

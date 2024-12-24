@@ -2,8 +2,8 @@
 # file: dxfreader.py
 #
 # Copyright © 2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Created: 2015-04-16 11:57:29 +0200
-# Last modified: 2024-12-24T01:11:06+0100
+# Created: 2015-04-16T11:57:29 +0200
+# Last modified: 2024-12-24T11:06:55+0100
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions

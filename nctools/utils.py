@@ -1,6 +1,7 @@
 # vim:fileencoding=utf-8
-# Copyright © 2013-2016 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-# Last modified: 2017-06-04 16:15:09 +0200
+# Copyright © 2011 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+# Created: 2011-04-03T17:25:16+02:00
+# Last modified: 2024-12-24T11:13:41+0100
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions

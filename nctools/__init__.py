@@ -3,7 +3,7 @@
 #
 # Copyright © 2018 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2018-01-22 23:39:42 +0100
-# Last modified: 2018-01-22 23:40:50 +0100
+# Last modified: 2024-12-24T10:42:30+0100
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -26,4 +26,5 @@
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """Module for generating nc code for a Gerber cloth cutter."""
 
-from .version import __version__
+from .data import __VERSION__
+from .data import __LICENSE__

@@ -3,12 +3,12 @@
 #
 # Author: R.F. Smith <rsmith@xs4all.nl>
 # Created: 2015-04-15 16:45:18 +0200
-# Last modified: 2018-01-23 21:36:22 +0100
+# Last modified: 2024-12-24T10:48:22+0100
 """Dump the contents of a NC file for a Gerber cutter in a readable form."""
 
 import argparse
 import sys
-from nctools import __version__
+from nctools import __VERSION__, __LICENSE__
 
 eof = "end of file"
 kd, ku = "knife down", "knife up"
@@ -52,37 +52,16 @@ simple = {
 }
 withargs = {"H": "file #{}", "N": "piece #{}", "F": "feed rate {} in/min"}
 
-_lic = """nc2pdf {}
-Copyright © 2013, 2016, 2018 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions
-are met:
-1. Redistributions of source code must retain the above copyright
-   notice, this list of conditions and the following disclaimer.
-2. Redistributions in binary form must reproduce the above copyright
-   notice, this list of conditions and the following disclaimer in the
-   documentation and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY AUTHOR AND CONTRIBUTORS ``AS IS'' AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED.  IN NO EVENT SHALL AUTHOR OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-SUCH DAMAGE.""".format(
-    __version__
-)
+_CP = f"""dumpgerber {__VERSION__}
+Copyright © 2018 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+"""
 
 
 class LicenseAction(argparse.Action):
 
     def __call__(self, parser, namespace, values, option_string=None):
-        print(_lic)
+        print(_CP)
+        print(__LICENSE__)
         sys.exit()
 
 
@@ -92,7 +71,7 @@ def process_arguments():
     group.add_argument(
         "-L", "--license", action=LicenseAction, nargs=0, help="print the license"
     )
-    group.add_argument("-v", "--version", action="version", version=__version__)
+    group.add_argument("-v", "--version", action="version", version=__VERSION__)
     parser.add_argument(
         "files", nargs="*", help="one or more file names", metavar="file"
     )

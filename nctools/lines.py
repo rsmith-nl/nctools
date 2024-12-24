@@ -1,9 +1,9 @@
 # file: lines.py
 # vim:fileencoding=utf-8:ft=python
 #
-# Copyright © 2015,2016 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
+# Copyright © 2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-11-14 18:56:39 +0100
-# Last modified: 2024-12-23T23:22:08+0100
+# Last modified: 2024-12-24T11:07:31+0100
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
