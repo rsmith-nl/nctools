@@ -58,22 +58,22 @@ class Writer(object):
         self.piece = 0
         # commands[2] is an empty placeholder. The name, length and width of
         # the program need to be put there before writing.
-        self.commands = ['H1', 'M20', '', 'M15']
+        self.commands = ["H1", "M20", "", "M15"]
 
     def __str__(self):
         """Convert to string."""
-        return '*'.join(self.commands)
+        return "*".join(self.commands)
 
     def newpiece(self):
         """Start a new piece."""
         self.piece += 1
-        self.commands += ['N{}'.format(self.piece)]
+        self.commands += ["N{}".format(self.piece)]
 
     def up(self):
         """Stop cutting (raise the knife)."""
         self.cut = False
         self.ang = None
-        self.commands += ['M15']
+        self.commands += ["M15"]
 
     def _bbupdate(self, pnt):
         """Update bounding box."""
@@ -94,10 +94,10 @@ class Writer(object):
     def down(self):
         """Start cutting (lower the knife)."""
         if not self.pos:
-            raise ValueError('start cutting at unknown position')
+            raise ValueError("start cutting at unknown position")
         self.cut = True
         self._bbupdate(self.pos)
-        self.commands += ['M14']
+        self.commands += ["M14"]
 
     def moveto(self, x, y):
         """
@@ -122,9 +122,9 @@ class Writer(object):
                 if angdif > 180:
                     angdif = 360 - angdif
                 if angdif > self.anglim:
-                    self.commands += ['M15', 'M14']
+                    self.commands += ["M15", "M14"]
             self.ang = newang
-        self.commands += ['X{:.0f}Y{:.0f}'.format(x, y)]
+        self.commands += ["X{:.0f}Y{:.0f}".format(x, y)]
         self.pos = (x, y)
 
     def write(self):
@@ -134,7 +134,7 @@ class Writer(object):
 
     def __enter__(self):
         """Start context manager."""
-        self.f = open(self.path, 'wb')
+        self.f = open(self.path, "wb")
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -142,14 +142,14 @@ class Writer(object):
         a, b, c, d = self.bbox
         li = abs(a - c) / 100.0
         wi = abs(b - d) / 100.0
-        self.commands[2] = '{}/L={:.3f}/W={:.3f}'.format(self.name, li, wi)
-        if self.commands[-1].startswith('N'):
+        self.commands[2] = "{}/L={:.3f}/W={:.3f}".format(self.name, li, wi)
+        if self.commands[-1].startswith("N"):
             del self.commands[-1]  # Remove unnecessary newpiece()
-        if not self.commands[-1] == 'M15':
-            self.commands.append('M15')
-        self.commands.append('M0')
-        self.f.write('*'.join(self.commands).encode('utf-8'))
-        self.f.write(b'*')
+        if not self.commands[-1] == "M15":
+            self.commands.append("M15")
+        self.commands.append("M0")
+        self.f.write("*".join(self.commands).encode("utf-8"))
+        self.f.write(b"*")
         self.f.close()
 
 
@@ -193,12 +193,12 @@ def segments(path):
     Yields:
         Lists of (x, y) tuples
     """
-    downcmd = ('M14', 'B')
-    upcmd = ('M15', 'A')
-    stopcmd = ('M0', 'M00')
+    downcmd = ("M14", "B")
+    upcmd = ("M15", "A")
+    stopcmd = ("M0", "M00")
     with open(path) as df:
         data = df.read()
-    items = data.split('*')
+    items = data.split("*")
     if len(items[-1]) == 0:
         del items[-1]
     pos = (0, 0)
@@ -218,8 +218,8 @@ def segments(path):
             if segment and len(segment) > 1:
                 yield segment
             return
-        elif cmd.startswith('X'):
-            x, y = cmd[1:].split('Y')
+        elif cmd.startswith("X"):
+            x, y = cmd[1:].split("Y")
             x = round(float(x) * 25.4 / 100, 0)
             y = round(float(y) * 25.4 / 100, 0)
             pos = (x, y)

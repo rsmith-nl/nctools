@@ -42,28 +42,30 @@ OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
 HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
 LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-SUCH DAMAGE.""".format(__version__)
+SUCH DAMAGE.""".format(
+    __version__
+)
 
-dxfheader = '  0\r\nSECTION\r\n  2\r\nENTITIES\r\n'
-dxffooter = '  0\r\nENDSEC\n  0\r\nEOF\r\n'
+dxfheader = "  0\r\nSECTION\r\n  2\r\nENTITIES\r\n"
+dxffooter = "  0\r\nENDSEC\n  0\r\nEOF\r\n"
 linefmt = (
-    '0\r\nLINE\r\n  8\r\n{layer}\r\n 10\r\n{x1:.3f}\r\n 20\r\n{y1:.3f}'
-    ' 30\r\n0\r\n 11\r\n{x2:.3f}\r\n 21\r\n{y2:.3f}\r\n 31\r\n0\r\n'
+    "0\r\nLINE\r\n  8\r\n{layer}\r\n 10\r\n{x1:.3f}\r\n 20\r\n{y1:.3f}"
+    " 30\r\n0\r\n 11\r\n{x2:.3f}\r\n 21\r\n{y2:.3f}\r\n 31\r\n0\r\n"
 )
 # The flag in plheader should be 8 for an open polyline or 9 for a closed one.
 # I'm assuming that in a closed segment the last point (equal to first) can be
 # left out.
 plheader = (
-    '0\r\nPOLYLINE\r\n100\r\nAcDb3dPolyline\r\n 66\r\n   1\r\n'
-    '  8\r\n{layer}\r\n 10\r\n0\r\n 20\r\n0\r\n'
-    ' 30\r\n0\r\n 70\r\n{flag:3d}\r\n'
+    "0\r\nPOLYLINE\r\n100\r\nAcDb3dPolyline\r\n 66\r\n   1\r\n"
+    "  8\r\n{layer}\r\n 10\r\n0\r\n 20\r\n0\r\n"
+    " 30\r\n0\r\n 70\r\n{flag:3d}\r\n"
 )
 vertex = (
-    '0\r\nVERTEX\r\n100\r\nAcDbVertex\r\n100\r\nAcDb3dPolylineVertex\r\n'
-    '  8\r\n{layer}\r\n'
-    ' 10\r\n{x}\r\n 20\r\n{y}\r\n 30\r\n0\r\n 70\r\n32\r\n'
+    "0\r\nVERTEX\r\n100\r\nAcDbVertex\r\n100\r\nAcDb3dPolylineVertex\r\n"
+    "  8\r\n{layer}\r\n"
+    " 10\r\n{x}\r\n 20\r\n{y}\r\n 30\r\n0\r\n 70\r\n32\r\n"
 )
-plfooter = '0\r\nSEQEND\r\n  8\r\n{layer}\r\n'
+plfooter = "0\r\nSEQEND\r\n  8\r\n{layer}\r\n"
 
 
 class LicenseAction(argparse.Action):
@@ -76,7 +78,9 @@ class LicenseAction(argparse.Action):
 def write_segment(s, out, layer):
     """Write a segment to a file."""
     if len(s) == 2:
-        out.write(linefmt.format(layer=layer, x1=s[0][0], y1=s[0][1], x2=s[1][0], y2=s[1][1]))
+        out.write(
+            linefmt.format(layer=layer, x1=s[0][0], y1=s[0][1], x2=s[1][0], y2=s[1][1])
+        )
     elif len(s) > 2:
         if lines.closed(s):
             flag = 9
@@ -94,7 +98,7 @@ def write_allseg(seg, out, layer, keyfunc):
     """Assemble segments into contours before writing them."""
     closedseg, openseg = lines.combine_segments(seg)
     fs = '{} {} segments in layer "{}"'
-    for a, b in (('closed', closedseg), ('open', openseg)):
+    for a, b in (("closed", closedseg), ("open", openseg)):
         logging.info(fs.format(len(b), a, layer))
     openseg.sort(key=keyfunc)
     for s in openseg:
@@ -107,37 +111,42 @@ def write_allseg(seg, out, layer, keyfunc):
 def process_arguments():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        '-d',
-        '--dist',
+        "-d",
+        "--dist",
         help="maximum distance between points considered equal "
         "(defaults to 0.25 mm)",
-        metavar='mm',
+        metavar="mm",
         type=float,
-        default=0.25
+        default=0.25,
     )
     parser.add_argument(
-        '--log',
-        default='warning',
-        choices=['debug', 'info', 'warning', 'error'],
-        help="logging level (defaults to 'warning')"
+        "--log",
+        default="warning",
+        choices=["debug", "info", "warning", "error"],
+        help="logging level (defaults to 'warning')",
     )
     parser.add_argument(
-        '-s',
-        '--sort',
-        default='xy',
-        choices=['xy', 'yx', 'dist'],
-        help="sorting algorithm to use (defaults to 'xy')"
+        "-s",
+        "--sort",
+        default="xy",
+        choices=["xy", "yx", "dist"],
+        help="sorting algorithm to use (defaults to 'xy')",
     )
     group = parser.add_mutually_exclusive_group()
-    group.add_argument('-L', '--license', action=LicenseAction, nargs=0, help="print the license")
-    group.add_argument('-v', '--version', action='version', version=__version__)
-    parser.add_argument('files', nargs='*', help='one or more file names', metavar='file')
+    group.add_argument(
+        "-L", "--license", action=LicenseAction, nargs=0, help="print the license"
+    )
+    group.add_argument("-v", "--version", action="version", version=__version__)
+    parser.add_argument(
+        "files", nargs="*", help="one or more file names", metavar="file"
+    )
     args = parser.parse_args(sys.argv[1:])
     logging.basicConfig(
-        level=getattr(logging, args.log.upper(), None), format='%(levelname)s: %(message)s'
+        level=getattr(logging, args.log.upper(), None),
+        format="%(levelname)s: %(message)s",
     )
-    logging.debug('command line arguments = {}'.format(sys.argv))
-    logging.debug('parsed arguments = {}'.format(args))
+    logging.debug("command line arguments = {}".format(sys.argv))
+    logging.debug("parsed arguments = {}".format(args))
     if not args.files:
         parser.print_help()
         sys.exit(0)
@@ -149,13 +158,13 @@ def main():
     Entry point for dxfgerber.py.
     """
     args = process_arguments()
-    sorters = {'xy': utils.bbxykey, 'yx': utils.bbyxkey, 'dist': utils.distkey}
+    sorters = {"xy": utils.bbxykey, "yx": utils.bbyxkey, "dist": utils.distkey}
     sortkey = sorters[args.sort]
     lines.epsilon = args.dist
     for f in utils.xpand(args.files):
         logging.info('starting file "{}"'.format(f))
         try:
-            ofn = utils.outname(f, extension='.dxf', addenum='_mod')
+            ofn = utils.outname(f, extension=".dxf", addenum="_mod")
             data = dx.parse(f)
             entities = dx.entities(data)
         except ValueError as ex:
@@ -173,8 +182,8 @@ def main():
         if num == 0:
             logging.info("no entities found! Skipping file '{}'.".format(f))
             continue
-        logging.info('{} entities found.'.format(num))
-        with open(ofn, 'w') as out:
+        logging.info("{} entities found.".format(num))
+        with open(ofn, "w") as out:
             out.write(dxfheader)
             for layername in layers:
                 thislayer = dx.fromlayer(entities, layername)
@@ -187,5 +196,5 @@ def main():
             out.write(dxffooter)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

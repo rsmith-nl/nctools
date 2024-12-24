@@ -39,7 +39,7 @@ def parse(filename):
     Returns:
         A list of (group, data) tuples.
     """
-    with open(filename, encoding='cp1252') as dxffile:
+    with open(filename, encoding="cp1252") as dxffile:
         lines = dxffile.readlines()
     lines = [ln.strip() for ln in lines]
     data = list(zip(lines[::2], lines[1::2]))
@@ -57,9 +57,9 @@ def entities(data):
         A list of drawing entities, each as a dictionary
         keyed by group code.
     """
-    soe = [n for n, d in enumerate(data) if d[1] == 'ENTITIES'][0]
-    eoe = [n for n, d in enumerate(data) if d[1] == 'ENDSEC' and n > soe][0]
-    entdata = data[soe + 1:eoe]
+    soe = [n for n, d in enumerate(data) if d[1] == "ENTITIES"][0]
+    eoe = [n for n, d in enumerate(data) if d[1] == "ENDSEC" and n > soe][0]
+    entdata = data[soe + 1 : eoe]
     idx = [n for n, d in enumerate(entdata) if d[0] == 0] + [len(entdata)]
     pairs = list(zip(idx, idx[1:]))
     entities = [tuple(entdata[b:e]) for b, e in pairs]
@@ -116,8 +116,8 @@ def numberedlayers(entities):
         number.
     """
     layers = layernames(entities)
-    numbered = [ln for ln in layers if len(re.findall(r'[1-9]\d*', ln)) == 1]
-    numbered.sort(key=lambda ln: int(re.search(r'[1-9]\d*', ln).group()))
+    numbered = [ln for ln in layers if len(re.findall(r"[1-9]\d*", ln)) == 1]
+    numbered.sort(key=lambda ln: int(re.search(r"[1-9]\d*", ln).group()))
     return numbered
 
 

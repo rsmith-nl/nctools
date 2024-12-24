@@ -61,14 +61,17 @@ def mksegments(entities, ndigits=3):
         """Take a LINE entity and return it as a list of point tuples."""
         return [
             (fr(dx.bycode(e, 10)), fr(dx.bycode(e, 20))),
-            (fr(dx.bycode(e, 11)), fr(dx.bycode(e, 21)))
+            (fr(dx.bycode(e, 11)), fr(dx.bycode(e, 21))),
         ]
 
     def arc(e):
         """Take an ARC entity and discretize it into line segments."""
         cx, cy = float(dx.bycode(e, 10)), float(dx.bycode(e, 20))
         R = fr(dx.bycode(e, 40))
-        sa, ea = (math.radians(float(dx.bycode(e, 50))), math.radians(float(dx.bycode(e, 51))))
+        sa, ea = (
+            math.radians(float(dx.bycode(e, 50))),
+            math.radians(float(dx.bycode(e, 51))),
+        )
         if ea > sa:
             da = ea - sa
         else:
@@ -87,8 +90,8 @@ def mksegments(entities, ndigits=3):
 
     def arc2(sp, ep, cp, R):
         """Discretize an arc into line segments"""
-        sv = (sp[0]-cp[0], sp[1]-cp[1])
-        ev = (ep[0]-cp[0], ep[1]-cp[1])
+        sv = (sp[0] - cp[0], sp[1] - cp[1])
+        ev = (ep[0] - cp[0], ep[1] - cp[1])
         sa = math.atan2(sv[1], sv[0])
         ea = math.atan2(ev[1], ev[0])
         if ea > sa:
@@ -104,21 +107,26 @@ def mksegments(entities, ndigits=3):
             cnt = math.ceil(da / maxstep)
         step = da / cnt
         angs = [sa + i * step for i in range(cnt + 1)]
-        pnts = [(fr(cp[0] + R * math.cos(a)), fr(cp[1] + R * math.sin(a))) for a in angs]
+        pnts = [
+            (fr(cp[0] + R * math.cos(a)), fr(cp[1] + R * math.sin(a))) for a in angs
+        ]
         return pnts
 
     # Convert lines
-    lines = [line(e) for e in entities if dx.bycode(e, 0) == 'LINE']
+    lines = [line(e) for e in entities if dx.bycode(e, 0) == "LINE"]
     # Convert arcs
-    lines += [arc(e) for e in entities if dx.bycode(e, 0) == 'ARC']
+    lines += [arc(e) for e in entities if dx.bycode(e, 0) == "ARC"]
     # Convert polylines
-    pi = [n for n, e in enumerate(entities) if dx.bycode(e, 0) == 'POLYLINE']
-    se = [n for n, e in enumerate(entities) if dx.bycode(e, 0) == 'SEQEND']
+    pi = [n for n, e in enumerate(entities) if dx.bycode(e, 0) == "POLYLINE"]
+    se = [n for n, e in enumerate(entities) if dx.bycode(e, 0) == "SEQEND"]
     for start in pi:
         end = [n for n in se if n > start][0]
         poly = entities[start:end]
         points = [(fr(dx.bycode(e, 10)), fr(dx.bycode(e, 20))) for e in poly[1:]]
-        angles = [math.atan(float(dx.bycode(e, 42))) * 4 if 42 in e else None for e in poly[1:]]
+        angles = [
+            math.atan(float(dx.bycode(e, 42))) * 4 if 42 in e else None
+            for e in poly[1:]
+        ]
         if 70 in poly[0] and (int(dx.bycode(poly[0], 70)) & 1):  # closed
             points.append(points[0])
         ends = zip(points, points[1:], angles)
@@ -131,7 +139,7 @@ def mksegments(entities, ndigits=3):
                 addition.append(ep)
         lines += [addition]
     # TODO: Convert lwpolylines
-    lwpoly = [e for e in entities if dx.bycode(e, 0) == 'LWPOLYLINE']
+    lwpoly = [e for e in entities if dx.bycode(e, 0) == "LWPOLYLINE"]
     for poly in lwpoly:
         ends = []
         x, y, b = None, None, None
@@ -147,7 +155,7 @@ def mksegments(entities, ndigits=3):
             elif k == 42:
                 b = float(v)
             elif k == 70:
-                if v == '1':
+                if v == "1":
                     closed = True
         if x is not None:
             ends.append((x, y, b))
@@ -157,17 +165,17 @@ def mksegments(entities, ndigits=3):
         points = zip(ends, ends[1:])
         for sp, ep in points:
             if sp[2]:  # bulge present
-                midchord = ((sp[0]+ep[0])/2, (sp[1]+ep[1])/2)
-                chordlen = math.sqrt((ep[0]-sp[0])**2 + (ep[1]-sp[1])**2)
-                chordvec = ((ep[0]-sp[0])/chordlen, (ep[1]-sp[1])/chordlen)
-                s = sp[2] * chordlen/2
-                R = s/2 + chordlen**2 / (8*s)
+                midchord = ((sp[0] + ep[0]) / 2, (sp[1] + ep[1]) / 2)
+                chordlen = math.sqrt((ep[0] - sp[0]) ** 2 + (ep[1] - sp[1]) ** 2)
+                chordvec = ((ep[0] - sp[0]) / chordlen, (ep[1] - sp[1]) / chordlen)
+                s = sp[2] * chordlen / 2
+                R = s / 2 + chordlen**2 / (8 * s)
                 cpoffs = R - s
                 if sp[2] > 0:  # CCW
-                    offs = (-chordvec[1]*cpoffs, chordvec[0]*cpoffs)
+                    offs = (-chordvec[1] * cpoffs, chordvec[0] * cpoffs)
                 else:  # CW
-                    offs = (chordvec[1]*cpoffs, -chordvec[0]*cpoffs)
-                cp = (midchord[0]+offs[0], midchord[1]+offs[1])
+                    offs = (chordvec[1] * cpoffs, -chordvec[0] * cpoffs)
+                cp = (midchord[0] + offs[0], midchord[1] + offs[1])
                 addition += arc2(sp[:2], ep[:2], cp, R)
             else:
                 addition.append(ep[:2])
@@ -258,7 +266,7 @@ def _arcdata(sp, ep, angs):
     xs, ys = sp
     xe, ye = ep
     if angs == 0.0:
-        raise ValueError('not a curved section')
+        raise ValueError("not a curved section")
     xm, ym = (xs + xe) / 2.0, (ys + ye) / 2.0
     xp, yp = xm - xs, ym - ys
     lp = math.sqrt(xp**2 + yp**2)
@@ -268,7 +276,7 @@ def _arcdata(sp, ep, angs):
         xc, yc = xm - f * yp, ym + f * xp
     else:
         xc, yc = xm + f * yp, ym - f * xp
-    R = math.sqrt((xc - xs)**2 + (yc - ys)**2)
+    R = math.sqrt((xc - xs) ** 2 + (yc - ys) ** 2)
     twopi = 2 * math.pi
     a0 = math.atan2(ys - yc, xs - xc)
     a1 = math.atan2(ye - yc, xe - xc)
@@ -295,7 +303,10 @@ def length(line):
     Returns:
         The sum of the lengths of the line segments between the listed points.
     """
-    dist = [math.sqrt((c - a)**2 + (d - b)**2) for ((a, b), (c, d)) in zip(line, line[1:])]
+    dist = [
+        math.sqrt((c - a) ** 2 + (d - b) ** 2)
+        for ((a, b), (c, d)) in zip(line, line[1:])
+    ]
     return sum(dist)
 
 
@@ -322,7 +333,7 @@ def setstart(line, newstart):
         line: list of 2-tuples (x, y)
     """
     if not closed(line):
-        raise ValueError('line is not closed')
+        raise ValueError("line is not closed")
     line.pop()  # Remove last point
     i = line.index(newstart)  # raises ValueError when newstart not in list.
     line[:] = line[i:] + line[:i]

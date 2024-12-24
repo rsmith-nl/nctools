@@ -1,6 +1,6 @@
 from nctools import dxf
 
-ents = dxf.reader('../test/test1.dxf')
+ents = dxf.reader("../test/test1.dxf")
 
 from collections import defaultdict
 

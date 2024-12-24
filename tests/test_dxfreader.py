@@ -8,7 +8,7 @@
 
 import sys
 
-sys.path.insert(1, '.')
+sys.path.insert(1, ".")
 
 from nctools import dxfreader as dxf  # noqa
 
@@ -19,24 +19,42 @@ names = []
 
 def test_parse():
     global data
-    data = dxf.parse('testfiles/demo.dxf')
+    data = dxf.parse("testfiles/demo.dxf")
     assert len(data) == 4768
-    assert data[0] == (0, 'SECTION')
-    assert data[-1] == (0, 'EOF')
+    assert data[0] == (0, "SECTION")
+    assert data[-1] == (0, "EOF")
 
 
 def test_entities():
     global ents
     ents = dxf.entities(data)
     start = (
-        (0, 'LINE'), (5, '359'), (330, '475'), (100, 'AcDbEntity'), (8, 'deel 1'),
-        (100, 'AcDbLine'), (10, '999.9999999999984'), (20, '100.0'), (30, '0.0'), (11, '1100.0'),
-        (21, '100.0'), (31, '0.0')
+        (0, "LINE"),
+        (5, "359"),
+        (330, "475"),
+        (100, "AcDbEntity"),
+        (8, "deel 1"),
+        (100, "AcDbLine"),
+        (10, "999.9999999999984"),
+        (20, "100.0"),
+        (30, "0.0"),
+        (11, "1100.0"),
+        (21, "100.0"),
+        (31, "0.0"),
     )
     end = (
-        (0, 'LINE'), (5, '37A'), (330, '475'), (100, 'AcDbEntity'), (8, 'deel 1'),
-        (100, 'AcDbLine'), (10, '999.9999999999982'), (20, '575.0'), (30, '0.0'),
-        (11, '999.9999999999982'), (21, '600.0'), (31, '0.0')
+        (0, "LINE"),
+        (5, "37A"),
+        (330, "475"),
+        (100, "AcDbEntity"),
+        (8, "deel 1"),
+        (100, "AcDbLine"),
+        (10, "999.9999999999982"),
+        (20, "575.0"),
+        (30, "0.0"),
+        (11, "999.9999999999982"),
+        (21, "600.0"),
+        (31, "0.0"),
     )
     assert len(ents) == 16
     assert ents[0] == start
@@ -46,9 +64,9 @@ def test_entities():
 def test_layernames():
     global names
     names = dxf.layernames(ents)
-    assert names == ['deel 1']
+    assert names == ["deel 1"]
 
 
 def test_numberedlayers():
     numnames = dxf.numberedlayers(ents)
-    assert numnames == ['deel 1']
+    assert numnames == ["deel 1"]

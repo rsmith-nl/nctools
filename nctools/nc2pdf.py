@@ -35,7 +35,9 @@ OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
 HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
 LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-SUCH DAMAGE.""".format(__version__)
+SUCH DAMAGE.""".format(
+    __version__
+)
 
 
 class LicenseAction(argparse.Action):
@@ -48,21 +50,26 @@ class LicenseAction(argparse.Action):
 def process_arguments():
     parser = argparse.ArgumentParser(description=__doc__)
     group = parser.add_mutually_exclusive_group()
-    group.add_argument('-L', '--license', action=LicenseAction, nargs=0, help="print the license")
-    group.add_argument('-v', '--version', action='version', version=__version__)
-    parser.add_argument(
-        '--log',
-        default='warning',
-        choices=['debug', 'info', 'warning', 'error'],
-        help="logging level (defaults to 'warning')"
+    group.add_argument(
+        "-L", "--license", action=LicenseAction, nargs=0, help="print the license"
     )
-    parser.add_argument('files', nargs='*', help='one or more file names', metavar='file')
+    group.add_argument("-v", "--version", action="version", version=__version__)
+    parser.add_argument(
+        "--log",
+        default="warning",
+        choices=["debug", "info", "warning", "error"],
+        help="logging level (defaults to 'warning')",
+    )
+    parser.add_argument(
+        "files", nargs="*", help="one or more file names", metavar="file"
+    )
     args = parser.parse_args(sys.argv[1:])
     logging.basicConfig(
-        level=getattr(logging, args.log.upper(), None), format='%(levelname)s: %(message)s'
+        level=getattr(logging, args.log.upper(), None),
+        format="%(levelname)s: %(message)s",
     )
-    logging.debug('command line arguments = {}'.format(sys.argv))
-    logging.debug('parsed arguments = {}'.format(args))
+    logging.debug("command line arguments = {}".format(sys.argv))
+    logging.debug("parsed arguments = {}".format(args))
     if not args.files:
         parser.print_help()
         sys.exit(0)
@@ -77,7 +84,7 @@ def main():
     for fn in utils.xpand(args.files):
         logging.info('starting file "{}"'.format(fn))
         try:
-            ofn = utils.outname(fn, extension='.pdf', addenum='_nc')
+            ofn = utils.outname(fn, extension=".pdf", addenum="_nc")
             cuts = list(gerbernc.segments(fn))
         except ValueError as e:
             logging.info(str(e))
@@ -89,24 +96,24 @@ def main():
             logging.error("i/o error, skipping file '{}'".format(fn))
             continue
         cnt = len(cuts)
-        logging.info('got {} cuts'.format(cnt))
+        logging.info("got {} cuts".format(cnt))
         xvals = [pnt[0] for s in cuts for pnt in s]
         yvals = [pnt[1] for s in cuts for pnt in s]
         minx, maxx = min(xvals), max(xvals)
         miny, maxy = min(yvals), max(yvals)
-        bs = '{} range from {:.1f} mm to {:.1f} mm'
-        logging.info(bs.format('X', minx, maxx))
-        logging.info(bs.format('Y', miny, maxy))
-        logging.info('plotting the cuts')
+        bs = "{} range from {:.1f} mm to {:.1f} mm"
+        logging.info(bs.format("X", minx, maxx))
+        logging.info(bs.format("Y", miny, maxy))
+        logging.info("plotting the cuts")
         out, ctx = plot.setup(ofn, minx, miny, maxx, maxy)
         plot.grid(ctx, minx, miny, maxx, maxy)
         plot.lines(ctx, cuts)
-        plot.title(ctx, 'nc2pdf', ofn, maxy - miny)
+        plot.title(ctx, "nc2pdf", ofn, maxy - miny)
         out.show_page()
         logging.info('writing output file "{}"'.format(ofn))
         out.finish()
         logging.info('file "{}" done.'.format(fn))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -38,7 +38,9 @@ OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
 HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
 LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-SUCH DAMAGE.""".format(__version__)
+SUCH DAMAGE.""".format(
+    __version__
+)
 
 
 class LicenseAction(argparse.Action):
@@ -54,34 +56,40 @@ def printent(e, v):
     def line():
         xs, ys = float(dx.bycode(e, 10)), float(dx.bycode(e, 20))
         xe, ye = float(dx.bycode(e, 11)), float(dx.bycode(e, 21))
-        outs = '  LINE from ({:.2f}, {:.2f}) to ({:.2f}, {:.2f})'
+        outs = "  LINE from ({:.2f}, {:.2f}) to ({:.2f}, {:.2f})"
         print(outs.format(xs, ys, xe, ye))
 
     def arc():
-        xc, yc, R = (float(dx.bycode(e, 10)), float(dx.bycode(e, 20)), float(dx.bycode(e, 40)))
+        xc, yc, R = (
+            float(dx.bycode(e, 10)),
+            float(dx.bycode(e, 20)),
+            float(dx.bycode(e, 40)),
+        )
         sa, ea = float(dx.bycode(e, 50)), float(dx.bycode(e, 51))
         sar, ear = math.radians(sa), math.radians(ea)
         xs, ys = xc + R * math.cos(sar), yc + R * math.sin(sar)
         xe, ye = xc + R * math.cos(ear), yc + R * math.sin(ear)
-        outs = '  ARC from ({:.2f}, {:.2f}) to ({:.2f}, {:.2f})'
+        outs = "  ARC from ({:.2f}, {:.2f}) to ({:.2f}, {:.2f})"
         print(outs.format(xs, ys, xe, ye))
-        outs = '      centered at ({:.2f}, {:.2f}), ' \
-               'radius {:.2f}, from {:.1f}° to {:.1f}°'
+        outs = (
+            "      centered at ({:.2f}, {:.2f}), "
+            "radius {:.2f}, from {:.1f}° to {:.1f}°"
+        )
         print(outs.format(xc, yc, R, sa, ea))
 
     def polyline():
-        print('  POLYLINE')
+        print("  POLYLINE")
 
     def lwpolyline():
-        print('  LWPOLYLINE')
+        print("  LWPOLYLINE")
         x, y, b = None, None, None
-        closed = ''
+        closed = ""
         for k, v in e:
             if k == 10:
                 if b:
-                    print(f'    x: {x}, y: {y}, b: {b}')
+                    print(f"    x: {x}, y: {y}, b: {b}")
                 elif x:
-                    print(f'    x: {x}, y: {y}')
+                    print(f"    x: {x}, y: {y}")
                 y, b = None, None
                 x = v
             elif k == 20:
@@ -89,67 +97,75 @@ def printent(e, v):
             elif k == 42:
                 b = v
             elif k == 70:
-                if v == '1':
-                    closed = 'closed'
+                if v == "1":
+                    closed = "closed"
         if b:
-            print(f'    x: {x}, y: {y}, b: {b}')
+            print(f"    x: {x}, y: {y}, b: {b}")
         elif x:
-            print(f'    x: {x}, y: {y}')
+            print(f"    x: {x}, y: {y}")
         if closed:
-            print('    closed')
+            print("    closed")
 
     def vertex():
         x, y = float(dx.bycode(e, 10)), float(dx.bycode(e, 20))
-        outs = '    VERTEX at ({:.2f}, {:.2f})'.format(x, y)
+        outs = "    VERTEX at ({:.2f}, {:.2f})".format(x, y)
         if 42 in e:
             v = math.degrees(math.atan(float(dx.bycode(e, 42))) * 4)
-            outs += ', curve angle {:.1f}°'.format(v)
+            outs += ", curve angle {:.1f}°".format(v)
         print(outs)
 
     def endseq():
-        print('  ENDSEQ')
+        print("  ENDSEQ")
 
     printdict = {
-        'LINE': line,
-        'ARC': arc,
-        'POLYLINE': polyline,
-        'LWPOLYLINE': lwpolyline,
-        'VERTEX': vertex,
-        'SEQEND': endseq
+        "LINE": line,
+        "ARC": arc,
+        "POLYLINE": polyline,
+        "LWPOLYLINE": lwpolyline,
+        "VERTEX": vertex,
+        "SEQEND": endseq,
     }
     k = dx.bycode(e, 0)
     try:
         printdict[k]()
     except KeyError:
         if v:
-            print('  {} entity: {}'.format(k, e))
+            print("  {} entity: {}".format(k, e))
         else:
-            print('  {} entity'.format(k))
+            print("  {} entity".format(k))
 
 
 def process_arguments():
     parser = argparse.ArgumentParser(description=__doc__)
-    argtext1 = 'show details of unknown entities'
-    parser.add_argument('-v', '--verbose', help=argtext1, action="store_true")
+    argtext1 = "show details of unknown entities"
+    parser.add_argument("-v", "--verbose", help=argtext1, action="store_true")
     parser.add_argument(
-        '-a', '--all', action="store_true", help='process all layers (default: numbered layers)'
+        "-a",
+        "--all",
+        action="store_true",
+        help="process all layers (default: numbered layers)",
     )
     parser.add_argument(
-        '--log',
-        default='warning',
-        choices=['debug', 'info', 'warning', 'error'],
-        help="logging level (defaults to 'warning')"
+        "--log",
+        default="warning",
+        choices=["debug", "info", "warning", "error"],
+        help="logging level (defaults to 'warning')",
     )
     group = parser.add_mutually_exclusive_group()
-    group.add_argument('-L', '--license', action=LicenseAction, nargs=0, help="print the license")
-    group.add_argument('-V', '--version', action='version', version=__version__)
-    parser.add_argument('files', metavar='file', nargs='*', help='one or more file names')
+    group.add_argument(
+        "-L", "--license", action=LicenseAction, nargs=0, help="print the license"
+    )
+    group.add_argument("-V", "--version", action="version", version=__version__)
+    parser.add_argument(
+        "files", metavar="file", nargs="*", help="one or more file names"
+    )
     args = parser.parse_args(sys.argv[1:])
     logging.basicConfig(
-        level=getattr(logging, args.log.upper(), None), format='%(levelname)s: %(message)s'
+        level=getattr(logging, args.log.upper(), None),
+        format="%(levelname)s: %(message)s",
     )
-    logging.debug('Command line arguments = {}'.format(sys.argv[1:]))
-    logging.debug('Parsed arguments = {}'.format(args))
+    logging.debug("Command line arguments = {}".format(sys.argv[1:]))
+    logging.debug("Parsed arguments = {}".format(args))
     if not args.files:
         parser.print_help()
         sys.exit(0)
@@ -162,7 +178,7 @@ def main():
     """
     args = process_arguments()
     for f in ut.xpand(args.files):
-        print('Filename: {}'.format(f))
+        print("Filename: {}".format(f))
         try:
             data = dx.parse(f)
             if args.verbose:
@@ -170,7 +186,7 @@ def main():
                     pprint.pprint(d)
             entities = dx.entities(data)
         except Exception as ex:
-            logging.info('skipping file {}: {}'.format(f, ex))
+            logging.info("skipping file {}: {}".format(f, ex))
             continue
         if not args.all:
             numbered = dx.numberedlayers(entities)
@@ -180,9 +196,9 @@ def main():
                 entities += layerent
         num = len(entities)
         if num == 0:
-            logging.warning('no entities found!')
+            logging.warning("no entities found!")
             continue
-        print('Contains: {} entities'.format(num))
+        print("Contains: {} entities".format(num))
         if args.verbose:
             for e in entities:
                 pprint.pprint(e)
@@ -193,5 +209,5 @@ def main():
                 printent(e, args.verbose)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

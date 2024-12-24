@@ -29,7 +29,7 @@ import os.path
 from nctools import lines
 
 
-def outname(inname, extension, addenum=''):
+def outname(inname, extension, addenum=""):
     """
     Create the name of the output filename based on the input filename.
 
@@ -42,10 +42,10 @@ def outname(inname, extension, addenum=''):
         Output file name.
     """
     rv = os.path.splitext(os.path.basename(inname))[0]
-    if rv.startswith('.') or rv.isspace():
+    if rv.startswith(".") or rv.isspace():
         raise ValueError("Invalid file name!")
-    if extension and not extension.startswith('.'):
-        extension = '.' + extension
+    if extension and not extension.startswith("."):
+        extension = "." + extension
     return rv + addenum + extension
 
 
