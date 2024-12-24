@@ -3,7 +3,7 @@
 #
 # Copyright © 2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-04-16 11:57:29 +0200
-# Last modified: 2024-12-23T19:43:43+0100
+# Last modified: 2024-12-24T01:11:06+0100
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -116,8 +116,8 @@ def numberedlayers(entities):
         number.
     """
     layers = layernames(entities)
-    numbered = [ln for ln in layers if len(re.findall('[1-9]\d*', ln)) == 1]
-    numbered.sort(key=lambda ln: int(re.search('[1-9]\d*', ln).group()))
+    numbered = [ln for ln in layers if len(re.findall(r'[1-9]\d*', ln)) == 1]
+    numbered.sort(key=lambda ln: int(re.search(r'[1-9]\d*', ln).group()))
     return numbered
 
 
