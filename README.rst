@@ -21,9 +21,6 @@ LINE, ARC, CIRCLE and (LW)POLYLINE entities from a DXF file. Note that it does
 *not* handle other entities like BLOCK. The module _assumes_ that the units in
 the file are millimeters. It writes nc code in centi-inches.
 
-At this time these programs have gone through a rewrite, done on the ‘develop’
-branch.
-
 
 Requirements
 ============
