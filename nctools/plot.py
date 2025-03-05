@@ -3,7 +3,7 @@
 #
 # Copyright © 2015 R.F. Smith <rsmith@xs4all.nl>. All rights reserved.
 # Created: 2015-05-03 20:18:19 +0200
-# Last modified: 2024-12-24T11:10:17+0100
+# Last modified: 2025-03-05T22:22:05+0100
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -28,7 +28,7 @@
 
 import datetime
 import math
-from .version import __VERSION__
+from .data import __VERSION__
 
 try:
     import cairo
